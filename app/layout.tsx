@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   keywords: ['前端开发', 'AI', '个人网站', '博客'],
   authors: [{ name: 'shanshan' }],
   creator: 'shanshan',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  icons: {
+    icon: '/icon.svg',
+  },
   openGraph: {
     title: 'shanshan的个人网站',
     description: '前端开发者 | AI爱好者 | 创意工作者',
@@ -27,12 +31,14 @@ export default function RootLayout({
     <html lang="zh-CN" suppressHydrationWarning>
       <body className={`${zenKakuGothic.variable} font-sans`}>
         <ThemeProvider>
-          <div className="min-h-screen flex flex-col">
-            <Navigation />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
+          <div className="min-h-screen">
+            <div className="w-1/2 mx-auto flex flex-col min-h-screen">
+              <Navigation />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </div>
         </ThemeProvider>
       </body>

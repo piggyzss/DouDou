@@ -46,34 +46,6 @@ export default function Hero() {
               用代码创造美好，用AI探索未来，让创意与技术完美融合
             </motion.p>
           </div>
-
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-          >
-            <Link href="/projects">
-              <motion.button
-                className="flex items-center space-x-2 bg-secondary text-white px-6 py-3 rounded-2xl hover:bg-secondary/90 transition-all duration-300 text-base font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span>查看作品</span>
-                <ArrowRight size={18} />
-              </motion.button>
-            </Link>
-            
-            <Link href="/blog">
-              <motion.button
-                className="flex items-center space-x-2 border-2 border-secondary text-secondary px-6 py-3 rounded-2xl hover:bg-secondary hover:text-white transition-all duration-300 text-base font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span>阅读博客</span>
-              </motion.button>
-            </Link>
-          </motion.div>
         </motion.div>
 
         {/* 右侧卡片 */}

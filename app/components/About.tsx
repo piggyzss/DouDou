@@ -5,20 +5,56 @@ import { User, Award, Heart } from 'lucide-react'
 
 export default function About() {
   return (
-    <section className="py-16 bg-bg-secondary dark:bg-gray-900">
+    <section className="pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+        {/* 新的动画标题区域 */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
           className="text-center mb-12"
         >
-          <h2 className="text-xl sm:text-2xl text-text-primary mb-3">关于我</h2>
-          <p className="text-lg sm:text-xl text-text-secondary max-w-3xl mx-auto">
-            热爱技术，追求创新，致力于用代码改变世界
-          </p>
+          {/* 两条横线容器 */}
+          <div className="flex items-center justify-center mb-6">
+            {/* 左侧横线 */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              viewport={{ once: false }}
+              className="h-0.5 bg-primary flex-1 max-w-32"
+              style={{ transformOrigin: 'right' }}
+            />
+            
+            {/* 中间的about文案 */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              whileInView={{ scale: 1, rotate: 0 }}
+              transition={{ 
+                duration: 0.6, 
+                delay: 0.5,
+                type: "spring",
+                stiffness: 200,
+                damping: 10
+              }}
+              viewport={{ once: false }}
+              className="mx-6 px-4 py-2 text-primary text-2xl font-medium"
+            >
+              About
+            </motion.div>
+            
+            {/* 右侧横线 */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              viewport={{ once: false }}
+              className="h-0.5 bg-primary flex-1 max-w-32"
+              style={{ transformOrigin: 'left' }}
+            />
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

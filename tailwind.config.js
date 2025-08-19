@@ -58,6 +58,25 @@ module.exports = {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+    function({ addUtilities, theme }) {
+      const newUtilities = {
+        '.dark .text-text-primary': {
+          color: '#ffffff',
+        },
+        '.dark .text-text-secondary': {
+          color: 'rgba(255, 255, 255, 0.9)',
+        },
+        '.dark .text-text-muted': {
+          color: 'rgba(255, 255, 255, 0.7)',
+        },
+        '.dark .text-text-light': {
+          color: 'rgba(255, 255, 255, 0.8)',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
   darkMode: 'class',
 } 
