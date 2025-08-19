@@ -14,20 +14,27 @@ export default function BlogPage({ searchParams }: Props) {
   return (
     <div className="min-h-screen pt-16">
       <div className="w-full py-12 relative">
-        {isDev && (
-          <Link href="/blog/new" className="absolute right-0 -top-2 px-3 py-1.5 rounded-full bg-primary text-white text-sm hover:bg-primary-dark transition-colors">
-            新建博客
-          </Link>
-        )}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text-primary font-blog">博客文章</h1>
+          <h1 className="text-3xl font-bold text-text-primary font-zen-kaku">博客文章</h1>
           <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
         </div>
+
+        {/* 新建博客按钮 */}
+        {isDev && (
+          <div className="mb-6">
+            <Link 
+              href="/blog/new" 
+              className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
+            >
+              新建博客
+            </Link>
+          </div>
+        )}
 
         <div className="space-y-6">
           {items.map((post) => (
             <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-800 bg-bg-primary p-5 hover:shadow-md transition-shadow">
-              <h2 className="text-xl font-semibold text-text-primary font-blog">
+              <h2 className="text-xl font-semibold text-text-primary font-zen-kaku">
                 <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
               </h2>
               <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
@@ -39,16 +46,16 @@ export default function BlogPage({ searchParams }: Props) {
                   ))}
                 </div>
               </div>
-              <p className="mt-3 text-text-secondary leading-7 font-blog">{post.excerpt}</p>
+              <p className="mt-3 text-text-secondary leading-7 font-blog text-base">{post.excerpt}</p>
               <div className="mt-3">
-                <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-sm font-blog">Read more →</Link>
+                <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-blog">Read more →</Link>
               </div>
             </section>
           ))}
         </div>
 
         {/* 分页 */}
-        <div className="mt-8 flex items-center justify-between text-sm font-blog">
+        <div className="mt-8 flex items-center justify-between text-base font-blog">
           <Link
             href={currentPage > 1 ? `/blog?page=${currentPage - 1}` : '#'}
             className={`px-3 py-1.5 rounded-md border ${currentPage > 1 ? 'text-text-secondary hover:text-primary border-gray-200 dark:border-gray-700' : 'cursor-not-allowed text-text-light border-gray-100 dark:border-gray-800'}`}

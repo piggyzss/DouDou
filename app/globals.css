@@ -6,8 +6,8 @@
   --primary: #6747ce;
   --primary-light: #8a6fd8;
   --primary-dark: #4f35a0;
-  --secondary: #fed336;
-  --accent: #d26c9e;
+  --secondary: #d26c9e;
+  --accent: #fed336;
   --text-primary: #34495e;
   --text-secondary: #3c4858;
   --text-muted: #6c757d;
@@ -125,27 +125,28 @@ h4 {
   margin-bottom: 1rem;
   border-bottom: 1px solid #e5e7eb;
   padding-bottom: 0.5rem;
+  color: #4b5563;
 }
 
 .blog-content h1 {
-  font-size: 1.75rem;
+  font-size: 1.375rem;
   border-bottom: 2px solid #e5e7eb;
 }
 
 .blog-content h2 {
-  font-size: 1.5rem;
-}
-
-.blog-content h3 {
   font-size: 1.25rem;
 }
 
-.blog-content h4 {
+.blog-content h3 {
   font-size: 1.125rem;
 }
 
-.blog-content h5 {
+.blog-content h4 {
   font-size: 1rem;
+}
+
+.blog-content h5 {
+  font-size: 0.875rem;
 }
 
 .blog-content h6 {
@@ -197,17 +198,9 @@ h4 {
   border: 1px solid #374151;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   position: relative;
-}
-
-.blog-content pre::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
-  border-radius: 0.75rem 0.75rem 0 0;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .blog-content pre code {
@@ -216,6 +209,68 @@ h4 {
   color: inherit;
   font-size: 0.875rem;
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: block;
+  width: 100%;
+}
+
+/* 代码块复制按钮 - 优化样式 */
+.blog-content pre {
+  position: relative;
+}
+
+.blog-content pre .copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.blog-content pre .copy-button:hover {
+  background: rgba(156, 163, 175, 0.1);
+  color: #d1d5db;
+}
+
+.blog-content pre .copy-button.copied {
+  color: #10b981;
+}
+
+.blog-content pre .copy-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.blog-content pre .copy-button .copy-icon,
+.blog-content pre .copy-button .copy-check-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .blog-content table {
@@ -245,12 +300,13 @@ h4 {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Prism.js 代码高亮样式 */
+/* Prism.js 代码高亮样式 - 更美观的主题 */
 .blog-content .token.comment,
 .blog-content .token.prolog,
 .blog-content .token.doctype,
 .blog-content .token.cdata {
   color: #6b7280;
+  font-style: italic;
 }
 
 .blog-content .token.punctuation {
@@ -293,6 +349,7 @@ h4 {
 .blog-content .token.attr-value,
 .blog-content .token.keyword {
   color: #60a5fa;
+  font-weight: 500;
 }
 
 .blog-content .token.function,
@@ -327,6 +384,7 @@ h4 {
 .dark .blog-content h5,
 .dark .blog-content h6 {
   border-bottom-color: #374151;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .dark .blog-content blockquote {

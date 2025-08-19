@@ -12,6 +12,7 @@ import rehypeStringify from 'rehype-stringify'
 import TOC from './toc'
 import ClientLike from './ClientLike'
 import ClientBackToTop from './ClientBackToTop'
+import ClientCodeBlock from './ClientCodeBlock'
 
 type Params = { params: { slug: string } }
 
@@ -38,7 +39,7 @@ export default async function BlogDetailPage({ params }: Params) {
       <div className="w-full py-8 relative">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8">
           <article className="min-w-0">
-            <h1 className="text-4xl font-bold text-text-primary font-blog">{post.title}</h1>
+            <h1 className="text-4xl font-bold text-text-primary font-zen-kaku">{post.title}</h1>
             <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
               <time>{new Date(post.date).toLocaleDateString()}</time>
               <span>·</span>
@@ -63,7 +64,8 @@ export default async function BlogDetailPage({ params }: Params) {
               </div>
             )}
             
-            <div className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-sm" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            <div className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-base" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            <ClientCodeBlock />
           </article>
           <aside className="hidden md:block">
             <div className="sticky top-24">

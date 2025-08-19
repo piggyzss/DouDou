@@ -277,8 +277,8 @@ app/
   --primary-dark: #4f35a0;
   
   /* 辅助色 */
-  --secondary: #fed336;
-  --accent: #d26c9e;
+  --secondary: #d26c9e;
+  --accent: #fed336;
   
   /* 文字色 */
   --text-primary: #34495e;
