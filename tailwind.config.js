@@ -28,8 +28,15 @@ module.exports = {
         }
       },
       fontFamily: {
-        // 统一使用ZenKakuGothicNew-Medium字体
-        sans: ['var(--font-zen-kaku)', 'PingFang SC', 'YouYuan', 'Microsoft Yahei', 'sans-serif'],
+        // 标题字体 - ZenKakuGothicNew-Medium
+        heading: ['var(--font-zen-kaku)', 'PingFang SC', 'YouYuan', 'Microsoft Yahei', 'sans-serif'],
+        // 英文字体 - fzm-Old.Typewriter
+        english: ['var(--font-typewriter)', 'PingFang SC', 'YouYuan', 'Microsoft Yahei', 'sans-serif'],
+        // 正文字体 - PingFang SC
+        body: ['PingFang SC', 'YouYuan', 'Microsoft Yahei', 'sans-serif'],
+        // 默认字体
+        sans: ['var(--font-typewriter)', 'PingFang SC', 'YouYuan', 'Microsoft Yahei', 'sans-serif'],
+        'typewriter': ['var(--font-typewriter)', 'sans-serif'],
         'zen-kaku': ['var(--font-zen-kaku)', 'sans-serif'],
       },
       fontSize: {

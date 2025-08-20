@@ -8,9 +8,9 @@ export default function FontDebugger() {
         <div className="font-sans">默认字体 (Medium)</div>
         <div className="font-bold">粗体字体</div>
         <div className="font-light">细体字体</div>
-        <div className="font-zen-kaku">ZenKaku Medium</div>
-        <div className="font-zen-kaku-bold">ZenKaku Bold</div>
-        <div className="font-zen-kaku-light">ZenKaku Light</div>
+        <div className="font-typewriter">Typewriter Font</div>
+        <div className="font-typewriter">Typewriter Bold</div>
+        <div className="font-typewriter">Typewriter Light</div>
       </div>
     </div>
   )

@@ -6,7 +6,7 @@
   --primary: #6747ce;
   --primary-light: #8a6fd8;
   --primary-dark: #4f35a0;
-  --secondary: #d26c9e;
+  --secondary: #fdded9;
   --accent: #fed336;
   --text-primary: #34495e;
   --text-secondary: #3c4858;
@@ -54,9 +54,9 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  /* 统一使用ZenKakuGothicNew-Medium字体 */
-  font-family: var(--font-zen-kaku), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
-  font-weight: 500; /* 恢复为500 */
+  /* 使用fzm-Old.Typewriter字体 */
+  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-weight: 400;
   line-height: 1.6;
 }
 
@@ -70,10 +70,10 @@ a {
   text-decoration: none;
 }
 
-/* 标题样式 - 统一使用相同字体，通过字重区分 */
+/* 标题样式 - 使用typewriter字体 */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-zen-kaku), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
-  font-weight: 500; /* 恢复为500 */
+  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-weight: 400;
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
@@ -95,9 +95,24 @@ h4 {
 }
 
 /* 统一字体类 */
-.font-zen-kaku {
+.font-heading {
   font-family: var(--font-zen-kaku), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
   font-weight: 500;
+}
+
+.font-english {
+  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-weight: 400;
+}
+
+.font-body {
+  font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-weight: 400;
+}
+
+.font-typewriter {
+  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-weight: 400;
 }
 
 /* 博客专用字体类 */
@@ -105,6 +120,74 @@ h4 {
   font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
   font-weight: 300;
 }
+
+/* 统一边框样式 */
+.border-unified {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.dark .border-unified {
+  border-color: #374151;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* 统一卡片样式 */
+.card-unified {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+}
+
+.card-unified:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dark .card-unified {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dark .card-unified:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* 自定义滚动条样式 */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+
 
 /* 博客Markdown样式优化 */
 .blog-content {

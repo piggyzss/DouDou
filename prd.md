@@ -64,7 +64,10 @@ Markdown文件解析（支持代码高亮/LaTeX公式）
 辅色： #d26c9e
 文字： #34495e + #3c4858
 
-字体：'PingFang SC YouYuan Microsoft Yahei'
+字体：
+标题：ZenKakuGothicNew-Medium
+英文：fzm-Old.Typewriter
+正文：'PingFang SC YouYuan Microsoft Yahei'
 
 页面结构：
 

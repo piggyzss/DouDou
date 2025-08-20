@@ -3,7 +3,7 @@ import './globals.css'
 import { ThemeProvider } from './providers'
 import Navigation from './components/Navigation'
 import Footer from './components/Footer'
-import { zenKakuGothic } from './fonts'
+import { typewriterFont, zenKakuGothic } from './fonts'
 
 export const metadata: Metadata = {
   title: 'shanshan的个人网站',
@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body className={`${zenKakuGothic.variable} font-sans`}>
+      <body className={`${typewriterFont.variable} ${zenKakuGothic.variable} font-sans`}>
         <ThemeProvider>
           <div className="min-h-screen">
             <div className="w-1/2 mx-auto flex flex-col min-h-screen">

@@ -1,17 +1,17 @@
 import localFont from 'next/font/local'
 
-// 只使用现有的Medium字体文件
-export const zenKakuGothic = localFont({
-  src: './assets/fonts/ZenKakuGothicNew-Medium.ttf',
+// 使用fzm-Old.Typewriter字体
+export const typewriterFont = localFont({
+  src: './assets/fonts/fzm-Old.Typewriter.ttf',
   display: 'swap',
-  variable: '--font-zen-kaku',
-  weight: '500',
+  variable: '--font-typewriter',
+  weight: '400',
 })
 
 // 字体组合
 export const fontFamily = {
   sans: [
-    'var(--font-zen-kaku)',
+    'var(--font-typewriter)',
     'PingFang SC',
     'YouYuan', 
     'Microsoft Yahei',
@@ -32,7 +32,7 @@ export default function Example() {
       <p className="text-lg font-light">这是细体文字</p>
       
       {/* 直接使用字体类 */}
-      <p className="text-base font-zen-kaku">直接使用ZenKaku字体</p>
+      <p className="text-base font-typewriter">直接使用Typewriter字体</p>
     </div>
   )
 } 

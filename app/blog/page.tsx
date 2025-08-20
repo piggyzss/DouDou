@@ -15,7 +15,7 @@ export default function BlogPage({ searchParams }: Props) {
     <div className="min-h-screen pt-16">
       <div className="w-full py-12 relative">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text-primary font-zen-kaku">博客文章</h1>
+          <h1 className="text-3xl font-bold text-text-primary font-heading">博客文章</h1>
           <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
         </div>
 
@@ -34,7 +34,7 @@ export default function BlogPage({ searchParams }: Props) {
         <div className="space-y-6">
           {items.map((post) => (
             <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-800 bg-bg-primary p-5 hover:shadow-md transition-shadow">
-              <h2 className="text-xl font-semibold text-text-primary font-zen-kaku">
+                              <h2 className="text-xl font-semibold text-text-primary font-heading">
                 <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
               </h2>
               <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
@@ -48,7 +48,7 @@ export default function BlogPage({ searchParams }: Props) {
               </div>
               <p className="mt-3 text-text-secondary leading-7 font-blog text-base">{post.excerpt}</p>
               <div className="mt-3">
-                <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-blog">Read more →</Link>
+                <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-english">Read more →</Link>
               </div>
             </section>
           ))}

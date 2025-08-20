@@ -25,7 +25,7 @@ export default function LatestContent() {
               whileInView={{ scaleX: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
-              className="h-0.5 bg-primary flex-1 max-w-32"
+              className="h-0.5 bg-text-primary flex-1 max-w-32"
               style={{ transformOrigin: 'right' }}
             />
             
@@ -41,7 +41,7 @@ export default function LatestContent() {
                 damping: 10
               }}
               viewport={{ once: false }}
-              className="mx-6 px-4 py-2 text-primary text-2xl font-medium"
+              className="mx-6 px-4 py-2 text-text-primary text-2xl font-medium font-english"
             >
               Project
             </motion.div>
@@ -52,31 +52,10 @@ export default function LatestContent() {
               whileInView={{ scaleX: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
-              className="h-0.5 bg-primary flex-1 max-w-32"
+              className="h-0.5 bg-text-primary flex-1 max-w-32"
               style={{ transformOrigin: 'left' }}
             />
           </div>
-
-          {/* 主标题 */}
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            viewport={{ once: false }}
-            className="text-xl sm:text-2xl font-normal text-text-primary mb-3"
-          >
-            最新内容
-          </motion.h2>
-          
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            viewport={{ once: false }}
-            className="text-lg sm:text-xl text-text-secondary font-light"
-          >
-            分享最新的技术文章和创意作品
-          </motion.p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

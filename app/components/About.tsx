@@ -13,6 +13,7 @@ interface ExperienceCard {
   color: string
   x: number
   y: number
+  rotation: number
 }
 
 export default function About() {
@@ -24,8 +25,9 @@ export default function About() {
       period: "2022 - 至今",
       description: "负责公司核心产品的前端开发，使用React、TypeScript等技术栈",
       color: "#6747ce",
-      x: 0,
-      y: 0
+      x: 25,
+      y: 25,
+      rotation: -8
     },
     {
       id: 2,
@@ -33,9 +35,10 @@ export default function About() {
       company: "设计工作室",
       period: "2020 - 2022",
       description: "专注于用户体验设计，创造直观易用的数字产品界面",
-      color: "#d26c9e",
-      x: 50,
-      y: 30
+      color: "#fdded9",
+      x: 75,
+      y: 20,
+      rotation: 12
     },
     {
       id: 3,
@@ -43,9 +46,10 @@ export default function About() {
       company: "创业公司",
       period: "2018 - 2020",
       description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
-      color: "#5d8eff",
+      color: "#84a5f4",
       x: 20,
-      y: 80
+      y: 65,
+      rotation: -5
     },
     {
       id: 4,
@@ -53,9 +57,10 @@ export default function About() {
       company: "咨询公司",
       period: "2016 - 2018",
       description: "为客户提供技术解决方案，优化业务流程和系统架构",
-      color: "#59d3a6",
+      color: "#fed336",
       x: 80,
-      y: 10
+      y: 70,
+      rotation: 8
     },
     {
       id: 5,
@@ -63,9 +68,10 @@ export default function About() {
       company: "互联网公司",
       period: "2014 - 2016",
       description: "负责产品规划和管理，协调开发团队实现产品目标",
-      color: "#59bcff",
-      x: 10,
-      y: 60
+      color: "#8ccc79",
+      x: 45,
+      y: 45,
+      rotation: -3
     },
     {
       id: 6,
@@ -73,14 +79,15 @@ export default function About() {
       company: "传统企业",
       period: "2012 - 2014",
       description: "参与企业级软件开发，积累丰富的项目经验",
-      color: "#ff7a7a",
+      color: "#53b88f",
       x: 60,
-      y: 50
+      y: 80,
+      rotation: 15
     }
   ])
 
   const handleDragEnd = (cardId: number, info: any) => {
-    const container = document.querySelector('.drag-container')
+    const container = document.querySelector('.about-section')
     if (!container) return
 
     const rect = container.getBoundingClientRect()
@@ -89,13 +96,13 @@ export default function About() {
 
     setCards(prev => prev.map(card => 
       card.id === cardId 
-        ? { ...card, x: Math.max(0, Math.min(90, x)), y: Math.max(0, Math.min(90, y)) }
+        ? { ...card, x: Math.max(5, Math.min(90, x)), y: Math.max(5, Math.min(90, y)) }
         : card
     ))
   }
 
   return (
-    <section className="pb-16">
+    <section className="about-section pb-16 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 动画标题区域 */}
@@ -112,7 +119,7 @@ export default function About() {
               whileInView={{ scaleX: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
-              className="h-0.5 bg-primary flex-1 max-w-32"
+              className="h-0.5 bg-text-primary flex-1 max-w-32"
               style={{ transformOrigin: 'right' }}
             />
             
@@ -127,7 +134,7 @@ export default function About() {
                 damping: 10
               }}
               viewport={{ once: false }}
-              className="mx-6 px-4 py-2 text-primary text-2xl font-medium"
+              className="mx-6 px-4 py-2 text-text-primary text-2xl font-medium font-english"
             >
               About
             </motion.div>
@@ -137,7 +144,7 @@ export default function About() {
               whileInView={{ scaleX: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
-              className="h-0.5 bg-primary flex-1 max-w-32"
+              className="h-0.5 bg-text-primary flex-1 max-w-32"
               style={{ transformOrigin: 'left' }}
             />
           </div>
@@ -156,31 +163,51 @@ export default function About() {
           >
             {/* Links */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4">Links</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Links</h3>
               <div className="flex space-x-4">
-                <a href="#" className="w-12 h-12 border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
-                  <Github className="w-6 h-6" />
-                </a>
-                <a href="#" className="w-12 h-12 border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
-                  <Linkedin className="w-6 h-6" />
-                </a>
-                <a href="#" className="w-12 h-12 border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
-                  <Twitter className="w-6 h-6" />
-                </a>
-                <a href="#" className="w-12 h-12 border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
-                  <Mail className="w-6 h-6" />
-                </a>
+                <motion.a
+                  href="#"
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Github size={20} />
+                </motion.a>
+                <motion.a
+                  href="#"
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Linkedin size={20} />
+                </motion.a>
+                <motion.a
+                  href="#"
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Twitter size={20} />
+                </motion.a>
+                <motion.a
+                  href="#"
+                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Mail size={20} />
+                </motion.a>
               </div>
             </div>
 
             {/* Skills */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4">Skills</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
                   <span 
                     key={skill}
-                    className="px-3 py-1 border-2 border-gray-300 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors cursor-pointer"
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium hover:border-primary hover:text-primary transition-colors cursor-pointer font-english"
                   >
                     {skill}
                   </span>
@@ -190,7 +217,7 @@ export default function About() {
 
             {/* Experience */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4">Experience</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Experience</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <Briefcase className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
@@ -227,12 +254,12 @@ export default function About() {
                   <User className="w-16 h-16 text-white" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-text-primary mb-2">Yours Truly</h2>
-              <p className="text-text-secondary">前端开发者 & 创意工作者</p>
+              <h2 className="text-2xl font-bold text-text-primary mb-2 font-heading">Yours Truly</h2>
+              <p className="text-text-secondary font-body">前端开发者 & 创意工作者</p>
             </div>
 
             {/* 可拖拽卡片区域 */}
-            <div className="drag-container relative w-full h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <div className="relative w-full h-96">
               {cards.map((card) => (
                 <motion.div
                   key={card.id}
@@ -240,19 +267,23 @@ export default function About() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: 0.1 * card.id }}
                   viewport={{ once: true }}
-                  className="absolute cursor-move"
+                  className="absolute cursor-move z-10"
                   style={{
                     left: `${card.x}%`,
                     top: `${card.y}%`,
-                    transform: 'translate(-50%, -50%)'
+                    transform: `translate(-50%, -50%) rotate(${card.rotation}deg)`
                   }}
                   drag
                   dragMomentum={false}
+                  dragElastic={0.1}
                   onDragEnd={(event, info) => handleDragEnd(card.id, info)}
                 >
                   <div 
-                    className="w-48 p-4 rounded-lg shadow-lg text-white"
-                    style={{ backgroundColor: card.color }}
+                    className="w-40 h-40 p-4 rounded-lg shadow-lg text-text-secondary hover:shadow-xl transition-shadow duration-200"
+                    style={{ 
+                      backgroundColor: `${card.color}95`,
+                      backdropFilter: 'blur(10px)'
+                    }}
                   >
                     <h4 className="font-semibold text-sm mb-1">{card.title}</h4>
                     <p className="text-xs opacity-90 mb-2">{card.company}</p>
@@ -261,11 +292,6 @@ export default function About() {
                   </div>
                 </motion.div>
               ))}
-              
-              {/* 拖拽提示 */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <p className="text-gray-400 text-sm">拖拽卡片到任意位置</p>
-              </div>
             </div>
           </motion.div>
         </div>
