@@ -3,20 +3,20 @@
 import { motion } from 'framer-motion'
 
 const skills = [
-  { name: 'React', level: 90, color: '#61DAFB' },
-  { name: 'TypeScript', level: 85, color: '#3178C6' },
-  { name: 'Next.js', level: 80, color: '#000000' },
-  { name: 'Vue.js', level: 75, color: '#4FC08D' },
-  { name: 'Node.js', level: 70, color: '#339933' },
-  { name: 'Python', level: 65, color: '#3776AB' },
-  { name: 'AI/ML', level: 60, color: '#FF6B6B' },
-  { name: 'UI/UX', level: 75, color: '#FFD93D' },
+  { name: 'React', level: 90, color: '#6747ce' },
+  { name: 'TypeScript', level: 85, color: '#fdded9' },
+  { name: 'Next.js', level: 80, color: '#84a5f4' },
+  { name: 'Vue.js', level: 75, color: '#fed336' },
+  { name: 'Node.js', level: 70, color: '#8ccc79' },
+  { name: 'Python', level: 65, color: '#53b88f' },
+  { name: 'AI/ML', level: 60, color: '#6747ce' },
+  { name: 'UI/UX', level: 75, color: '#fdded9' },
 ]
 
 export default function Skills() {
   return (
     <section className="pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
 
         {/* 新的动画标题区域 */}
         <motion.div

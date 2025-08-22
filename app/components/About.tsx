@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useState } from 'react'
 import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, Briefcase } from 'lucide-react'
+import Image from 'next/image'
 
 interface ExperienceCard {
   id: number
@@ -25,8 +26,8 @@ export default function About() {
       period: "2022 - 至今",
       description: "负责公司核心产品的前端开发，使用React、TypeScript等技术栈",
       color: "#6747ce",
-      x: 25,
-      y: 25,
+      x: 10,
+      y: 5,
       rotation: -8
     },
     {
@@ -36,8 +37,8 @@ export default function About() {
       period: "2020 - 2022",
       description: "专注于用户体验设计，创造直观易用的数字产品界面",
       color: "#fdded9",
-      x: 75,
-      y: 20,
+      x: 55,
+      y: 10,
       rotation: 12
     },
     {
@@ -47,8 +48,8 @@ export default function About() {
       period: "2018 - 2020",
       description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
       color: "#84a5f4",
-      x: 20,
-      y: 65,
+      x: 5,
+      y: 30,
       rotation: -5
     },
     {
@@ -58,9 +59,9 @@ export default function About() {
       period: "2016 - 2018",
       description: "为客户提供技术解决方案，优化业务流程和系统架构",
       color: "#fed336",
-      x: 80,
-      y: 70,
-      rotation: 8
+      x: 50,
+      y: 35,
+      rotation: 10
     },
     {
       id: 5,
@@ -69,8 +70,8 @@ export default function About() {
       period: "2014 - 2016",
       description: "负责产品规划和管理，协调开发团队实现产品目标",
       color: "#8ccc79",
-      x: 45,
-      y: 45,
+      x: 0,
+      y: 55,
       rotation: -3
     },
     {
@@ -80,9 +81,9 @@ export default function About() {
       period: "2012 - 2014",
       description: "参与企业级软件开发，积累丰富的项目经验",
       color: "#53b88f",
-      x: 60,
-      y: 80,
-      rotation: 15
+      x: 45,
+      y: 60,
+      rotation: 7
     }
   ])
 
@@ -102,10 +103,9 @@ export default function About() {
   }
 
   return (
-    <section className="about-section pb-16 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* 动画标题区域 */}
+    <section className="py-16">
+      <div className="max-w-7xl mx-auto">
+        {/* 新的动画标题区域 */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -113,7 +113,9 @@ export default function About() {
           viewport={{ once: false }}
           className="text-center mb-12"
         >
+          {/* 两条横线容器 */}
           <div className="flex items-center justify-center mb-6">
+            {/* 左侧横线 */}
             <motion.div
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
@@ -223,16 +225,16 @@ export default function About() {
                   <Briefcase className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-text-primary">前端开发工程师</h4>
-                    <p className="text-sm text-text-secondary">某科技公司 • 2022 - 至今</p>
-                    <p className="text-sm text-text-muted mt-1">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
+                    <p className="text-sm text-text-secondary mt-1 mb-2">某科技公司 • 2022 - 至今</p>
+                    <p className="text-sm text-text-muted">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Briefcase className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-text-primary">UI/UX设计师</h4>
-                    <p className="text-sm text-text-secondary">设计工作室 • 2020 - 2022</p>
-                    <p className="text-sm text-text-muted mt-1">专注于用户体验设计，创造直观易用的数字产品界面</p>
+                    <p className="text-sm text-text-secondary mt-1 mb-2">设计工作室 • 2020 - 2022</p>
+                    <p className="text-sm text-text-muted">专注于用户体验设计，创造直观易用的数字产品界面</p>
                   </div>
                 </div>
               </div>
@@ -245,21 +247,28 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
-            className="relative"
+            className="relative flex flex-col items-center justify-center"
           >
             {/* 头像区域 */}
-            <div className="text-center mb-8">
-              <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-4 border-gray-200">
-                <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                  <User className="w-16 h-16 text-white" />
+            <div className="text-center mb-8 ml-4">
+              <div className="relative w-52 h-52 mx-auto mb-6">
+                {/* 装饰性背景圆圈 */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-sm"></div>
+                <div className="relative w-full h-full">
+                  <Image
+                    src="/images/avatar.png?v=20240821"
+                    alt="shanshan的头像"
+                    width={208}
+                    height={208}
+                    className="w-full h-full object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 hover:scale-105"
+                    priority
+                  />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-text-primary mb-2 font-heading">Yours Truly</h2>
-              <p className="text-text-secondary font-body">前端开发者 & 创意工作者</p>
             </div>
 
             {/* 可拖拽卡片区域 */}
-            <div className="relative w-full h-96">
+            <div className="relative w-full h-72">
               {cards.map((card) => (
                 <motion.div
                   key={card.id}

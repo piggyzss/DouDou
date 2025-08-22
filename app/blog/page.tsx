@@ -1,6 +1,15 @@
 import Link from 'next/link'
 import { getAllPosts, paginatePosts } from '@/lib/blog'
 
+// 统一的日期格式化函数
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 type Props = {
   searchParams?: { page?: string }
 }
@@ -8,8 +17,43 @@ type Props = {
 export default function BlogPage({ searchParams }: Props) {
   const page = Number(searchParams?.page ?? '1') || 1
   const all = getAllPosts()
-  const { items, currentPage, totalPages } = paginatePosts(all, page, 5)
+  const { items, currentPage, totalPages } = paginatePosts(all, page, 2)
   const isDev = process.env.NODE_ENV === 'development'
+
+  // 生成分页按钮数组
+  const generatePaginationButtons = () => {
+    const buttons = []
+    const maxVisible = 5 // 最多显示5个按钮
+    
+    if (totalPages <= maxVisible) {
+      // 如果总页数少于等于最大显示数，显示所有页
+      for (let i = 1; i <= totalPages; i++) {
+        buttons.push(i)
+      }
+    } else {
+      // 如果总页数大于最大显示数，智能显示
+      if (currentPage <= 3) {
+        // 当前页在前3页，显示前5页
+        for (let i = 1; i <= 5; i++) {
+          buttons.push(i)
+        }
+      } else if (currentPage >= totalPages - 2) {
+        // 当前页在后3页，显示后5页
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          buttons.push(i)
+        }
+      } else {
+        // 当前页在中间，显示当前页前后各2页
+        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+          buttons.push(i)
+        }
+      }
+    }
+    
+    return buttons
+  }
+
+  const paginationButtons = generatePaginationButtons()
 
   return (
     <div className="min-h-screen pt-16">
@@ -33,16 +77,16 @@ export default function BlogPage({ searchParams }: Props) {
 
         <div className="space-y-6">
           {items.map((post) => (
-            <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-800 bg-bg-primary p-5 hover:shadow-md transition-shadow">
-                              <h2 className="text-xl font-semibold text-text-primary font-heading">
+            <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
+              <h2 className="text-xl font-semibold text-text-primary font-heading">
                 <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
               </h2>
               <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
-                <time>{new Date(post.date).toLocaleDateString()}</time>
+                <time>{formatDate(post.date)}</time>
                 <span>·</span>
                 <div className="flex flex-wrap gap-2">
                   {post.tags.map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded-full bg-bg-secondary text-text-secondary text-xs">#{t}</span>
+                    <span key={t} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs">#{t}</span>
                   ))}
                 </div>
               </div>
@@ -54,24 +98,58 @@ export default function BlogPage({ searchParams }: Props) {
           ))}
         </div>
 
-        {/* 分页 */}
-        <div className="mt-8 flex items-center justify-between text-base font-blog">
-          <Link
-            href={currentPage > 1 ? `/blog?page=${currentPage - 1}` : '#'}
-            className={`px-3 py-1.5 rounded-md border ${currentPage > 1 ? 'text-text-secondary hover:text-primary border-gray-200 dark:border-gray-700' : 'cursor-not-allowed text-text-light border-gray-100 dark:border-gray-800'}`}
-            aria-disabled={currentPage <= 1}
-          >
-            上一页
-          </Link>
-          <span className="text-text-muted">{currentPage} / {totalPages}</span>
-          <Link
-            href={currentPage < totalPages ? `/blog?page=${currentPage + 1}` : '#'}
-            className={`px-3 py-1.5 rounded-md border ${currentPage < totalPages ? 'text-text-secondary hover:text-primary border-gray-200 dark:border-gray-700' : 'cursor-not-allowed text-text-light border-gray-100 dark:border-gray-800'}`}
-            aria-disabled={currentPage >= totalPages}
-          >
-            下一页
-          </Link>
-        </div>
+        {/* 优化后的分页 */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-2">
+            {/* 上一页按钮 */}
+            <div className="w-8 h-8">
+              {currentPage > 1 ? (
+                <Link
+                  href={`/blog?page=${currentPage - 1}`}
+                  className="w-full h-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-text-secondary hover:text-primary hover:shadow-md transition-all duration-200 font-blog shadow-sm"
+                >
+                  ←
+                </Link>
+              ) : (
+                <div className="w-full h-full rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-text-light font-blog opacity-50 shadow-sm">
+                  ←
+                </div>
+              )}
+            </div>
+            
+            {/* 分页按钮 */}
+            {paginationButtons.map((pageNum) => (
+              <div key={pageNum} className="w-8 h-8">
+                <Link
+                  href={`/blog?page=${pageNum}`}
+                  className={`w-full h-full rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 shadow-sm ${
+                    pageNum === currentPage
+                      ? 'bg-gradient-primary-secondary text-white shadow-md'
+                      : 'bg-white dark:bg-gray-800 text-text-secondary border border-gray-200 dark:border-gray-700 hover:text-primary hover:shadow-md'
+                  }`}
+                >
+                  {pageNum}
+                </Link>
+              </div>
+            ))}
+            
+            {/* 下一页按钮 */}
+            <div className="w-8 h-8">
+              {currentPage < totalPages ? (
+                <Link
+                  href={`/blog?page=${currentPage + 1}`}
+                  className="w-full h-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-text-secondary hover:text-primary hover:shadow-md transition-all duration-200 font-blog shadow-sm"
+                >
+                  →
+                </Link>
+              ) : (
+                <div className="w-full h-full rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-text-light font-blog opacity-50 shadow-sm">
+                  →
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

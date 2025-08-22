@@ -62,13 +62,13 @@ export default function EditBlogPage() {
             <button 
               onClick={save} 
               disabled={saving} 
-              className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark disabled:opacity-60 transition-colors font-blog"
+              className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark disabled:opacity-60 transition-colors font-blog text-sm"
             >
               {saving ? '保存中...' : '保存'}
             </button>
             <button 
               onClick={() => router.push(`/blog/${slug}`)}
-              className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
+              className="inline-flex items-center px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-text-secondary hover:text-primary transition-colors font-blog text-sm"
             >
               取消
             </button>

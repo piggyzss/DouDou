@@ -14,6 +14,15 @@ import ClientLike from './ClientLike'
 import ClientBackToTop from './ClientBackToTop'
 import ClientCodeBlock from './ClientCodeBlock'
 
+// 统一的日期格式化函数
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 type Params = { params: { slug: string } }
 
 async function renderMarkdown(md: string) {
@@ -41,7 +50,7 @@ export default async function BlogDetailPage({ params }: Params) {
           <article className="min-w-0">
             <h1 className="text-4xl font-bold text-text-primary font-heading">{post.title}</h1>
             <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
-              <time>{new Date(post.date).toLocaleDateString()}</time>
+              <time>{formatDate(post.date)}</time>
               <span>·</span>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((t) => (
