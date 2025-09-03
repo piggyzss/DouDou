@@ -3,8 +3,68 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Calendar, Clock, ArrowRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
+
+interface BlogPost {
+  id: number
+  title: string
+  slug: string
+  excerpt?: string
+  published_at?: string
+  created_at: string
+}
+
+interface ArtworkCollection {
+  id: string
+  title: string
+  description?: string
+  created_at: string
+  images: any[]
+}
 
 export default function LatestContent() {
+  const [latestBlog, setLatestBlog] = useState<BlogPost | null>(null)
+  const [latestArtwork, setLatestArtwork] = useState<ArtworkCollection | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchLatestContent = async () => {
+      try {
+        // 获取最新博客
+        const blogResponse = await fetch('/api/blog?limit=1')
+        if (blogResponse.ok) {
+          const blogData = await blogResponse.json()
+          if (blogData.data.posts.length > 0) {
+            setLatestBlog(blogData.data.posts[0])
+          }
+        }
+
+        // 获取最新AIGC作品
+        const artworkResponse = await fetch('/api/aigc/artworks?limit=1')
+        if (artworkResponse.ok) {
+          const artworkData = await artworkResponse.json()
+          if (artworkData.data.collections.length > 0) {
+            setLatestArtwork(artworkData.data.collections[0])
+          }
+        }
+      } catch (error) {
+        console.error('获取最新内容失败:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLatestContent()
+  }, [])
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   return (
     <section className="pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,19 +129,43 @@ export default function LatestContent() {
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4">最新博客</h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
-                  <Calendar size={16} />
-                  <span>2024-01-15</span>
+              {loading ? (
+                <div className="space-y-4">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-4"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                  </div>
                 </div>
-                <h4 className="font-normal text-text-primary text-base">Next.js 14 新特性解析</h4>
-                <p className="text-text-secondary text-sm font-light leading-relaxed">
-                  深入探讨Next.js 14带来的新功能和性能优化...
-                </p>
-                <Link href="/blog" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                  阅读更多 <ArrowRight size={16} className="ml-1" />
-                </Link>
-              </div>
+              ) : latestBlog ? (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
+                    <Calendar size={16} />
+                    <span>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
+                  </div>
+                  <h4 className="font-normal text-text-primary text-base">{latestBlog.title}</h4>
+                  <p className="text-text-secondary text-sm font-light leading-relaxed">
+                    {latestBlog.excerpt || '暂无摘要...'}
+                  </p>
+                  <Link href={`/blog/${latestBlog.slug}`} className="text-primary text-sm font-normal hover:underline inline-flex items-center">
+                    阅读更多 <ArrowRight size={16} className="ml-1" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
+                    <Calendar size={16} />
+                    <span>暂无博客</span>
+                  </div>
+                  <h4 className="font-normal text-text-primary text-base">暂无博客文章</h4>
+                  <p className="text-text-secondary text-sm font-light leading-relaxed">
+                    还没有发布任何博客文章...
+                  </p>
+                  <Link href="/blog" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
+                    查看博客 <ArrowRight size={16} className="ml-1" />
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -121,19 +205,43 @@ export default function LatestContent() {
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4">最新AIGC作品</h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
-                  <Calendar size={16} />
-                  <span>2024-01-08</span>
+              {loading ? (
+                <div className="space-y-4">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-4"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                  </div>
                 </div>
-                <h4 className="font-normal text-text-primary text-base">未来城市概念图</h4>
-                <p className="text-text-secondary text-sm font-light leading-relaxed">
-                  使用Midjourney生成的未来城市概念设计...
-                </p>
-                <Link href="/aigc" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                  浏览作品 <ArrowRight size={16} className="ml-1" />
-                </Link>
-              </div>
+              ) : latestArtwork ? (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
+                    <Calendar size={16} />
+                    <span>{formatDate(latestArtwork.created_at)}</span>
+                  </div>
+                  <h4 className="font-normal text-text-primary text-base">{latestArtwork.title}</h4>
+                  <p className="text-text-secondary text-sm font-light leading-relaxed">
+                    {latestArtwork.description || `包含 ${latestArtwork.images.length} 张图片的作品集`}
+                  </p>
+                  <Link href="/aigc" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
+                    浏览作品 <ArrowRight size={16} className="ml-1" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
+                    <Calendar size={16} />
+                    <span>暂无作品</span>
+                  </div>
+                  <h4 className="font-normal text-text-primary text-base">暂无AIGC作品</h4>
+                  <p className="text-text-secondary text-sm font-light leading-relaxed">
+                    还没有创建任何AIGC作品...
+                  </p>
+                  <Link href="/aigc" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
+                    查看作品 <ArrowRight size={16} className="ml-1" />
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

@@ -49,7 +49,7 @@ export default function EditBlogPage() {
     }
   }
 
-  if (loading) return <div className="min-h-screen pt-16"><div className="w-full py-8 text-text-secondary font-blog">加载中...</div></div>
+  if (loading) return <div className="min-h-screen pt-16"><div className="w-full py-8 text-text-secondary font-blog">Loading...</div></div>
 
   return (
     <div className="min-h-screen pt-16">

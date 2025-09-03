@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { getAllPosts, paginatePosts } from '@/lib/blog'
+import EmptyState from './EmptyState'
+import { BlogModel } from '@/lib/models/blog'
 
 // 统一的日期格式化函数
 const formatDate = (dateString: string) => {
@@ -14,10 +15,9 @@ type Props = {
   searchParams?: { page?: string }
 }
 
-export default function BlogPage({ searchParams }: Props) {
+export default async function BlogPage({ searchParams }: Props) {
   const page = Number(searchParams?.page ?? '1') || 1
-  const all = getAllPosts()
-  const { items, currentPage, totalPages } = paginatePosts(all, page, 2)
+  const result = await BlogModel.findAllPublished(page, 2)
   const isDev = process.env.NODE_ENV === 'development'
 
   // 生成分页按钮数组
@@ -25,26 +25,26 @@ export default function BlogPage({ searchParams }: Props) {
     const buttons = []
     const maxVisible = 5 // 最多显示5个按钮
     
-    if (totalPages <= maxVisible) {
+    if (result.totalPages <= maxVisible) {
       // 如果总页数少于等于最大显示数，显示所有页
-      for (let i = 1; i <= totalPages; i++) {
+      for (let i = 1; i <= result.totalPages; i++) {
         buttons.push(i)
       }
     } else {
       // 如果总页数大于最大显示数，智能显示
-      if (currentPage <= 3) {
+      if (result.currentPage <= 3) {
         // 当前页在前3页，显示前5页
         for (let i = 1; i <= 5; i++) {
           buttons.push(i)
         }
-      } else if (currentPage >= totalPages - 2) {
+      } else if (result.currentPage >= result.totalPages - 2) {
         // 当前页在后3页，显示后5页
-        for (let i = totalPages - 4; i <= totalPages; i++) {
+        for (let i = result.totalPages - 4; i <= result.totalPages; i++) {
           buttons.push(i)
         }
       } else {
         // 当前页在中间，显示当前页前后各2页
-        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+        for (let i = result.currentPage - 2; i <= result.currentPage + 2; i++) {
           buttons.push(i)
         }
       }
@@ -76,36 +76,44 @@ export default function BlogPage({ searchParams }: Props) {
         )}
 
         <div className="space-y-6">
-          {items.map((post) => (
-            <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
-              <h2 className="text-xl font-semibold text-text-primary font-heading">
-                <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
-              </h2>
-              <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
-                <time>{formatDate(post.date)}</time>
-                <span>·</span>
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map((t) => (
-                    <span key={t} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs">#{t}</span>
-                  ))}
+          {result.posts && result.posts.length > 0 ? (
+            result.posts.map((post: any) => (
+              <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
+                <h2 className="text-xl font-semibold text-text-primary font-heading">
+                  <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
+                </h2>
+                <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
+                  <time>{formatDate(post.published_at || post.created_at)}</time>
+                  <span>·</span>
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags && post.tags.length > 0 ? (
+                      post.tags.map((t: any) => (
+                        <span key={t} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs">#{t}</span>
+                      ))
+                    ) : (
+                      <span className="text-text-light text-xs">无标签</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <p className="mt-3 text-text-secondary leading-7 font-blog text-base">{post.excerpt}</p>
-              <div className="mt-3">
-                <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-english">Read more →</Link>
-              </div>
-            </section>
-          ))}
+                <p className="mt-3 text-text-secondary leading-7 font-blog text-base">{post.excerpt}</p>
+                <div className="mt-3">
+                  <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-english">Read more →</Link>
+                </div>
+              </section>
+            ))
+          ) : (
+            <EmptyState />
+          )}
         </div>
 
         {/* 优化后的分页 */}
-        {totalPages > 1 && (
+        {result.totalPages > 1 && result.posts && result.posts.length > 0 && (
           <div className="mt-8 flex items-center justify-center gap-2">
             {/* 上一页按钮 */}
             <div className="w-8 h-8">
-              {currentPage > 1 ? (
+              {result.currentPage > 1 ? (
                 <Link
-                  href={`/blog?page=${currentPage - 1}`}
+                  href={`/blog?page=${result.currentPage - 1}`}
                   className="w-full h-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-text-secondary hover:text-primary hover:shadow-md transition-all duration-200 font-blog shadow-sm"
                 >
                   ←
@@ -123,7 +131,7 @@ export default function BlogPage({ searchParams }: Props) {
                 <Link
                   href={`/blog?page=${pageNum}`}
                   className={`w-full h-full rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 shadow-sm ${
-                    pageNum === currentPage
+                    pageNum === result.currentPage
                       ? 'bg-gradient-primary-secondary text-white shadow-md'
                       : 'bg-white dark:bg-gray-800 text-text-secondary border border-gray-200 dark:border-gray-700 hover:text-primary hover:shadow-md'
                   }`}
@@ -135,9 +143,9 @@ export default function BlogPage({ searchParams }: Props) {
             
             {/* 下一页按钮 */}
             <div className="w-8 h-8">
-              {currentPage < totalPages ? (
+              {result.currentPage < result.totalPages ? (
                 <Link
-                  href={`/blog?page=${currentPage + 1}`}
+                  href={`/blog?page=${result.currentPage + 1}`}
                   className="w-full h-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-center text-text-secondary hover:text-primary hover:shadow-md transition-all duration-200 font-blog shadow-sm"
                 >
                   →
