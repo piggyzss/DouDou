@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Palette, Film, Music4, Heart, MessageCircle, X, ChevronLeft, ChevronRight, Play, SkipBack, SkipForward, Headphones, Trash2, Upload, ImagePlus, AlertTriangle, AlertCircle, Info } from 'lucide-react'
+import LikeToggle from '@/app/components/LikeToggle'
 
 // 统一的日期格式化函数
 const formatDate = (dateString: string) => {
@@ -1414,7 +1415,7 @@ export default function AIGCPage() {
                           <h3 className="text-2xl font-bold text-text-primary font-heading">{artwork.title}</h3>
                           {/* 操作按钮 - 仅在开发模式下显示 */}
                           {process.env.NODE_ENV === 'development' && (
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <button
                                 onClick={() => {
                                   setSelectedArtworkForAdd(artwork)
@@ -1445,10 +1446,17 @@ export default function AIGCPage() {
                             </span>
                           ))}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-text-muted">
-                          <time>{formatDate(artwork.createdAt)}</time>
-                          <span>·</span>
-                          <span>{artwork.images.length} 张图片</span>
+                        <div className="flex items-center gap-3 text-sm text-text-muted">
+                          <div className="flex items-center gap-2">
+                            <time>{formatDate(artwork.createdAt)}</time>
+                            <span>·</span>
+                            <span>{artwork.images.length} 张图片</span>
+                          </div>
+                          <span className="leading-none">·</span>
+                          <div className="flex items-center gap-1">
+                            <Heart size={16} />
+                            <span>{formatNumber(artwork.likes)}</span>
+                          </div>
                         </div>
                       </div>
 
@@ -1477,12 +1485,17 @@ export default function AIGCPage() {
                               
                               {/* 交互按钮 */}
                               <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-90 transition-opacity duration-300">
-                                <button className="p-2 bg-white bg-opacity-90 rounded-full shadow-lg hover:bg-gray-50 transition-colors">
-                                  <Heart size={16} className="text-gray-700" />
-                                </button>
-                                <button className="p-2 bg-white bg-opacity-90 rounded-full shadow-lg hover:bg-gray-50 transition-colors">
-                                  <MessageCircle size={16} className="text-gray-700" />
-                                </button>
+                                <div className="p-2 bg-white bg-opacity-90 rounded-full shadow-lg hover:bg-gray-50 transition-colors">
+                                  <LikeToggle
+                                    targetType="artwork"
+                                    targetId={parseInt(artwork.id,10)}
+                                    size={16}
+                                    showCount={false}
+                                    onChanged={(liked, count) => {
+                                      setArtworks(prev => prev.map(a => a.id === artwork.id ? { ...a, likes: count } : a))
+                                    }}
+                                  />
+                                </div>
                                 {/* 删除图片按钮 - 仅在开发模式下显示 */}
                                 {process.env.NODE_ENV === 'development' && (
                                   <button 
@@ -1508,17 +1521,8 @@ export default function AIGCPage() {
                         </div>
                       </div>
 
-                      {/* 统计信息 */}
-                      <div className="flex items-center gap-6 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center gap-2 text-text-muted font-blog">
-                          <Heart size={16} />
-                          <span>{formatNumber(artwork.likes)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-text-muted font-blog">
-                          <MessageCircle size={16} />
-                          <span>{artwork.comments}</span>
-                        </div>
-                      </div>
+                      {/* 紧凑分隔线（去掉喜欢与留言统计） */}
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700" />
                     </div>
                   ))}
                 </>
@@ -1799,68 +1803,68 @@ export default function AIGCPage() {
               transition={{ duration: 0.3 }}
               className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
             >
-              {/* 关闭按钮 */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ delay: 0.1, duration: 0.2 }}
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-2 right-2 text-white hover:text-gray-300 transition-colors z-10 p-2 bg-black bg-opacity-60 rounded-full hover:bg-opacity-80"
-                title="关闭预览"
-              >
-                <X size={24} />
-              </motion.button>
-              
-              {/* 图片计数器 */}
-              {hasMultipleImages && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ delay: 0.1, duration: 0.2 }}
-                  className="absolute top-2 left-2 text-white text-sm bg-black bg-opacity-60 px-3 py-1 rounded-full"
-                >
-                  {selectedImage.imageIndex + 1} / {artwork!.images.length}
-                </motion.div>
-              )}
-              
-              {/* 左右切换按钮 */}
-              {hasMultipleImages && (
-                <>
-                  <motion.button
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ delay: 0.2, duration: 0.2 }}
-                    onClick={() => navigateImage('prev')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-60 text-white p-3 rounded-full hover:bg-opacity-80 transition-all hover:scale-110"
-                    title="上一张"
-                  >
-                    <ChevronLeft size={28} />
-                  </motion.button>
-                  <motion.button
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: 0.2, duration: 0.2 }}
-                    onClick={() => navigateImage('next')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-60 text-white p-3 rounded-full hover:bg-opacity-80 transition-all hover:scale-110"
-                    title="下一张"
-                  >
-                    <ChevronRight size={28} />
-                  </motion.button>
-                </>
-              )}
-              
-              {/* 主图片容器 */}
+              {/* 主图片容器（相对定位，用于贴近图片放置控制按钮） */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
-                className="max-w-4xl max-h-full mx-8"
+                className="relative max-w-4xl max-h-full mx-8"
               >
+                {/* 关闭按钮：贴近图片右上角 */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ delay: 0.1, duration: 0.2 }}
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute top-2 right-2 text-white hover:text-gray-300 transition-colors z-10 p-2 bg-black bg-opacity-60 rounded-full hover:bg-opacity-80"
+                  title="关闭预览"
+                >
+                  <X size={22} />
+                </motion.button>
+
+                {/* 图片计数器：贴近图片左上角 */}
+                {hasMultipleImages && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: 0.1, duration: 0.2 }}
+                    className="absolute top-2 left-2 text-white text-xs bg-black bg-opacity-60 px-2.5 py-1 rounded-full"
+                  >
+                    {selectedImage.imageIndex + 1} / {artwork!.images.length}
+                  </motion.div>
+                )}
+
+                {/* 左右切换按钮：贴近图片左右两侧 */}
+                {hasMultipleImages && (
+                  <>
+                    <motion.button
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -12 }}
+                      transition={{ delay: 0.2, duration: 0.2 }}
+                      onClick={() => navigateImage('prev')}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-60 text-white p-2.5 rounded-full hover:bg-opacity-80 transition-all hover:scale-110"
+                      title="上一张"
+                    >
+                      <ChevronLeft size={24} />
+                    </motion.button>
+                    <motion.button
+                      initial={{ opacity: 0, x: 12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 12 }}
+                      transition={{ delay: 0.2, duration: 0.2 }}
+                      onClick={() => navigateImage('next')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-60 text-white p-2.5 rounded-full hover:bg-opacity-80 transition-all hover:scale-110"
+                      title="下一张"
+                    >
+                      <ChevronRight size={24} />
+                    </motion.button>
+                  </>
+                )}
+
                 <img
                   src={selectedImage.url}
                   alt="放大图片"

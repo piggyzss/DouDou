@@ -138,6 +138,7 @@ async function createTables() {
       title VARCHAR(255) NOT NULL,
       content TEXT NOT NULL,
       excerpt TEXT,
+      cover_url VARCHAR(500),
       tags TEXT[],
       status VARCHAR(20) DEFAULT 'draft',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -146,6 +147,25 @@ async function createTables() {
       likes_count INTEGER DEFAULT 0
     )
   `)
+
+  // 创建点赞表（匿名）
+  await query(`
+    CREATE TABLE IF NOT EXISTS likes (
+      id SERIAL PRIMARY KEY,
+      target_type VARCHAR(20) NOT NULL,
+      target_id INTEGER NOT NULL,
+      anon_id VARCHAR(64),
+      ip_hash VARCHAR(128),
+      ua_hash VARCHAR(128),
+      status VARCHAR(10) DEFAULT 'liked',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_anon ON likes(target_type, target_id, anon_id) WHERE anon_id IS NOT NULL`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_likes_target ON likes(target_type, target_id)`)
+  // 兼容 ON CONFLICT 使用的非部分唯一索引（避免部分索引不匹配导致冲突错误）
+  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_all ON likes(target_type, target_id, anon_id)`)
+  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_ipua ON likes(target_type, target_id, ip_hash, ua_hash)`)
 
   // 创建索引
   await query(`CREATE INDEX IF NOT EXISTS idx_artwork_collections_created_at ON artwork_collections(created_at)`)

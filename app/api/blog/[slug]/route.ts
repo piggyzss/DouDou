@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BlogModel } from '@/lib/models/blog'
+import { deleteFile } from '@/lib/tencent-cos'
+
+function normalizeSlug(input: string) {
+  try {
+    return decodeURIComponent(input).normalize('NFC')
+  } catch {
+    return String(input || '').normalize('NFC')
+  }
+}
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params
+    const slug = normalizeSlug(params.slug)
     
     // 获取博客文章
     const post = await BlogModel.findBySlug(slug)
@@ -55,8 +64,8 @@ export async function PUT(
       )
     }
 
-    const { slug } = params
-    const { title, content, tags, status } = await req.json()
+    const slug = normalizeSlug(params.slug)
+    const { title, content, tags, status, cover_url } = await req.json()
 
     // 获取博客文章
     const post = await BlogModel.findBySlug(slug)
@@ -69,9 +78,10 @@ export async function PUT(
 
     // 更新博客文章
     const updates: any = {}
-    if (title) updates.title = title
-    if (content) updates.content = content
-    if (status) updates.status = status
+    if (title !== undefined) updates.title = title
+    if (content !== undefined) updates.content = content
+    if (status !== undefined) updates.status = status
+    if (cover_url !== undefined && cover_url !== null) updates.cover_url = cover_url
 
     const updatedPost = await BlogModel.update(post.id, updates)
     if (!updatedPost) {
@@ -81,11 +91,7 @@ export async function PUT(
       )
     }
 
-    // 处理标签更新
-    if (tags && Array.isArray(tags)) {
-      // 这里可以添加标签更新逻辑
-      // 暂时跳过标签更新，保持简单
-    }
+    // 处理标签更新（暂略）
 
     return NextResponse.json({
       success: true,
@@ -113,7 +119,7 @@ export async function DELETE(
       )
     }
 
-    const { slug } = params
+    const slug = normalizeSlug(params.slug)
 
     // 获取博客文章
     const post = await BlogModel.findBySlug(slug)
@@ -124,6 +130,23 @@ export async function DELETE(
       )
     }
 
+    // 删除封面（如果存在）
+    if ((post as any).cover_url) {
+      try {
+        const u = new URL((post as any).cover_url)
+        const key = u.pathname.startsWith('/') ? u.pathname.slice(1) : u.pathname
+        if (key) await deleteFile(key)
+      } catch (e) {
+        console.warn('封面删除异常（已忽略）：', e)
+      }
+    }
+
+    // 删除内容文件（可忽略失败）
+    try {
+      const contentKey = `blog/content/blog-${post.id}-${post.slug}.md`
+      await deleteFile(contentKey)
+    } catch {}
+
     // 删除博客文章
     const success = await BlogModel.delete(post.id)
     if (!success) {
@@ -133,10 +156,7 @@ export async function DELETE(
       )
     }
 
-    return NextResponse.json({
-      success: true,
-      message: '博客文章删除成功'
-    })
+    return NextResponse.json({ success: true, message: '博客文章删除成功' })
   } catch (error) {
     console.error('删除博客文章失败:', error)
     return NextResponse.json(

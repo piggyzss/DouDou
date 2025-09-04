@@ -1,6 +1,9 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getPostBySlug } from '@/lib/blog'
+import { BlogModel } from '@/lib/models/blog'
 import { unified } from 'unified'
 import remarkParse from 'remark-parse'
 import remarkGfm from 'remark-gfm'
@@ -10,9 +13,11 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrism from 'rehype-prism-plus'
 import rehypeStringify from 'rehype-stringify'
 import TOC from './toc'
-import ClientLike from './ClientLike'
+import ClientLikesHeader from './ClientLikesHeader'
+import LikeToggle from '@/app/components/LikeToggle'
 import ClientBackToTop from './ClientBackToTop'
 import ClientCodeBlock from './ClientCodeBlock'
+import ClientFadeIn from './ClientFadeIn'
 
 // 统一的日期格式化函数
 const formatDate = (dateString: string) => {
@@ -39,60 +44,63 @@ async function renderMarkdown(md: string) {
 }
 
 export default async function BlogDetailPage({ params }: Params) {
-  const post = getPostBySlug(params.slug)
+  const normalizedSlug = (() => {
+    try { return decodeURIComponent(params.slug).normalize('NFC') } catch { return String(params.slug || '').normalize('NFC') }
+  })()
+  const post = await BlogModel.findBySlug(normalizedSlug)
   if (!post) return notFound()
   const htmlContent = await renderMarkdown(post.content)
+  const tagRows = await BlogModel.getPostTags(post.id)
+  const tags = tagRows.map(t => ({ name: t.name, slug: t.slug }))
   const isDev = process.env.NODE_ENV === 'development'
+  const initialLikes = (post as any).likes_count ?? 0
   return (
     <div className="min-h-screen pt-16">
       <div className="w-full py-8 relative">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8">
-          <article className="min-w-0">
-            <h1 className="text-4xl font-bold text-text-primary font-heading">{post.title}</h1>
-            <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
-              <time>{formatDate(post.date)}</time>
-              <span>·</span>
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((t) => (
-                  <span key={t} className="px-2 py-0.5 rounded-full bg-bg-secondary text-text-secondary text-xs">#{t}</span>
-                ))}
+        <ClientFadeIn>
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8">
+            <article className="min-w-0">
+              <h1 className="text-4xl font-bold text-text-primary font-heading">{post.title}</h1>
+              <ClientLikesHeader
+                likes={initialLikes}
+                publishedAt={(post as any).published_at}
+                createdAt={(post as any).created_at}
+                tags={tags}
+                postId={post.id}
+              />
+
+              {(post as any).cover_url && (
+              <div className="mt-4">
+                <img
+                  src={(post as any).cover_url.startsWith('/') ? (post as any).cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent((post as any).cover_url)}`}
+                  alt={post.title}
+                  className="w-full max-h-[360px] object-cover rounded-lg border border-gray-100 dark:border-gray-700"
+                />
               </div>
-              <span>·</span>
-              <LikeButton slug={post.slug} />
-            </div>
-            
-            {/* 开发模式下的编辑按钮 */}
-            {isDev && (
-              <div className="mt-4 mb-6">
-                <Link 
-                  href={`/blog/${post.slug}/edit`} 
-                  className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
-                >
-                  编辑文章
-                </Link>
+              )}
+              
+              {/* 编辑按钮已移至列表页 hover 区域 */}
+
+              <div className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-base" dangerouslySetInnerHTML={{ __html: htmlContent }} />
+              <ClientCodeBlock />
+
+              {/* 操作喜欢：内容左下角（样式与AIGC一致） */}
+              <div className="mt-6 flex justify-start">
+                <div className="p-0 bg-transparent hover:opacity-90 transition-opacity">
+                  <LikeToggle targetType="blog" targetId={post.id} initialCount={(post as any).likes_count ?? 0} size={18} showCount={false} />
+                </div>
               </div>
-            )}
-            
-            <div className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-base" dangerouslySetInnerHTML={{ __html: htmlContent }} />
-            <ClientCodeBlock />
-          </article>
-          <aside className="hidden md:block">
-            <div className="sticky top-24">
-              <TOC />
-            </div>
-          </aside>
-        </div>
+            </article>
+            <aside className="hidden md:block">
+              <div className="sticky top-24">
+                <TOC />
+              </div>
+            </aside>
+          </div>
+        </ClientFadeIn>
       </div>
       <BackToTop />
     </div>
-  )
-}
-
-function LikeButton({ slug }: { slug: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-text-secondary">
-      <ClientLike slug={slug} />
-    </span>
   )
 }
 

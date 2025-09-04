@@ -362,3 +362,56 @@ app/
 - 用户偏好：localStorage
 
 这个完善后的设计文档涵盖了个人网站的所有核心功能，包括详细的页面结构、UI设计规范、交互效果和技术实现方案。你可以根据这个规划逐步实现各个功能模块。
+
+
+## 七、技术实现细节
+
+### 1.全局确认弹窗样式规范
+
+- 组件：`app/components/ConfirmModal.tsx`
+- 交互：
+  - 打开时背景使用 `bg-black bg-opacity-50` 遮罩，内容弹入动画（opacity + scale）
+  - 关闭/确认均可关闭弹窗，确认按钮触发回调
+- 尺寸：
+  - 最大宽度 `max-w-md`，左右留白 `mx-4`
+- 样式：
+  - 容器：白底（深色为 `dark:bg-gray-800`），圆角 `rounded-lg`，内边距 `p-6`，细边框并按类型变化（`danger/warning/info`）
+  - 文案：标题 `text-lg font-semibold`；正文 `text-sm`，采用 `font-body`
+  - 图标：左侧类型图标（danger=AlertTriangle 红色，warning=AlertCircle 黄色，info=Info 蓝色）
+  - 按钮：
+    - 取消：灰色系 `bg-gray-100 hover:bg-gray-200`（深色 `dark:bg-gray-700 dark:hover:bg-gray-600`）
+    - 确认：按类型着色（danger=红，warning=黄，info=蓝），hover 加深
+- 使用场景：AIGC 作品删除、Blog 文章删除、其他危险操作二次确认
+
+### 2.按钮风格统一规范（Blog）
+
+- 统一主按钮（如“新建博客”“保存”）：
+  - 类名：`inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark disabled:opacity-60 transition-colors font-blog text-sm shadow-sm`
+- 统一次按钮（如“取消”“普通操作”）：
+  - 类名：`inline-flex items-center px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-text-secondary hover:text-primary transition-colors font-blog text-sm shadow-sm`
+- 图标按钮（如编辑/删除）：
+  - 灰色圆形：`p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors`
+- 要求：页面内所有操作按钮遵守以上规范，保持颜色、阴影、字号、字体、hover、padding、高度一致
+
+### 3.详情页进入动画规范（Blog）
+
+- 组件：`app/blog/[slug]/ClientFadeIn.tsx`
+- 动画：
+  - 初始：`opacity: 0, y: 12`
+  - 目标：`opacity: 1, y: 0`
+  - 时长：`~0.28s`
+- 使用：在详情页主内容外层包裹，提升新建/编辑完成后跳转的进入体验
+
+### 4.字体样式规范
+
+#### 时间信息样式规范
+
+- 容器：`flex items-center gap-2`
+- 字体：`text-sm text-text-muted`
+- 位置：标题下方一行展示，元素之间用 `·` 分隔
+
+#### 标签信息样式规范
+
+- 标签 pill：`px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog`
+- 行容器：`flex flex-wrap gap-2`
+- 适用位置：Blog 列表与详情、AIGC 标签行

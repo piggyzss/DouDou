@@ -1,5 +1,8 @@
 import Link from 'next/link'
 import EmptyState from './EmptyState'
+import PostDeleteButton from './PostDeleteButton'
+import { PenSquare, Heart } from 'lucide-react'
+import ClientListLikeCount from './ClientListLikeCount'
 import { BlogModel } from '@/lib/models/blog'
 
 // 统一的日期格式化函数
@@ -78,26 +81,55 @@ export default async function BlogPage({ searchParams }: Props) {
         <div className="space-y-6">
           {result.posts && result.posts.length > 0 ? (
             result.posts.map((post: any) => (
-              <section key={post.slug} className="rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
-                <h2 className="text-xl font-semibold text-text-primary font-heading">
-                  <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
-                </h2>
-                <div className="mt-2 text-sm text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 font-blog">
-                  <time>{formatDate(post.published_at || post.created_at)}</time>
-                  <span>·</span>
-                  <div className="flex flex-wrap gap-2">
-                    {post.tags && post.tags.length > 0 ? (
-                      post.tags.map((t: any) => (
-                        <span key={t} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs">#{t}</span>
-                      ))
-                    ) : (
-                      <span className="text-text-light text-xs">无标签</span>
-                    )}
+              <section key={post.slug} className="group rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
+                <div className="flex gap-4 items-stretch">
+                  {post.cover_url ? (
+                    <Link href={`/blog/${post.slug}`} className="flex-shrink-0 block w-32 md:w-40 h-full">
+                      <img
+                        src={post.cover_url.startsWith('/') ? post.cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`}
+                        alt={post.title}
+                        className="w-full h-full object-cover rounded-md border border-gray-100 dark:border-gray-700"
+                      />
+                    </Link>
+                  ) : null}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <h2 className="text-xl font-semibold text-text-primary font-heading leading-6">
+                        <Link href={`/blog/${post.slug}`} className="hover:text-primary">{post.title}</Link>
+                      </h2>
+                      {process.env.NODE_ENV === 'development' && (
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link
+                            href={`/blog/${post.slug}/edit`}
+                            className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            title="编辑文章"
+                          >
+                            <PenSquare size={14} />
+                          </Link>
+                          <PostDeleteButton slug={post.slug} currentPage={result.currentPage} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+                      <time className="leading-none">{formatDate(post.published_at || post.created_at)}</time>
+                      <span className="leading-none">·</span>
+                      <div className="flex flex-wrap gap-2 self-center">
+                        {post.tags && post.tags.length > 0 ? (
+                          post.tags.map((t: any) => (
+                            <span key={t} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">#{t}</span>
+                          ))
+                        ) : (
+                          <span className="text-text-light text-xs">无标签</span>
+                        )}
+                      </div>
+                      <span className="leading-none">·</span>
+                      <ClientListLikeCount postId={post.id} initial={post.likes_count ?? 0} />
+                    </div>
+                    <p className="mt-3 text-text-secondary leading-7 font-blog text-base line-clamp-2 md:line-clamp-3">{post.excerpt}</p>
+                    <div className="mt-3">
+                      <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-english">Read more →</Link>
+                    </div>
                   </div>
-                </div>
-                <p className="mt-3 text-text-secondary leading-7 font-blog text-base">{post.excerpt}</p>
-                <div className="mt-3">
-                  <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-base font-english">Read more →</Link>
                 </div>
               </section>
             ))

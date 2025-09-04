@@ -9,11 +9,12 @@ function generateSlug(title: string): string {
     .replace(/[^a-z0-9\u4e00-\u9fa5]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
+    .normalize('NFC')
 }
 
 // 生成摘要
 function generateExcerpt(content: string, maxLength: number = 150): string {
-  const plainText = content.replace(/[#*`]/g, '').replace(/\n+/g, ' ').trim()
+  const plainText = content.replace(/[#$*`]/g, '').replace(/\n+/g, ' ').trim()
   if (plainText.length <= maxLength) return plainText
   return plainText.substring(0, maxLength) + '...'
 }
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { title, slug: providedSlug, tags, content } = await req.json()
+    const { title, slug: providedSlug, tags, content, cover_url } = await req.json()
     
     if (!title || !content) {
       return NextResponse.json(
@@ -71,8 +72,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 生成或验证slug
-    const slug = providedSlug || generateSlug(title)
+    // 生成或验证slug（做Unicode规范化）
+    const slug = (providedSlug && String(providedSlug).trim().length > 0
+      ? String(providedSlug)
+      : generateSlug(title)
+    ).normalize('NFC')
     
     // 检查slug是否已存在
     const existingPost = await BlogModel.findBySlug(slug)
@@ -92,8 +96,9 @@ export async function POST(req: NextRequest) {
       slug,
       content,
       excerpt,
-      status: 'published'
-    })
+      status: 'published',
+      cover_url
+    } as any)
 
     // 处理标签
     if (tags && Array.isArray(tags) && tags.length > 0) {
@@ -115,7 +120,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 将内容上传到腾讯云COS
+    // 将内容上传到腾讯云COS（可选）
     try {
       const contentBuffer = Buffer.from(content, 'utf-8')
       const uploadResult = await uploadFile(
@@ -140,6 +145,7 @@ export async function POST(req: NextRequest) {
       message: '博客创建成功',
       post: {
         ...post,
+        cover_url: post.cover_url || cover_url || null,
         tags: tags || []
       }
     })

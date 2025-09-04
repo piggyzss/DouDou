@@ -6,6 +6,7 @@ export interface BlogPost {
   slug: string
   content: string
   excerpt?: string
+  cover_url?: string
   status: 'draft' | 'published' | 'archived'
   created_at: string
   updated_at: string
@@ -34,14 +35,27 @@ export interface BlogComment {
   updated_at: string
 }
 
+function normalizeVariants(input: string): { nfc: string; nfd: string } {
+  const base = String(input || '')
+  return { nfc: base.normalize('NFC'), nfd: base.normalize('NFD') }
+}
+
 export class BlogModel {
   // 创建博客文章
   static async create(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'views_count' | 'likes_count' | 'comments_count'>): Promise<BlogPost> {
     const result = await db.query(
-      `INSERT INTO blog_posts (title, slug, content, excerpt, status, published_at) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
+      `INSERT INTO blog_posts (title, slug, content, excerpt, cover_url, status, published_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) 
        RETURNING *`,
-      [post.title, post.slug, post.content, post.excerpt, post.status, post.published_at || new Date().toISOString()]
+      [
+        post.title,
+        post.slug,
+        post.content,
+        post.excerpt,
+        (post as any).cover_url || null,
+        post.status,
+        post.published_at || new Date().toISOString()
+      ]
     )
     return result.rows[0]
   }
@@ -52,9 +66,10 @@ export class BlogModel {
     return result.rows[0] || null
   }
 
-  // 根据slug查找博客文章
+  // 根据slug查找博客文章（同时尝试 NFC 与 NFD）
   static async findBySlug(slug: string): Promise<BlogPost | null> {
-    const result = await db.query('SELECT * FROM blog_posts WHERE slug = $1', [slug])
+    const { nfc, nfd } = normalizeVariants(slug)
+    const result = await db.query('SELECT * FROM blog_posts WHERE slug = $1 OR slug = $2 LIMIT 1', [nfc, nfd])
     return result.rows[0] || null
   }
 
@@ -131,7 +146,8 @@ export class BlogModel {
 
   // 根据slug查找标签
   static async findTagBySlug(slug: string): Promise<BlogTag | null> {
-    const result = await db.query('SELECT * FROM blog_tags WHERE slug = $1', [slug])
+    const { nfc, nfd } = normalizeVariants(slug)
+    const result = await db.query('SELECT * FROM blog_tags WHERE slug = $1 OR slug = $2 LIMIT 1', [nfc, nfd])
     return result.rows[0] || null
   }
 
