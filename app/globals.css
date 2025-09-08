@@ -16,6 +16,8 @@
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #e9ecef;
   --bg-card: #ffffff;
+  /* 博客正文字体变量 */
+  --font-body: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
 }
 
 .dark {
@@ -108,7 +110,7 @@ h4 {
 }
 
 .font-body {
-  font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
 }
 
@@ -121,6 +123,14 @@ h4 {
 .font-blog {
   font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
   font-weight: 300;
+}
+
+/* 博客正文样式变量（可复用） */
+.blog-body-text {
+  font-family: var(--font-body);
+  font-weight: 300;
+  color: var(--text-primary);
+  line-height: 1.8;
 }
 
 /* 自定义渐变色 */
@@ -211,7 +221,7 @@ h4 {
 
 /* 博客Markdown样式优化 */
 .blog-content {
-  font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family: var(--font-body);
   font-weight: 300;
   line-height: 1.8;
 }
@@ -222,7 +232,7 @@ h4 {
 .blog-content h4,
 .blog-content h5,
 .blog-content h6 {
-  font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   margin-top: 2rem;
   margin-bottom: 1rem;

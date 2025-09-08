@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
 import { query } from '@/lib/database'
 
-function sha256(input: string) {
-  return crypto.createHash('sha256').update(input).digest('hex')
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input)
+  const digest = await (globalThis.crypto as Crypto).subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 async function ensureLikesTable() {
@@ -41,10 +42,10 @@ export async function POST(req: NextRequest) {
     }
 
     const anonId = req.cookies.get('anon_id')?.value || null
-    const ip = req.ip || req.headers.get('x-forwarded-for') || '0.0.0.0'
+    const ip = (req as any).ip || req.headers.get('x-forwarded-for') || '0.0.0.0'
     const ua = req.headers.get('user-agent') || ''
-    const ipHash = sha256(String(ip))
-    const uaHash = sha256(ua)
+    const ipHash = await sha256Hex(String(ip))
+    const uaHash = await sha256Hex(ua)
 
     if (action === 'like') {
       if (anonId) {
@@ -91,6 +92,8 @@ async function bumpCount(targetType: string, targetId: number, delta: number) {
     await query('UPDATE blog_posts SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
   } else if (targetType === 'artwork') {
     await query('UPDATE artwork_collections SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+  } else if (targetType === 'music') {
+    await query('UPDATE music_tracks SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
   }
 }
 
@@ -101,6 +104,10 @@ async function getCount(targetType: string, targetId: number) {
   }
   if (targetType === 'artwork') {
     const r = await query('SELECT likes_count FROM artwork_collections WHERE id=$1', [targetId])
+    return r.rows[0]?.likes_count ?? 0
+  }
+  if (targetType === 'music') {
+    const r = await query('SELECT likes_count FROM music_tracks WHERE id=$1', [targetId])
     return r.rows[0]?.likes_count ?? 0
   }
   return 0

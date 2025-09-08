@@ -34,6 +34,7 @@ export async function uploadFile(
       ContentType: mimeType,
       ContentDisposition: `inline; filename="${originalName}"`,
       CacheControl: 'max-age=31536000', // 1年缓存
+      ACL: 'public-read' as any,
     }
 
     // 执行上传

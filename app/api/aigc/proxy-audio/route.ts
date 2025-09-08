@@ -13,18 +13,29 @@ export async function GET(req: NextRequest) {
     const { hostname, pathname } = new URL(url)
     const isCosHost = hostname.includes('.cos.') && hostname.endsWith('.myqcloud.com')
     if (!isCosHost) {
-      // 对非 COS 域名，回退为普通透传
-      const res = await fetch(url)
+      const range = req.headers.get('range') || undefined
+      const res = await fetch(url, { headers: range ? { range } as any : undefined })
       if (!res.ok || !res.body) return NextResponse.json({ error: 'fetch failed' }, { status: 502 })
       const headers = new Headers()
-      headers.set('content-type', res.headers.get('content-type') || 'image/jpeg')
-      headers.set('cache-control', res.headers.get('cache-control') || 'public, max-age=300')
+      headers.set('content-type', res.headers.get('content-type') || 'audio/mpeg')
+      const acceptRanges = res.headers.get('accept-ranges')
+      if (acceptRanges) headers.set('accept-ranges', acceptRanges)
+      const contentRange = res.headers.get('content-range')
+      if (contentRange) headers.set('content-range', contentRange)
       return new NextResponse(res.body as any, { status: res.status, headers })
     }
 
     const key = pathname.startsWith('/') ? pathname.slice(1) : pathname
-    const result = await cos.getObject({ Bucket: cosConfig.Bucket, Region: cosConfig.Region, Key: key })
-    if (result.statusCode !== 200 || !result.Body) return NextResponse.json({ error: 'cos fetch failed' }, { status: 502 })
+    const range = req.headers.get('range') || undefined
+    const result = await cos.getObject({
+      Bucket: cosConfig.Bucket,
+      Region: cosConfig.Region,
+      Key: key,
+      Range: range as any
+    })
+    if (!result || (result.statusCode !== 200 && result.statusCode !== 206) || !result.Body) {
+      return NextResponse.json({ error: 'cos fetch failed' }, { status: 502 })
+    }
 
     const body = result.Body as Buffer | string | ArrayBuffer | Uint8Array
     let arrayBuffer: ArrayBuffer
@@ -34,12 +45,19 @@ export async function GET(req: NextRequest) {
     else if (body instanceof Uint8Array) arrayBuffer = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)
     else arrayBuffer = new TextEncoder().encode(String(body)).buffer
 
-    const contentType = (result.headers?.['content-type'] as string) || 'image/jpeg'
-    return new NextResponse(arrayBuffer, { headers: { 'content-type': contentType, 'cache-control': 'public, max-age=900' } })
+    const headers: Record<string, string> = {
+      'content-type': (result.headers?.['content-type'] as string) || 'audio/mpeg',
+      'accept-ranges': 'bytes',
+      'cache-control': 'public, max-age=300'
+    }
+    const contentRange = result.headers?.['content-range'] as string | undefined
+    if (contentRange) headers['content-range'] = contentRange
+
+    return new NextResponse(arrayBuffer, { status: result.statusCode, headers })
   } catch (e) {
-    console.error('proxy-image error:', e)
+    console.error('proxy-audio error:', e)
     return NextResponse.json({ error: 'proxy error' }, { status: 500 })
   }
 }
 
-// 仅保留简单透传代理，避免重复导出与环境依赖
+

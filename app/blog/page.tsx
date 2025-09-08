@@ -4,6 +4,7 @@ import PostDeleteButton from './PostDeleteButton'
 import { PenSquare, Heart } from 'lucide-react'
 import ClientListLikeCount from './ClientListLikeCount'
 import { BlogModel } from '@/lib/models/blog'
+import ClientFadeIn from './[slug]/ClientFadeIn'
 
 // 统一的日期格式化函数
 const formatDate = (dateString: string) => {
@@ -62,8 +63,8 @@ export default async function BlogPage({ searchParams }: Props) {
     <div className="min-h-screen pt-16">
       <div className="w-full py-12 relative">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text-primary font-heading">博客文章</h1>
-          <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
+          <h1 className="text-3xl text-text-primary font-heading">博客文章</h1>
+          <p className="text-text-secondary mt-1 font-english">分享技术心得和生活感悟</p>
         </div>
 
         {/* 新建博客按钮 */}
@@ -78,7 +79,8 @@ export default async function BlogPage({ searchParams }: Props) {
           </div>
         )}
 
-        <div className="space-y-6">
+        <ClientFadeIn>
+          <div className="space-y-6">
           {result.posts && result.posts.length > 0 ? (
             result.posts.map((post: any) => (
               <section key={post.slug} className="group rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
@@ -136,7 +138,8 @@ export default async function BlogPage({ searchParams }: Props) {
           ) : (
             <EmptyState />
           )}
-        </div>
+          </div>
+        </ClientFadeIn>
 
         {/* 优化后的分页 */}
         {result.totalPages > 1 && result.posts && result.posts.length > 0 && (

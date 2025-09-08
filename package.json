@@ -11,7 +11,8 @@
     "db:setup": "ts-node -P tsconfig.scripts.json scripts/setup-database.ts",
     "db:init": "ts-node -P tsconfig.scripts.json scripts/init-aigc-db.ts",
     "db:test": "ts-node -P tsconfig.scripts.json scripts/test-aigc-config.ts",
-    "db:manage-aigc": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-db.ts",
+    "db:manage-aigc-image": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-image.ts",
+    "db:manage-aigc-music": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-music.ts",
     "db:manage-aigc-master": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-master.ts",
     "db:manage-blog": "ts-node -P tsconfig.scripts.json scripts/manage-blog-db.ts"
   },

@@ -130,6 +130,22 @@ async function createTables() {
     )
   `)
 
+  // 创建音乐表
+  await query(`
+    CREATE TABLE IF NOT EXISTS music_tracks (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      tags TEXT[],
+      audio_url VARCHAR(500) NOT NULL,
+      cover_url VARCHAR(500),
+      duration INTEGER DEFAULT 0,
+      likes_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      status VARCHAR(20) DEFAULT 'active'
+    )
+  `)
+
   // 创建博客文章表
   await query(`
     CREATE TABLE IF NOT EXISTS blog_posts (
@@ -173,6 +189,8 @@ async function createTables() {
   await query(`CREATE INDEX IF NOT EXISTS idx_artwork_images_collection_id ON artwork_images(collection_id)`)
   await query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug)`)
   await query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status)`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_music_tracks_created_at ON music_tracks(created_at)`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_music_tracks_status ON music_tracks(status)`)
 }
 
 // 导出数据库实例

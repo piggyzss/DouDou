@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, Clock, ArrowRight } from 'lucide-react'
+import { Calendar, ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface BlogPost {
@@ -66,7 +66,7 @@ export default function LatestContent() {
   }
 
   return (
-    <section className="pb-16">
+    <section className="pt-12 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* 新的动画标题区域 */}
@@ -144,7 +144,7 @@ export default function LatestContent() {
                     <span>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
                   </div>
                   <h4 className="font-normal text-text-primary text-base">{latestBlog.title}</h4>
-                  <p className="text-text-secondary text-sm font-light leading-relaxed">
+                  <p className="text-sm blog-body-text line-clamp-5">
                     {latestBlog.excerpt || '暂无摘要...'}
                   </p>
                   <Link href={`/blog/${latestBlog.slug}`} className="text-primary text-sm font-normal hover:underline inline-flex items-center">
@@ -181,11 +181,11 @@ export default function LatestContent() {
               <h3 className="text-lg font-normal text-text-primary mb-4">最新项目</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
-                  <Clock size={16} />
+                  <Calendar size={16} />
                   <span>2024-01-10</span>
                 </div>
                 <h4 className="font-normal text-text-primary text-base">AI聊天助手</h4>
-                <p className="text-text-secondary text-sm font-light leading-relaxed">
+                <p className="text-sm blog-body-text">
                   基于OpenAI API的智能聊天应用，支持多轮对话...
                 </p>
                 <Link href="/projects" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
@@ -220,9 +220,15 @@ export default function LatestContent() {
                     <span>{formatDate(latestArtwork.created_at)}</span>
                   </div>
                   <h4 className="font-normal text-text-primary text-base">{latestArtwork.title}</h4>
-                  <p className="text-text-secondary text-sm font-light leading-relaxed">
-                    {latestArtwork.description || `包含 ${latestArtwork.images.length} 张图片的作品集`}
-                  </p>
+                  {latestArtwork.images && latestArtwork.images.length > 0 ? (
+                    <div className="relative w-full h-40 overflow-hidden rounded-md border border-gray-100 dark:border-gray-700">
+                      <img
+                        src={latestArtwork.images[0].file_url.startsWith('/') ? latestArtwork.images[0].file_url : `/api/aigc/proxy-image?url=${encodeURIComponent(latestArtwork.images[0].file_url)}`}
+                        alt={latestArtwork.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : null}
                   <Link href="/aigc" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
                     浏览作品 <ArrowRight size={16} className="ml-1" />
                   </Link>

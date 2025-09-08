@@ -1,52 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
-import { query } from '@/lib/database'
+import { LikesModel } from '@/lib/models/likes'
 
-function sha256(input: string) {
-  return crypto.createHash('sha256').update(input).digest('hex')
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input)
+  const digest = await (globalThis.crypto as Crypto).subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 export async function POST(req: NextRequest) {
   try {
     const { targets } = await req.json()
-    if (!Array.isArray(targets) || targets.length === 0) {
-      return NextResponse.json({ error: 'invalid targets' }, { status: 400 })
-    }
-    const anonId = req.cookies.get('anon_id')?.value || null
-    const ip = req.ip || req.headers.get('x-forwarded-for') || '0.0.0.0'
+    if (!Array.isArray(targets) || targets.length === 0) return NextResponse.json({ statuses: [] })
     const ua = req.headers.get('user-agent') || ''
-    const ipHash = sha256(String(ip))
-    const uaHash = sha256(ua)
-
-    // 构造查询
-    const conditions: string[] = []
-    const params: any[] = []
-    let idx = 1
-    for (const t of targets) {
-      if (!t?.type || !t?.id) continue
-      if (anonId) {
-        conditions.push(`(target_type=$${idx++} AND target_id=$${idx++} AND anon_id=$${idx++})`)
-        params.push(t.type, t.id, anonId)
-      } else {
-        conditions.push(`(target_type=$${idx++} AND target_id=$${idx++} AND anon_id IS NULL AND ip_hash=$${idx++} AND ua_hash=$${idx++})`)
-        params.push(t.type, t.id, ipHash, uaHash)
-      }
-    }
-    if (conditions.length === 0) return NextResponse.json({ statuses: [] })
-
-    const sql = `SELECT target_type, target_id FROM likes WHERE ${conditions.join(' OR ')}`
-    const r = await query(sql, params)
-    const set = new Set(r.rows.map((row: any) => `${row.target_type}:${row.target_id}`))
-
-    const statuses = targets.map((t: any) => ({
-      type: t.type,
-      id: t.id,
-      liked: set.has(`${t.type}:${t.id}`)
-    }))
-
+    const ip = (req as any).ip || req.headers.get('x-forwarded-for') || '0.0.0.0'
+    const ipHash = await sha256Hex(String(ip))
+    const uaHash = await sha256Hex(ua)
+    const statuses = await Promise.all(
+      targets.map(async (t: { type: string; id: number }) => {
+        const s = await LikesModel.getUserLike(t.type, Number(t.id), ipHash, uaHash)
+        const count = await LikesModel.getLikesCount(t.type, Number(t.id))
+        return { targetType: t.type, targetId: t.id, liked: s?.status === 'liked', likesCount: count }
+      })
+    )
     return NextResponse.json({ statuses })
   } catch (e) {
-    console.error('status like error', e)
-    return NextResponse.json({ error: 'server error' }, { status: 500 })
+    console.error('likes status error:', e)
+    return NextResponse.json({ statuses: [] })
   }
 }

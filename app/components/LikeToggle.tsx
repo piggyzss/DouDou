@@ -12,16 +12,26 @@ export default function LikeToggle({
   size = 14,
   showCount = true,
   className = '',
-  onChanged
+  countClassName = '',
+  onChanged,
+  unlikedFill = 'none',
+  unlikedColorClass = 'text-text-muted',
+  likedColorClass = 'text-red-500',
+  ignoreExternalEvents = false
 }: {
-  targetType: 'blog' | 'artwork'
+  targetType: 'blog' | 'artwork' | 'artwork_image' | 'music'
   targetId: number
   initialLiked?: boolean
   initialCount?: number
   size?: number
   showCount?: boolean
   className?: string
+  countClassName?: string
   onChanged?: (liked: boolean, count: number) => void
+  unlikedFill?: 'none' | 'currentColor'
+  unlikedColorClass?: string
+  likedColorClass?: string
+  ignoreExternalEvents?: boolean
 }) {
   const [liked, setLiked] = useState<boolean>(initialLiked)
   const [count, setCount] = useState<number>(initialCount)
@@ -44,11 +54,29 @@ export default function LikeToggle({
     fetchStatus()
   }, [targetType, targetId])
 
+  // 同步跨组件的点赞状态（例如预览模式与列表 hover 图标之间）
+  useEffect(() => {
+    if (ignoreExternalEvents) return
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { targetType: 'blog' | 'artwork' | 'artwork_image'; targetId: number; liked: boolean; count: number }
+      if (!detail) return
+      if (detail.targetType === targetType && detail.targetId === targetId) {
+        setLiked(detail.liked)
+        setCount(detail.count)
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('like:changed', handler as EventListener)
+      return () => window.removeEventListener('like:changed', handler as EventListener)
+    }
+  }, [targetType, targetId, ignoreExternalEvents])
+
   const toggle = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (busy) return
     setBusy(true)
     const nextLiked = !liked
+    const prevCount = count
     setLiked(nextLiked)
     setCount(c => Math.max(0, c + (nextLiked ? 1 : -1)))
     try {
@@ -64,16 +92,18 @@ export default function LikeToggle({
         throw new Error('toggle failed')
       }
       const json = await res.json()
-      setLiked(json.liked)
-      setCount(json.likesCount)
-      onChanged?.(json.liked, json.likesCount)
+      const finalLiked = typeof json.liked === 'boolean' ? json.liked : nextLiked
+      const finalCount = typeof json.likesCount === 'number' ? json.likesCount : Math.max(0, prevCount + (finalLiked ? 1 : -1))
+      setLiked(finalLiked)
+      setCount(finalCount)
+      onChanged?.(finalLiked, finalCount)
       // 广播全局事件，供展示组件同步
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('like:changed', {
-          detail: { targetType, targetId, liked: json.liked, count: json.likesCount }
+          detail: { targetType, targetId, liked: finalLiked, count: finalCount }
         }))
         try {
-          localStorage.setItem(`likes:${targetType}:${targetId}`, String(json.likesCount))
+          localStorage.setItem(`likes:${targetType}:${targetId}`, String(finalCount))
         } catch {}
       }
     } catch (err) {
@@ -85,7 +115,7 @@ export default function LikeToggle({
   }
 
   return (
-    <button disabled={busy} onClick={toggle} className={`flex items-center gap-1 text-sm ${className}`}>
+    <button disabled={busy} onClick={toggle} className={`group inline-flex items-center gap-1 p-0 m-0 bg-transparent text-sm leading-none ${className}`}>
       <motion.span
         animate={{ scale: liked ? 1.15 : 1 }}
         transition={{ type: 'spring', stiffness: 500, damping: 20, duration: 0.15 }}
@@ -94,11 +124,11 @@ export default function LikeToggle({
       >
         <Heart
           size={size}
-          className={`${liked ? 'text-red-500' : 'text-text-muted'} transition-colors duration-200`}
-          fill={liked ? 'currentColor' : 'none'}
+          className={`${liked ? likedColorClass : unlikedColorClass} transition-colors duration-200`}
+          fill={liked ? 'currentColor' : unlikedFill}
         />
       </motion.span>
-      {showCount && <span className="leading-none text-text-muted transition-colors duration-200">{count}</span>}
+      {showCount && <span className={`leading-none text-text-muted transition-colors duration-200 ${countClassName}`}>{count}</span>}
     </button>
   )
 }

@@ -334,8 +334,6 @@ app/
 │   │   └── components/            # 项目组件
 │   ├── aigc/
 │   │   ├── page.tsx               # AIGC画廊
-│   │   ├── [id]/
-│   │   │   └── page.tsx           # 作品详情
 │   │   └── components/            # AIGC组件
 │   └── components/                # 全局组件
 ├── layout.tsx                     # 全局布局
@@ -415,3 +413,34 @@ app/
 - 标签 pill：`px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog`
 - 行容器：`flex flex-wrap gap-2`
 - 适用位置：Blog 列表与详情、AIGC 标签行
+
+#### 字体变量定义与绑定（同步）
+
+- 标题字体变量（博客标题“博客文章”等）
+  - 变量名：`--font-zen-kaku`
+  - 字体来源：`ZenKakuGothicNew-Medium.ttf`
+  - 字重：`500`
+  - 颜色：`var(--text-primary)`（类名：`text-text-primary`）
+  - 使用类名：`font-heading`
+
+- 副标题/英文变量（副标题“分享技术心得和生活感悟”等）
+  - 变量名：`--font-typewriter`
+  - 字体来源：`fzm-Old.Typewriter.ttf`
+  - 字重：`400`
+  - 颜色：`var(--text-secondary)`（类名：`text-text-secondary`）
+  - 使用类名：`font-english`
+
+- 正文字体（博客正文内容）
+  - 变量名：`--font-body`
+  - 字体栈：`'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif`
+  - 字重：`400`（正文段落在 `.blog-content` 内部为 300）
+  - 颜色：`var(--text-primary)`（类名：`text-text-primary`）
+  - 使用类名：`font-body`（已绑定 `var(--font-body)`）或复用变量类：`blog-body-text`
+
+应用位置：
+- 首页 About/Experience 描述文案（`app/components/About.tsx`）
+- 首页 Hero 副标语可选（若需要与正文完全一致）
+
+对照代码位置：
+- 标题与副标题：`app/blog/page.tsx` 顶部区域
+- 正文容器：`app/blog/[slug]/page.tsx` 中 `.blog-content` 外层容器类名

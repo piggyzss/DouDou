@@ -2,7 +2,7 @@
 
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useState } from 'react'
-import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, Briefcase } from 'lucide-react'
+import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, PawPrint } from 'lucide-react'
 import Image from 'next/image'
 
 interface ExperienceCard {
@@ -26,8 +26,8 @@ export default function About() {
       period: "2022 - 至今",
       description: "负责公司核心产品的前端开发，使用React、TypeScript等技术栈",
       color: "#6747ce",
-      x: 10,
-      y: 5,
+      x: 35,
+      y: -15,
       rotation: -8
     },
     {
@@ -37,7 +37,7 @@ export default function About() {
       period: "2020 - 2022",
       description: "专注于用户体验设计，创造直观易用的数字产品界面",
       color: "#fdded9",
-      x: 55,
+      x: 72,
       y: 10,
       rotation: 12
     },
@@ -49,7 +49,7 @@ export default function About() {
       description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
       color: "#84a5f4",
       x: 5,
-      y: 30,
+      y: 15,
       rotation: -5
     },
     {
@@ -59,8 +59,8 @@ export default function About() {
       period: "2016 - 2018",
       description: "为客户提供技术解决方案，优化业务流程和系统架构",
       color: "#fed336",
-      x: 50,
-      y: 35,
+      x: 52,
+      y: 32,
       rotation: 10
     },
     {
@@ -70,8 +70,8 @@ export default function About() {
       period: "2014 - 2016",
       description: "负责产品规划和管理，协调开发团队实现产品目标",
       color: "#8ccc79",
-      x: 0,
-      y: 55,
+      x: 17,
+      y: 60,
       rotation: -3
     },
     {
@@ -81,8 +81,8 @@ export default function About() {
       period: "2012 - 2014",
       description: "参与企业级软件开发，积累丰富的项目经验",
       color: "#53b88f",
-      x: 45,
-      y: 60,
+      x: 46,
+      y: 75,
       rotation: 7
     }
   ])
@@ -203,7 +203,7 @@ export default function About() {
             </div>
 
             {/* Skills */}
-            <div>
+            <div className="mt-6">
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
@@ -218,23 +218,23 @@ export default function About() {
             </div>
 
             {/* Experience */}
-            <div>
+            <div className="mt-6">
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Experience</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <Briefcase className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <PawPrint className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-text-primary">前端开发工程师</h4>
-                    <p className="text-sm text-text-secondary mt-1 mb-2">某科技公司 • 2022 - 至今</p>
-                    <p className="text-sm text-text-muted">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
+                    <p className="text-sm text-text-secondary mt-2 mb-2">某科技公司 • 2022 - 至今</p>
+                    <p className="text-sm blog-body-text">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <Briefcase className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <PawPrint className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-text-primary">UI/UX设计师</h4>
-                    <p className="text-sm text-text-secondary mt-1 mb-2">设计工作室 • 2020 - 2022</p>
-                    <p className="text-sm text-text-muted">专注于用户体验设计，创造直观易用的数字产品界面</p>
+                    <p className="text-sm text-text-secondary mt-2 mb-2">设计工作室 • 2020 - 2022</p>
+                    <p className="text-sm blog-body-text">专注于用户体验设计，创造直观易用的数字产品界面</p>
                   </div>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export default function About() {
                   onDragEnd={(event, info) => handleDragEnd(card.id, info)}
                 >
                   <div 
-                    className="w-40 h-40 p-4 rounded-lg shadow-lg text-text-secondary hover:shadow-xl transition-shadow duration-200"
+                    className="w-40 h-40 p-4 rounded-lg shadow-lg text-text-secondary hover:shadow-xl transition-shadow duration-200 font-body"
                     style={{ 
                       backgroundColor: `${card.color}95`,
                       backdropFilter: 'blur(10px)'

@@ -167,6 +167,14 @@ export class ArtworkModel {
     )
   }
 
+  // 直接设置点赞数
+  static async updateLikes(id: number, likesCount: number): Promise<void> {
+    await query(
+      'UPDATE artwork_collections SET likes_count = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [likesCount, id]
+    )
+  }
+
   // 增加浏览数
   static async incrementViews(id: number): Promise<void> {
     await query(

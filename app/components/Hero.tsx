@@ -29,7 +29,7 @@ export default function Hero() {
         >
           <div className="space-y-6">
             <motion.h1
-              className="text-2xl sm:text-3xl lg:text-4xl text-text-primary font-heading"
+              className="text-3xl sm:text-4xl lg:text-5xl text-text-primary font-heading"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
@@ -50,7 +50,7 @@ export default function Hero() {
             </motion.p>
             
             <motion.p
-              className="text-sm sm:text-base text-text-muted leading-relaxed font-body"
+              className="text-base sm:text-lg text-text-primary leading-8 font-blog"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}

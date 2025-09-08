@@ -15,7 +15,7 @@ const skills = [
 
 export default function Skills() {
   return (
-    <section className="pb-16">
+    <section className="pt-12 pb-20">
       <div className="max-w-7xl mx-auto">
 
         {/* 新的动画标题区域 */}
