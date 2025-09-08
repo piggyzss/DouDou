@@ -112,10 +112,10 @@ export default async function BlogPage({ searchParams }: Props) {
                         </div>
                       )}
                     </div>
-                    <div className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+                    <div className="mt-2 flex items-center gap-2 text-text-muted text-[11px]">
                       <time className="leading-none">{formatDate(post.published_at || post.created_at)}</time>
-                      <span className="leading-none">·</span>
-                      <div className="flex flex-wrap gap-2 self-center">
+                      <span className="inline-flex items-center justify-center align-middle leading-none translate-y-[2px] mx-0.5">·</span>
+                      <div className="flex flex-wrap gap-1 self-center">
                         {post.tags && post.tags.length > 0 ? (
                           post.tags.map((t: any) => (
                             <span key={t} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">#{t}</span>
@@ -124,7 +124,7 @@ export default async function BlogPage({ searchParams }: Props) {
                           <span className="text-text-light text-xs">无标签</span>
                         )}
                       </div>
-                      <span className="leading-none">·</span>
+                      <span className="inline-flex items-center justify-center align-middle leading-none translate-y-[2px] mx-0.5">·</span>
                       <ClientListLikeCount postId={post.id} initial={post.likes_count ?? 0} />
                     </div>
                     <p className="mt-3 text-text-secondary leading-7 font-blog text-base line-clamp-2 md:line-clamp-3">{post.excerpt}</p>

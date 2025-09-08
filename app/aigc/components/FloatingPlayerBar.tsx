@@ -59,7 +59,9 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
 
   return (
     <div className="fixed left-0 right-0 bottom-4 md:bottom-6 flex justify-center z-40">
-      <div className="relative w-[92%] md:w-1/2 mx-auto bg-white/70 dark:bg-gray-900/60 backdrop-blur-md shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-visible">
+      <div className="relative w-[92%] md:w-1/2 mx-auto rounded-lg overflow-visible shadow-lg border border-gray-200 dark:border-gray-700 player-pop">
+        {/* 内容层：移除背景色，保留磨砂与圆角 */}
+        <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-lg">
         <div className="relative py-3.5 md:py-4 px-2.5">
         <button
           onClick={onClose}
@@ -93,13 +95,13 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
 
           {/* 中间控制 */}
           <div className="flex items-center justify-center gap-2.5 flex-none">
-            <button onClick={onPrev} className="h-8 w-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="上一首">
+            <button onClick={onPrev} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title="上一首">
               <SkipBack size={18} />
             </button>
-            <button onClick={onTogglePlay} className="h-8 w-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700" title={isPlaying ? '暂停' : '播放'}>
+            <button onClick={onTogglePlay} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title={isPlaying ? '暂停' : '播放'}>
               {isPlaying ? <Pause size={18} /> : <Play size={18} />}
             </button>
-            <button onClick={onNext} className="h-8 w-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="下一首">
+            <button onClick={onNext} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title="下一首">
               <SkipForward size={18} />
             </button>
           </div>
@@ -111,11 +113,11 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
               <span>/</span>
               <span>{format(duration)}</span>
             </div>
-            <button onClick={onCycleRepeat} className="h-8 w-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700" title={repeatTitle}>
+            <button onClick={onCycleRepeat} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title={repeatTitle}>
               {renderRepeatIcon()}
             </button>
             <div className="relative" ref={volumeWrapRef}>
-              <button onClick={onToggleVolumePanel} className="h-8 w-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="音量">
+              <button onClick={onToggleVolumePanel} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title="音量">
                 {renderVolumeIcon()}
               </button>
               {showVolumePanel && (
@@ -145,12 +147,27 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
           </div>
         </div>
         </div>
-        {/* 进度条：仅显示前景填充，背景由整体渐变承担 */}
-        <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-pointer" onClick={onSeekByClick}>
-          <div className="absolute left-0 top-0 h-full bg-primary/80" style={{ width: `${progressPercent}%` }} />
+        </div>
+        {/* 进度条：纯色 --primary */}
+        <div className="absolute left-0 right-0 bottom-0 h-1.5 cursor-pointer rounded-b-lg overflow-hidden" onClick={onSeekByClick}>
+          <div
+            className="absolute left-0 top-0 h-full"
+            style={{
+              width: `${progressPercent}%`,
+              background: 'var(--primary)'
+            }}
+          />
         </div>
       </div>
       <style jsx>{`
+        .player-cute-bg {
+          background:
+            radial-gradient(circle at 12px 12px, rgba(255,255,255,0.18) 0 2px, transparent 2px),
+            radial-gradient(circle at 32px 28px, rgba(255,255,255,0.12) 0 1.5px, transparent 1.5px),
+            linear-gradient(135deg, var(--secondary), var(--primary));
+          background-size: 28px 28px, 36px 36px, cover;
+          filter: saturate(1.05);
+        }
         .volume-vertical::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;

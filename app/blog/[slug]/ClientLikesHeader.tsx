@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { Heart } from 'lucide-react'
+import LikeToggle from '@/app/components/LikeToggle'
 
 type Tag = { name: string; slug: string }
 
@@ -28,19 +28,27 @@ export default function ClientLikesHeader({ likes, publishedAt, createdAt, tags,
   }
 
   return (
-    <div className="my-3 flex items-center gap-2 text-sm text-text-muted">
-      <time>{formatDate(publishedAt || createdAt)}</time>
-      <span>·</span>
-      <div className="flex flex-wrap gap-2">
+    <div className="my-3 flex items-center gap-2 text-text-muted text-[11px]">
+      <time className="leading-none">{formatDate(publishedAt || createdAt)}</time>
+      <span className="inline-flex items-center justify-center align-middle leading-none translate-y-[2px] mx-0.5">·</span>
+      <div className="flex flex-wrap gap-1">
         {tags.map((t: Tag) => (
           <span key={t.slug} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">#{t.name}</span>
         ))}
       </div>
-      <span>·</span>
-      <div className="flex items-center gap-1 text-sm text-text-muted">
-        <Heart size={14} />
-        <span>{count}</span>
-      </div>
+      <span className="inline-flex items-center justify-center align-middle leading-none translate-y-[2px] mx-0.5">·</span>
+      <LikeToggle
+        targetType="blog"
+        targetId={postId}
+        initialCount={count}
+        size={14}
+        showCount={true}
+        className="text-[11px]"
+        countClassName="text-[11px] leading-none"
+        unlikedColorClass="text-text-muted"
+        likedColorClass="text-red-500"
+        onChanged={(_, c) => setCount(c)}
+      />
     </div>
   )
 }

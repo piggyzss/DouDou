@@ -25,11 +25,11 @@ interface MusicSectionProps {
   formatDuration: (s: number) => string
   formatNumber: (n: number) => string
   formatDate: (d: string) => string
-  onDeleteTrack?: (id: string) => void
+  onDeleteMusic?: (id: string) => void
   onUpdateMusicLikes?: (id: string, count: number) => void
 }
 
-export default function MusicSection({ tracks, currentTrackId, setCurrentTrackId, isAudioPlaying, formatDuration, formatNumber, formatDate, onDeleteTrack, onUpdateMusicLikes }: MusicSectionProps) {
+export default function MusicSection({ tracks, currentTrackId, setCurrentTrackId, isAudioPlaying, formatDuration, formatNumber, formatDate, onDeleteMusic, onUpdateMusicLikes }: MusicSectionProps) {
   const [confirm, setConfirm] = useState<{ open: boolean; id: string; title: string } | null>(null)
 
   const playTrack = (track: MusicTrack) => {
@@ -81,7 +81,7 @@ export default function MusicSection({ tracks, currentTrackId, setCurrentTrackId
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 relative group/title">
                 <h3 className="text-base md:text-lg font-heading text-text-primary truncate">{track.title}</h3>
-                {process.env.NODE_ENV === 'development' && onDeleteTrack && (
+                {process.env.NODE_ENV === 'development' && onDeleteMusic && (
                   <button
                     onClick={() => setConfirm({ open: true, id: track.id, title: track.title })}
                     className="opacity-0 group-hover/title:opacity-100 transition-opacity p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -130,7 +130,7 @@ export default function MusicSection({ tracks, currentTrackId, setCurrentTrackId
           isOpen={confirm.open}
           onClose={() => setConfirm(null)}
           onConfirm={() => {
-            if (onDeleteTrack && confirm) onDeleteTrack(confirm.id)
+            if (onDeleteMusic && confirm) onDeleteMusic(confirm.id)
             setConfirm(null)
           }}
           title="删除音乐"

@@ -84,12 +84,7 @@ export default async function BlogDetailPage({ params }: Params) {
               <div className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-base font-body text-text-primary" dangerouslySetInnerHTML={{ __html: htmlContent }} />
               <ClientCodeBlock />
 
-              {/* 操作喜欢：内容左下角（样式与AIGC一致） */}
-              <div className="mt-6 flex justify-start">
-                <div className="p-0 bg-transparent hover:opacity-90 transition-opacity">
-                  <LikeToggle targetType="blog" targetId={post.id} initialCount={(post as any).likes_count ?? 0} size={18} showCount={false} />
-                </div>
-              </div>
+              {/* 移除正文底部喜欢按钮，交互移动到顶部信息栏 */}
             </article>
             <aside className="hidden md:block">
               <div className="sticky top-24">

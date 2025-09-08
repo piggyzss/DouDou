@@ -133,7 +133,7 @@ export default function AIGCPage() {
       id: '1',
       title: '城市夜景延时摄影',
       tags: ['延时摄影', '城市', '夜景'],
-      videoUrl: 'https://example.com/video1.mp4',
+      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
       coverUrl: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400&h=400&fit=crop',
       duration: 180,
       likes: 8900,
@@ -144,7 +144,7 @@ export default function AIGCPage() {
       id: '2',
       title: '自然风光航拍',
       tags: ['航拍', '自然', '风景'],
-      videoUrl: 'https://example.com/video2.mp4',
+      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
       coverUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
       duration: 240,
       likes: 7600,
@@ -155,7 +155,7 @@ export default function AIGCPage() {
       id: '3',
       title: '创意动画短片',
       tags: ['动画', '创意', '短片'],
-      videoUrl: 'https://example.com/video3.mp4',
+      videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
       coverUrl: 'https://images.unsplash.com/photo-1518700115892-45ecd05ae2ad?w=400&h=400&fit=crop',
       duration: 120,
       likes: 11200,
@@ -166,7 +166,7 @@ export default function AIGCPage() {
       id: '4',
       title: '生活记录片段',
       tags: ['生活', '记录', '日常'],
-      videoUrl: 'https://example.com/video4.mp4',
+      videoUrl: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
       coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
       duration: 90,
       likes: 5400,
@@ -324,11 +324,7 @@ export default function AIGCPage() {
     setArtworks(prev => prev.map(a => a.id === artworkId ? { ...a, likes: newCount } : a))
   }
 
-  const handleDeleteMusic = (musicId: string) => {
-    setMusicTracks(musicTracks.filter(music => music.id !== musicId))
-  }
-
-  const handleDeleteMusicTrack = async (id: string) => {
+  const handleDeleteMusic = async (id: string) => {
     try {
       const res = await fetch(`/api/aigc/music/${id}`, { method: 'DELETE' })
       if (!res.ok) {
@@ -630,7 +626,7 @@ export default function AIGCPage() {
                 formatDuration={formatDuration}
                 formatNumber={formatNumber}
                 formatDate={formatDate}
-                onDeleteTrack={handleDeleteMusicTrack}
+                onDeleteMusic={handleDeleteMusic}
                 onUpdateMusicLikes={(id, count) => setMusicTracks(prev => prev.map(t => t.id === id ? { ...t, likes: count } : t))}
               />
             </motion.div>
