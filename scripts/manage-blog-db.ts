@@ -288,7 +288,13 @@ async function showDatabaseStats() {
       console.log('\n最近创建的博客文章:')
       recentPosts.rows.forEach((row: any) => {
         console.log(`  - ${row.title} (${row.status}) - ${row.views_count} 浏览`)
-        console.log(`    创建时间: ${row.created_at.split('T')[0]}`)
+        const createdAtDate = row.created_at instanceof Date
+          ? row.created_at
+          : new Date(row.created_at)
+        const createdAtStr = isNaN(createdAtDate.getTime())
+          ? String(row.created_at)
+          : createdAtDate.toISOString().slice(0, 10)
+        console.log(`    创建时间: ${createdAtStr}`)
       })
     }
   } catch (error) {
@@ -370,9 +376,20 @@ async function main() {
     process.exit(1)
   }
   
+  // 非交互环境（如管道、CI），直接执行统计后退出，避免 readline 报错
+  if (!process.stdin.isTTY) {
+    await showDatabaseStats()
+    process.exit(0)
+  }
+
   const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
+  })
+  
+  readline.on('close', () => {
+    console.log('🔌 输入已关闭，退出。')
+    process.exit(0)
   })
   
   while (true) {

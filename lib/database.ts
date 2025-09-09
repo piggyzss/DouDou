@@ -146,6 +146,22 @@ async function createTables() {
     )
   `)
 
+  // 创建视频表
+  await query(`
+    CREATE TABLE IF NOT EXISTS videos (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      tags TEXT[],
+      video_url VARCHAR(500) NOT NULL,
+      cover_url VARCHAR(500),
+      duration INTEGER DEFAULT 0,
+      likes_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      status VARCHAR(20) DEFAULT 'active'
+    )
+  `)
+
   // 创建博客文章表
   await query(`
     CREATE TABLE IF NOT EXISTS blog_posts (
@@ -191,6 +207,8 @@ async function createTables() {
   await query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status)`)
   await query(`CREATE INDEX IF NOT EXISTS idx_music_tracks_created_at ON music_tracks(created_at)`)
   await query(`CREATE INDEX IF NOT EXISTS idx_music_tracks_status ON music_tracks(status)`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at)`)
+  await query(`CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status)`)
 }
 
 // 导出数据库实例

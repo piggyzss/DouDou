@@ -26,7 +26,7 @@ export async function uploadFile(
     const filename = `${folder}/${Date.now()}-${uuidv4()}.${fileExtension}`
     
     // 上传参数
-    const uploadParams = {
+    const uploadParams: any = {
       Bucket: cosConfig.Bucket,
       Region: cosConfig.Region,
       Key: filename,
@@ -34,7 +34,6 @@ export async function uploadFile(
       ContentType: mimeType,
       ContentDisposition: `inline; filename="${originalName}"`,
       CacheControl: 'max-age=31536000', // 1年缓存
-      ACL: 'public-read' as any,
     }
 
     // 执行上传

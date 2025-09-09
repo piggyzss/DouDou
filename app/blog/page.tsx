@@ -83,14 +83,17 @@ export default async function BlogPage({ searchParams }: Props) {
           <div className="space-y-6">
           {result.posts && result.posts.length > 0 ? (
             result.posts.map((post: any) => (
-              <section key={post.slug} className="group rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 hover:shadow-md transition-shadow">
+              <section
+                key={post.slug}
+                className="group rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-gray-200 dark:hover:border-gray-600"
+              >
                 <div className="flex gap-4 items-stretch">
                   {post.cover_url ? (
                     <Link href={`/blog/${post.slug}`} className="flex-shrink-0 block w-32 md:w-40 h-full">
                       <img
                         src={post.cover_url.startsWith('/') ? post.cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`}
                         alt={post.title}
-                        className="w-full h-full object-cover rounded-md border border-gray-100 dark:border-gray-700"
+                        className="w-full h-full object-cover rounded-md border border-gray-100 dark:border-gray-700 transform transition-transform duration-500 group-hover:scale-[1.02] group-hover:brightness-[1.03]"
                       />
                     </Link>
                   ) : null}

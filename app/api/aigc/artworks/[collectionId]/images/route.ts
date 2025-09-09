@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ArtworkModel } from '@/lib/models/artwork'
+import { uploadFile } from '@/lib/tencent-cos'
 
 export async function POST(
   req: NextRequest,
@@ -7,10 +8,34 @@ export async function POST(
 ) {
   try {
     const { collectionId } = params
-    const { urls } = await req.json()
-    
-    if (!urls || !Array.isArray(urls) || urls.length === 0) {
-      return NextResponse.json({ error: '请提供有效的图片URL' }, { status: 400 })
+    const contentType = req.headers.get('content-type') || ''
+    let urls: string[] = []
+    let filesCount = 0
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData()
+      const files = formData.getAll('files') as File[]
+      if (!files || files.length === 0) {
+        return NextResponse.json({ error: '未提供图片文件' }, { status: 400 })
+      }
+      // 上传到 COS
+      const uploaded: string[] = []
+      for (const file of files) {
+        const buffer = Buffer.from(await file.arrayBuffer())
+        const res = await uploadFile(buffer, file.name, file.type, 'aigc/images')
+        if (!res.success || !res.url) {
+          return NextResponse.json({ error: res.error || '图片上传失败' }, { status: 500 })
+        }
+        uploaded.push(res.url)
+      }
+      urls = uploaded
+      filesCount = files.length
+    } else {
+      const body = await req.json().catch(() => ({}))
+      urls = Array.isArray(body.urls) ? body.urls : []
+      if (urls.length === 0) {
+        return NextResponse.json({ error: '请提供有效的图片URL' }, { status: 400 })
+      }
     }
     
     // 验证作品集是否存在
@@ -24,7 +49,7 @@ export async function POST(
     const startSortOrder = existingImages.length
     
     // 添加图片到数据库
-    const addedImages = []
+    const addedImages = [] as any[]
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i]
       
@@ -49,8 +74,10 @@ export async function POST(
     return NextResponse.json({
       success: true,
       message: '图片添加成功',
+      uploadedFiles: urls,
       addedImages: addedImages.length,
-      images: addedImages
+      images: addedImages,
+      filesReceived: filesCount
     })
     
   } catch (error) {

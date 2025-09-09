@@ -1,8 +1,7 @@
 "use client"
 
-import { Repeat1, VolumeX, Volume1, Volume2, Play, Pause, SkipBack, SkipForward, Headphones, Shuffle, ListMusic, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-
+import { Repeat1, VolumeX, Volume1, Volume2, Play, Pause, SkipBack, SkipForward, Headphones, Shuffle, ListMusic, X, Hand } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 interface Props {
   title: string
   tags: string[]
@@ -26,15 +25,16 @@ interface Props {
 
 export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ isPlaying, currentTime, duration, repeatMode, volume, showVolumePanel, onPrev, onNext, onTogglePlay, onCycleRepeat, onSeekByClick, onToggleVolumePanel, onChangeVolume, onClose }: Props) {
   const volumeWrapRef = useRef<HTMLDivElement | null>(null)
+  const [volOpen, setVolOpen] = useState(false)
   const format = (s: number) => {
     const m = Math.floor(s / 60)
     const sec = Math.floor(s % 60)
     return `${m}:${String(sec).padStart(2, '0')}`
   }
   const renderVolumeIcon = () => {
-    if (volume <= 0.001) return <VolumeX size={18} />
-    if (volume < 0.5) return <Volume1 size={18} />
-    return <Volume2 size={18} />
+    if (volume <= 0.001) return <VolumeX size={16} />
+    if (volume < 0.5) return <Volume1 size={16} />
+    return <Volume2 size={16} />
   }
   const renderRepeatIcon = () => {
     if (repeatMode === 'all') return <ListMusic size={18} />
@@ -44,18 +44,9 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
   const repeatTitle = repeatMode === 'all' ? '列表循环' : repeatMode === 'one' ? '单曲循环' : '随机播放'
   const progressPercent = Math.min(100, duration ? (currentTime / duration) * 100 : 0)
 
-  // 点击空白处收起音量面板
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (!showVolumePanel) return
-      const wrap = volumeWrapRef.current
-      if (wrap && !wrap.contains(e.target as Node)) {
-        onToggleVolumePanel()
-      }
-    }
-    document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
-  }, [showVolumePanel, onToggleVolumePanel])
+  // 兼容旧 props（不再使用弹出面板），改为悬停式横向音量条
+  void showVolumePanel
+  void onToggleVolumePanel
 
   return (
     <div className="fixed left-0 right-0 bottom-4 md:bottom-6 flex justify-center z-40">
@@ -95,14 +86,14 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
 
           {/* 中间控制 */}
           <div className="flex items-center justify-center gap-2.5 flex-none">
-            <button onClick={onPrev} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title="上一首">
-              <SkipBack size={18} />
+            <button onClick={onPrev} className="h-8 w-8 flex items-center justify-center rounded transition-transform duration-150 hover:scale-105 active:scale-95" title="上一首">
+              <SkipBack size={16} />
             </button>
-            <button onClick={onTogglePlay} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title={isPlaying ? '暂停' : '播放'}>
-              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            <button onClick={onTogglePlay} className="h-8 w-8 flex items-center justify-center rounded transition-transform duration-150 hover:scale-105 active:scale-95" title={isPlaying ? '暂停' : '播放'}>
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
             </button>
-            <button onClick={onNext} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title="下一首">
-              <SkipForward size={18} />
+            <button onClick={onNext} className="h-8 w-8 flex items-center justify-center rounded transition-transform duration-150 hover:scale-105 active:scale-95" title="下一首">
+              <SkipForward size={16} />
             </button>
           </div>
 
@@ -113,36 +104,39 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
               <span>/</span>
               <span>{format(duration)}</span>
             </div>
-            <button onClick={onCycleRepeat} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title={repeatTitle}>
+            <button onClick={onCycleRepeat} className="h-8 w-8 flex items-center justify-center rounded transition-transform duration-150 hover:scale-105 active:scale-95" title={repeatTitle}>
               {renderRepeatIcon()}
             </button>
-            <div className="relative" ref={volumeWrapRef}>
-              <button onClick={onToggleVolumePanel} className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/10 transition-transform duration-150 hover:scale-105 active:scale-95" title="音量">
+            <div
+              className="relative flex items-center gap-2"
+              ref={volumeWrapRef}
+              onMouseEnter={() => setVolOpen(true)}
+              onMouseLeave={() => setVolOpen(false)}
+            >
+              <button className="h-8 w-8 flex items-center justify-center rounded transition-transform duration-150 hover:scale-105 active:scale-95" title="音量">
                 {renderVolumeIcon()}
               </button>
-              {showVolumePanel && (
-                <div className="absolute bottom-12 right-0 w-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-md shadow-lg border border-gray-200 dark:border-gray-700 px-1 py-1 z-50">
-                  <div className="flex flex-col items-center gap-0.5">
-                    <span className="text-[11px] text-text-secondary">{Math.round(volume * 100)}%</span>
-                    <div className="h-36 flex items-center">
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={volume}
-                        className="w-24 transform -rotate-90 appearance-none transition-none volume-vertical"
-                        onChange={(e) => onChangeVolume(Number(e.target.value))}
-                        style={{
-                          background: 'linear-gradient(to right, var(--primary, #ef4444) ' + Math.round(volume * 100) + '%, rgba(107,114,128,0.35) ' + Math.round(volume * 100) + '%)',
-                          height: '6px',
-                          borderRadius: '9999px'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div className={`overflow-hidden transition-all duration-300 ease-out relative ${volOpen ? 'w-28 opacity-100' : 'w-0 opacity-0'}`}>
+                <span className={`pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2 text-[var(--secondary)] transition-opacity duration-200 ${volOpen ? 'opacity-100' : 'opacity-0'}`}>
+                  <Hand size={12} />
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={volume}
+                  className="vol-range w-28 appearance-none transition-none cursor-pointer"
+                  onChange={(e) => onChangeVolume(Number(e.target.value))}
+                  onFocus={() => setVolOpen(true)}
+                  onBlur={() => setVolOpen(false)}
+                  style={{
+                    background: 'linear-gradient(to right, var(--primary, #ef4444) ' + Math.round(volume * 100) + '%, rgba(107,114,128,0.35) ' + Math.round(volume * 100) + '%)',
+                    height: '4px',
+                    borderRadius: '9999px'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -184,6 +178,22 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
           height: 14px;
           border: 2px solid white;
           border-radius: 9999px;
+        }
+        /* 横向音量条隐藏滑块拇指，细线条显示 */
+        .vol-range::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 0;
+          height: 0;
+          background: transparent;
+          box-shadow: none;
+          border: none;
+        }
+        .vol-range::-moz-range-thumb {
+          width: 0;
+          height: 0;
+          background: transparent;
+          border: none;
         }
       `}</style>
     </div>

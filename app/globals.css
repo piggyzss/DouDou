@@ -6,7 +6,7 @@
   --primary: #6747ce;
   --primary-light: #8a6fd8;
   --primary-dark: #4f35a0;
-  --secondary: #d26c9e;
+  --secondary: #FADCDA;
   --accent: #fed336;
   --text-primary: #34495e;
   --text-secondary: #3c4858;
@@ -523,6 +523,11 @@ h4 {
 
 .dark .blog-content td {
   border-color: #4b5563;
+}
+
+/* 全局品牌手型光标（链接、按钮、range、以及显式 cursor-pointer 的元素） */
+a, button, [role="button"], input[type="range"], .cursor-pointer {
+  cursor: url('/cursors/hand.svg') 6 2, pointer;
 }
 
 /* 自定义滚动条 */

@@ -127,53 +127,7 @@ export default function AIGCPage() {
   const [loading, setLoading] = useState(true)
 
   const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([])
-
-  const [videoTracks, setVideoTracks] = useState<VideoTrack[]>([
-    {
-      id: '1',
-      title: '城市夜景延时摄影',
-      tags: ['延时摄影', '城市', '夜景'],
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      coverUrl: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400&h=400&fit=crop',
-      duration: 180,
-      likes: 8900,
-      comments: 234,
-      createdAt: '2024-01-15'
-    },
-    {
-      id: '2',
-      title: '自然风光航拍',
-      tags: ['航拍', '自然', '风景'],
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      coverUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-      duration: 240,
-      likes: 7600,
-      comments: 189,
-      createdAt: '2024-01-12'
-    },
-    {
-      id: '3',
-      title: '创意动画短片',
-      tags: ['动画', '创意', '短片'],
-      videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-      coverUrl: 'https://images.unsplash.com/photo-1518700115892-45ecd05ae2ad?w=400&h=400&fit=crop',
-      duration: 120,
-      likes: 11200,
-      comments: 456,
-      createdAt: '2024-01-10'
-    },
-    {
-      id: '4',
-      title: '生活记录片段',
-      tags: ['生活', '记录', '日常'],
-      videoUrl: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
-      coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
-      duration: 90,
-      likes: 5400,
-      comments: 123,
-      createdAt: '2024-01-08'
-    }
-  ])
+  const [videoTracks, setVideoTracks] = useState<VideoTrack[]>([])
 
   const tabs = [
     { id: 'images', label: '图片', icon: Palette },
@@ -225,10 +179,43 @@ export default function AIGCPage() {
     }
   }
 
+  // 加载视频列表（占位实现，等待后端 /api/aigc/videos 接口）
+  const loadVideos = async () => {
+    try {
+      const res = await fetch('/api/aigc/videos')
+      if (!res.ok) {
+        setVideoTracks([])
+        return
+      }
+      const data = await res.json().catch(() => ({} as any))
+      const list = (data?.data?.videos || data?.videos || []) as any[]
+      if (!Array.isArray(list)) {
+        setVideoTracks([])
+        return
+      }
+      const videos: VideoTrack[] = list.map((v: any) => ({
+        id: String(v.id),
+        title: v.title,
+        tags: v.tags || [],
+        videoUrl: v.video_url ? `/api/aigc/proxy-audio?url=${encodeURIComponent(v.video_url)}` : '',
+        coverUrl: v.cover_url ? `/api/aigc/proxy-image?url=${encodeURIComponent(v.cover_url)}` : '',
+        duration: v.duration || 0,
+        likes: v.likes_count || 0,
+        comments: 0,
+        createdAt: (v.created_at || '').split('T')[0] || ''
+      }))
+      setVideoTracks(videos)
+    } catch (e) {
+      console.error('加载视频失败:', e)
+      setVideoTracks([])
+    }
+  }
+
   // 页面加载时获取数据
   useEffect(() => {
     loadArtworks()
     loadMusic()
+    loadVideos()
   }, [])
 
   const handleCreateArtwork = (artworkData: Omit<Artwork, 'id' | 'likes' | 'comments' | 'createdAt'>) => {
@@ -254,7 +241,7 @@ export default function AIGCPage() {
         coverUrl: t.cover_url ? `/api/aigc/proxy-image?url=${encodeURIComponent(t.cover_url)}` : '',
         duration: t.duration || 0,
         likes: t.likes_count || 0,
-        comments: 0,
+      comments: 0,
         createdAt: (t.created_at || '').split('T')[0] || ''
       }))
       setMusicTracks(tracks)
@@ -337,21 +324,8 @@ export default function AIGCPage() {
     }
   }
 
-  const handleCreateVideo = (videoData: Omit<VideoTrack, 'id' | 'likes' | 'comments' | 'createdAt' | 'duration'>) => {
-    const newVideo: VideoTrack = {
-      ...videoData,
-      id: Date.now().toString(),
-      likes: 0,
-      comments: 0,
-      duration: 0, // 实际应用中可以通过视频文件获取
-      createdAt: new Date().toISOString().split('T')[0]
-    }
-    setVideoTracks([newVideo, ...videoTracks])
-  }
-
-  const handleDeleteVideo = (videoId: string) => {
-    setVideoTracks(videoTracks.filter(video => video.id !== videoId))
-  }
+  const handleCreateVideo = async () => { await loadVideos() }
+  const handleDeleteVideo = async (videoId: string) => { await fetch(`/api/aigc/videos/${videoId}`, { method: 'DELETE' }).catch(()=>{}); await loadVideos() }
 
   const formatNumber = (num: number) => {
     if (num >= 10000) {
@@ -523,7 +497,7 @@ export default function AIGCPage() {
   }, [musicTracks, currentTrackId])
 
   return (
-    <div className="min-h-screen pt-16">
+    <div className="aigc-root min-h-screen pt-16">
       <div className="max-w-7xl mx-auto py-12">
         {/* 页面标题 */}
         <div className="mb-8">

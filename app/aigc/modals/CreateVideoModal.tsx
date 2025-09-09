@@ -48,8 +48,26 @@ export default function CreateVideoModal({ isOpen, onClose, onSubmit }: Props) {
     setError('')
     setIsSubmitting(true)
     try {
-      const tagArray = tags.split(',').map(tag => tag.trim()).filter(Boolean)
-      onSubmit({ title, tags: tagArray, videoUrl: videoFile ? URL.createObjectURL(videoFile) : '', coverUrl: coverPreview })
+      if (!title.trim()) throw new Error('请输入作品名称')
+      if (!videoFile) throw new Error('请上传视频文件')
+
+      const form = new FormData()
+      form.append('title', title.trim())
+      form.append('tags', tags)
+      form.append('video', videoFile)
+      if (coverFile) form.append('cover', coverFile)
+
+      const res = await fetch('/api/aigc/videos', { method: 'POST', body: form })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || '创建视频失败')
+      }
+      const data = await res.json()
+
+      // 通知上层刷新列表
+      onSubmit(data.data)
+
+      // 清理状态并关闭
       setTitle('')
       setTags('')
       setVideoFile(null)
@@ -114,7 +132,7 @@ export default function CreateVideoModal({ isOpen, onClose, onSubmit }: Props) {
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} disabled={isSubmitting} className="flex-1 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-text-primary dark:text-white bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed">取消</button>
-            <button type="submit" disabled={isSubmitting || !title.trim()} className="flex-1 px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button type="submit" disabled={isSubmitting || !title.trim() || !videoFile} className="flex-1 px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               {isSubmitting ? (<><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>上传中...</>) : ('完成')}
             </button>
           </div>

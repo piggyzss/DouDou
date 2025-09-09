@@ -225,7 +225,7 @@ export default function About() {
                   <PawPrint className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-text-primary">前端开发工程师</h4>
-                    <p className="text-sm text-text-secondary mt-2 mb-2">某科技公司 • 2022 ～ 至今</p>
+                    <p className="text-sm blog-body-text mt-2 mb-2">某科技公司 • 2022 ～ 至今</p>
                     <p className="text-sm blog-body-text">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export default function About() {
                   <PawPrint className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-text-primary">UI/UX设计师</h4>
-                    <p className="text-sm text-text-secondary mt-2 mb-2">设计工作室 • 2020 ～ 2022</p>
+                    <p className="text-sm blog-body-text mt-2 mb-2">设计工作室 • 2020 ～ 2022</p>
                     <p className="text-sm blog-body-text">专注于用户体验设计，创造直观易用的数字产品界面</p>
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export default function About() {
                   onDragEnd={(event, info) => handleDragEnd(card.id, info)}
                 >
                   <div 
-                    className="w-40 h-40 p-4 rounded-lg shadow-lg text-text-secondary hover:shadow-xl transition-shadow duration-200 font-body"
+                    className="w-40 h-40 p-4 rounded-lg shadow-lg blog-body-text hover:shadow-xl transition-shadow duration-200 font-body"
                     style={{ 
                       backgroundColor: `${card.color}95`,
                       backdropFilter: 'blur(10px)'

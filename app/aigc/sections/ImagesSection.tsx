@@ -1,6 +1,4 @@
 "use client"
-
-import { motion } from 'framer-motion'
 import { Palette, Heart, ImagePlus, Trash2 } from 'lucide-react'
 import LikeToggle from '@/app/components/LikeToggle'
 
@@ -121,18 +119,18 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
             <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
               {artwork.images.map((image, index) => (
                 <div key={index} className="relative group/image flex-shrink-0">
-                  <motion.div 
+                  <div 
                     className="w-80 h-60 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
                     onClick={() => onClickImage(artwork.id, index, image.file_url)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                   >
+                    {/* 覆盖层与视频卡片一致的淡入（仅当前图片触发） */}
+                    <div className="absolute inset-0 opacity-0 group-hover/image:opacity-100 transition-opacity duration-100 bg-black/10" />
                     <img
                       src={image.file_url}
                       alt={image.original_name || '作品图片'}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transform transition-transform duration-150 ease-out will-change-transform group-hover/image:scale-[1.03] group-hover/image:brightness-[1.03] group-hover/image:animate-[breatheScale_800ms_ease-in-out_infinite]"
                     />
-                  </motion.div>
+                  </div>
                   {process.env.NODE_ENV === 'development' && (
                     <button
                       onClick={(e) => { e.stopPropagation(); onDeleteImage(artwork.id, image.id) }}

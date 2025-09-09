@@ -60,7 +60,7 @@ Markdown文件解析（支持代码高亮/LaTeX公式）
 核心设计原则：
 
 色彩：
-主色： #6747ce + #d26c9e
+主色： #6747ce + #eeb8b8
 辅色： #fed336
 文字： #34495e + #3c4858
 
@@ -277,7 +277,7 @@ app/
   --primary-dark: #4f35a0;
   
   /* 辅助色 */
-  --secondary: #d26c9e;
+  --secondary: #eeb8b8;
   --accent: #fed336;
   
   /* 文字色 */
