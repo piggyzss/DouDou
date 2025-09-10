@@ -21,7 +21,10 @@
     "db:manage-aigc-music": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-music.ts",
     "db:manage-aigc-master": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-master.ts",
     "db:manage-blog": "ts-node -P tsconfig.scripts.json scripts/manage-blog-db.ts",
-    "changelog": "ts-node -P tsconfig.scripts.json scripts/update-changelog.ts"
+    "changelog": "ts-node -P tsconfig.scripts.json scripts/update-changelog.ts",
+    "deploy:init": "ts-node -P tsconfig.scripts.json scripts/deploy-init.ts",
+    "deploy:verify": "ts-node -P tsconfig.scripts.json scripts/verify-deployment.ts",
+    "db:test-vercel": "ts-node -P tsconfig.scripts.json scripts/test-vercel-db.ts"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",
