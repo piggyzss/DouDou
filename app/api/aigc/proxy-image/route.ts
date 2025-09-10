@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import COS from 'cos-nodejs-sdk-v5'
 import { cosConfig } from '../../../../lib/tencent-cos-config'
 
+export const dynamic = 'force-dynamic'
+
 const cos = new COS({ SecretId: cosConfig.SecretId, SecretKey: cosConfig.SecretKey })
 
 export async function GET(req: NextRequest) {

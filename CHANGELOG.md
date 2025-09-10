@@ -31,6 +31,7 @@
 - 修复Vercel构建错误：将所有@/路径别名改为相对路径导入 (piggyzss, 2025/9/10)
 - 修复Vercel TypeScript构建错误：将TypeScript依赖移到dependencies并添加vercel.json配置 (piggyzss, 2025/9/10)
 - 删除vercel.json配置文件：让Vercel自动检测Next.js项目配置 (piggyzss, 2025/9/10)
+- 修复Vercel构建错误：移除webpack别名配置并修复所有@/路径导入 (piggyzss, 2025/9/10)
 
 
 ## [1.0.0] - 2025-08-10

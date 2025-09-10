@@ -1,5 +1,3 @@
-const path = require('path')
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -22,16 +20,6 @@ const nextConfig = {
         ],
       },
     ]
-  },
-  // 配置 webpack 别名
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.resolve(__dirname),
-      '@/lib': path.resolve(__dirname, 'lib'),
-      '@/app': path.resolve(__dirname, 'app'),
-    }
-    return config
   },
 }
 
