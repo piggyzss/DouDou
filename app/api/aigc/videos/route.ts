@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { VideoModel } from '@/lib/models/video'
-import { uploadFile } from '@/lib/tencent-cos'
+import { VideoModel } from '../../../../lib/models/video'
+import { uploadFile } from '../../../../lib/tencent-cos'
 
 export async function GET(req: NextRequest) {
   try {

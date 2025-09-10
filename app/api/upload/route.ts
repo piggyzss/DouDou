@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadFile, uploadMultipleFiles } from '@/lib/tencent-cos'
+import { uploadFile, uploadMultipleFiles } from '../../../lib/tencent-cos'
 
 // 允许的文件类型
 const ALLOWED_TYPES = [

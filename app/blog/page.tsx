@@ -3,7 +3,7 @@ import EmptyState from './components/EmptyState'
 import PostDeleteButton from './components/PostDeleteButton'
 import { PenSquare, Heart } from 'lucide-react'
 import ClientListLikeCount from './components/ClientListLikeCount'
-import { BlogModel } from '@/lib/models/blog'
+import { BlogModel } from '../../lib/models/blog'
 import ClientFadeIn from './[slug]/ClientFadeIn'
 
 // 统一的日期格式化函数

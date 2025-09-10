@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { LikesModel } from '@/lib/models/likes'
+import { LikesModel } from '../../../../lib/models/likes'
 
 async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input)
