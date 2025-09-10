@@ -225,14 +225,16 @@ Vercel Postgres: 在 Vercel 项目 Storage 中创建数据库后自动生成
 创建存储桶，记录名称和地域
 进入 访问管理 > API 密钥管理
 创建密钥，获取 SecretId 和 SecretKey
-�� 验证环境变量配置
+
+验证环境变量配置
 1. 在 Vercel 中检查
 进入项目 Settings > Environment Variables
 确认所有变量都已添加
 检查变量值是否正确
 2. 通过代码验证
 创建一个简单的 API 路由来验证环境变量：
-�� 部署后验证步骤
+
+部署后验证步骤
 1. 检查健康状态
 部署完成后，访问：https://yourdomain.com/api/health
 应该看到类似这样的响应：
@@ -250,7 +252,8 @@ Vercel Postgres: 在 Vercel 项目 Storage 中创建数据库后自动生成
 验证 COS_SECRET_ID 和 COS_SECRET_KEY 是否正确
 检查存储桶名称和地域是否匹配
 确认存储桶权限设置
-�� 快速操作指南
+
+快速操作指南
 立即开始：
 登录 Vercel → 选择项目 → Settings → Environment Variables
 逐个添加 上面列出的环境变量
