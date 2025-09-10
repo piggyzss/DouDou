@@ -29,6 +29,7 @@
 - 修复文件重构后的模块缓存错误和页面显示问题 (piggyzss, 2025/9/10)
 - 修复AIGC作品集列表中的多余底部边距 (piggyzss, 2025/9/10)
 - 修复Vercel构建错误：将所有@/路径别名改为相对路径导入 (piggyzss, 2025/9/10)
+- 修复Vercel TypeScript构建错误：将TypeScript依赖移到dependencies并添加vercel.json配置 (piggyzss, 2025/9/10)
 
 
 ## [1.0.0] - 2024-01-10
