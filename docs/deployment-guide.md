@@ -207,12 +207,13 @@ production
 DATABASE_URL	数据库连接字符串	postgresql://user:pass@host:5432/db
 COS_SECRET_ID	腾讯云COS密钥ID	AKIDxxxxxxxxxxxxxxxxxxxx
 COS_SECRET_KEY	腾讯云COS密钥	xxxxxxxxxxxxxxxxxxxxxxxx
-COS_BUCKET	COS存储桶名称	yourname-website-assets
+COS_BUCKET	COS存储桶名称	yourname-website-assets-1234567890
 COS_REGION	COS地域	ap-beijing
 COS_APP_ID	COS应用ID	1234567890
 COS_DOMAIN	COS域名	https://bucket.cos.ap-beijing.myqcloud.com
 NEXT_PUBLIC_SITE_URL	网站URL	https://yourdomain.com
 NODE_ENV	环境标识	production
+
 
 
 环境变量获取方法
