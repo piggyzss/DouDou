@@ -1,6 +1,6 @@
 "use client"
 
-import LikeToggle from '@/app/components/LikeToggle'
+import LikeToggle from '../../components/LikeToggle'
 
 export default function ClientListLikeCount({ postId, initial }: { postId: number; initial: number }) {
   return (

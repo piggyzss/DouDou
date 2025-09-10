@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Palette, Film, Music4, Heart, MessageCircle, X, ChevronLeft, ChevronRight, Play, SkipBack, SkipForward, Headphones, Trash2, Upload, ImagePlus } from 'lucide-react'
-import LikeToggle from '@/app/components/LikeToggle'
+import LikeToggle from '../components/LikeToggle'
 import ConfirmModal from './components/ConfirmModal'
 import CreateArtworkModal from './components/CreateArtworkModal'
 import CreateMusicModal from './components/CreateMusicModal'

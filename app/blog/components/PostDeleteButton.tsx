@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
-import ConfirmModal from '@/app/components/ConfirmModal'
+import ConfirmModal from '../../components/ConfirmModal'
 
 export default function PostDeleteButton({ slug, currentPage }: { slug: string; currentPage: number }) {
   const router = useRouter()

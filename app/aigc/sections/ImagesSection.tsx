@@ -1,6 +1,6 @@
 "use client"
 import { Palette, Heart, ImagePlus, Trash2 } from 'lucide-react'
-import LikeToggle from '@/app/components/LikeToggle'
+import LikeToggle from '../../components/LikeToggle'
 
 export interface ArtworkImage {
   id: number

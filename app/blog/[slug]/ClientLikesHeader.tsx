@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import LikeToggle from '@/app/components/LikeToggle'
+import LikeToggle from '../../components/LikeToggle'
 
 type Tag = { name: string; slug: string }
 
