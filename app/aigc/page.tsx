@@ -4,16 +4,16 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Palette, Film, Music4, Heart, MessageCircle, X, ChevronLeft, ChevronRight, Play, SkipBack, SkipForward, Headphones, Trash2, Upload, ImagePlus } from 'lucide-react'
 import LikeToggle from '@/app/components/LikeToggle'
-import ConfirmModal from './ConfirmModal'
-import CreateArtworkModal from './modals/CreateArtworkModal'
-import CreateMusicModal from './modals/CreateMusicModal'
-import CreateVideoModal from './modals/CreateVideoModal'
-import AddImageModal from './modals/AddImageModal'
+import ConfirmModal from './components/ConfirmModal'
+import CreateArtworkModal from './components/CreateArtworkModal'
+import CreateMusicModal from './components/CreateMusicModal'
+import CreateVideoModal from './components/CreateVideoModal'
+import AddImageModal from './components/AddImageModal'
 import ImagePreview from './components/ImagePreview'
 import FloatingPlayerBar from './components/FloatingPlayerBar'
-import ImagesSection from './sections/ImagesSection'
-import VideosSection from './sections/VideosSection'
-import MusicSection from './sections/MusicSection'
+import ImagesSection, { ArtworkImage, Artwork } from './sections/ImagesSection'
+import VideosSection, { VideoTrack } from './sections/VideosSection'
+import MusicSection, { MusicTrack } from './sections/MusicSection'
 
 // 统一的日期格式化函数
 const formatDate = (dateString: string) => {
@@ -24,50 +24,8 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day}`
 }
 
-interface ArtworkImage {
-  id: number
-  file_url: string
-  original_name: string
-  file_size?: number
-  width?: number
-  height?: number
-  mime_type?: string
-  created_at: string
-}
 
-interface Artwork {
-  id: string
-  title: string
-  tags: string[]
-  images: ArtworkImage[]
-  likes: number
-  comments: number
-  createdAt: string
-}
 
-interface MusicTrack {
-  id: string
-  title: string
-  tags: string[]
-  audioUrl: string
-  coverUrl: string
-  duration: number
-  likes: number
-  comments: number
-  createdAt: string
-}
-
-interface VideoTrack {
-  id: string
-  title: string
-  tags: string[]
-  videoUrl: string
-  coverUrl: string
-  duration: number
-  likes: number
-  comments: number
-  createdAt: string
-}
 
 interface CreateArtworkModalProps {
   isOpen: boolean

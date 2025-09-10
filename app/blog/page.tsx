@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import EmptyState from './EmptyState'
-import PostDeleteButton from './PostDeleteButton'
+import EmptyState from './components/EmptyState'
+import PostDeleteButton from './components/PostDeleteButton'
 import { PenSquare, Heart } from 'lucide-react'
-import ClientListLikeCount from './ClientListLikeCount'
+import ClientListLikeCount from './components/ClientListLikeCount'
 import { BlogModel } from '@/lib/models/blog'
 import ClientFadeIn from './[slug]/ClientFadeIn'
 

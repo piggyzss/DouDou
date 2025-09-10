@@ -20,7 +20,8 @@
     "db:manage-aigc-image": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-image.ts",
     "db:manage-aigc-music": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-music.ts",
     "db:manage-aigc-master": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-master.ts",
-    "db:manage-blog": "ts-node -P tsconfig.scripts.json scripts/manage-blog-db.ts"
+    "db:manage-blog": "ts-node -P tsconfig.scripts.json scripts/manage-blog-db.ts",
+    "changelog": "ts-node -P tsconfig.scripts.json scripts/update-changelog.ts"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",

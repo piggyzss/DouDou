@@ -39,10 +39,10 @@ export async function GET(req: NextRequest) {
 
     const body = result.Body as Buffer | string | ArrayBuffer | Uint8Array
     let arrayBuffer: ArrayBuffer
-    if (Buffer.isBuffer(body)) arrayBuffer = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)
+    if (Buffer.isBuffer(body)) arrayBuffer = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer
     else if (typeof body === 'string') arrayBuffer = new TextEncoder().encode(body).buffer
     else if (body instanceof ArrayBuffer) arrayBuffer = body
-    else if (body instanceof Uint8Array) arrayBuffer = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)
+    else if (body instanceof Uint8Array) arrayBuffer = body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer
     else arrayBuffer = new TextEncoder().encode(String(body)).buffer
 
     const headers: Record<string, string> = {

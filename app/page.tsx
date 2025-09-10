@@ -1,8 +1,7 @@
-import Hero from './components/Hero'
-import About from './components/About'
-import Skills from './components/Skills'
-import LatestContent from './components/LatestContent'
-import SocialLinks from './components/SocialLinks'
+import Hero from './home/Hero'
+import About from './home/About'
+import Skills from './home/Skills'
+import LatestContent from './home/LatestContent'
 
 export default function Home() {
   return (
@@ -11,7 +10,6 @@ export default function Home() {
       <About />
       <Skills />
       <LatestContent />
-      {/* <SocialLinks /> */}
     </div>
   )
 } 

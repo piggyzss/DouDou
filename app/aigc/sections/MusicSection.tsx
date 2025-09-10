@@ -2,7 +2,7 @@
 
 import { Headphones, MessageCircle, Play, Pause, Trash2 } from 'lucide-react'
 import LikeToggle from '@/app/components/LikeToggle'
-import ConfirmModal from '../ConfirmModal'
+import ConfirmModal from '../components/ConfirmModal'
 import { useState } from 'react'
 
 export interface MusicTrack {

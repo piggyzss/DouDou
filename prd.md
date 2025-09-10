@@ -1,4 +1,4 @@
-一、项目概述
+## 一、项目概述
 目标：搭建可爱有趣的个人网站，包含首页、博客（Markdown支持）、开发作品、AICG作品等核心板块。
 技术栈：
 
@@ -10,8 +10,8 @@
 
 部署：Vercel
 
-二、核心功能模块
-1、首页（Landing Page）
+## 二、核心功能模块
+### 1、首页（Landing Page）
 
 导航栏（首页、博客、开发作品、AICG作品）
 
@@ -23,31 +23,41 @@
 
 社交媒体链接（GitHub/Twitter/LinkedIn）
 
-2、博客系统（Blog）
+### 2、博客系统（Blog）
 
 Markdown文件解析（支持代码高亮/LaTeX公式）
 
-文章列表页（分类/标签/时间轴筛选）
+文章列表页（创建时间/标签/喜欢）
 
 文章详情页（目录导航、阅读进度条）
 
-暗黑模式切换（持久化存储）
-
-3、开发作品（Projects）
+### 3、开发作品（Projects）
 
 卡片式项目展示（标题/描述/技术栈/预览图）
 
 项目详情页（Demo链接/GitHub仓库）
 
-4、AIGC作品（AIGC Gallery）
+### 4、AIGC作品（AIGC Gallery）
 
-瀑布流图片墙（响应式布局）
+#### 图片
+
+横向瀑布流图片墙（响应式布局）
 
 图片灯箱查看（全屏模式）
 
-作品描述生成（调用OpenAI API摘要）
+#### 视频
 
-5、全局组件
+视频墙（响应式布局）
+
+视频播放画布
+
+#### 音乐
+
+音乐列表
+
+音乐播放器
+
+### 5、全局组件
 
 导航栏（Sticky Header，滚动高亮）
 
@@ -55,34 +65,122 @@ Markdown文件解析（支持代码高亮/LaTeX公式）
 
 返回顶部按钮（滚动阈值触发）
 
-三、UI/UX设计规范
-风格参考：piggyzss.github.io
-核心设计原则：
+## 三、项目结构
 
-色彩：
-主色： #6747ce + #eeb8b8
-辅色： #fed336
-文字： #34495e + #3c4858
+### 应用目录结构
 
-字体：
-标题：ZenKakuGothicNew-Medium
-英文：fzm-Old.Typewriter
-正文：'PingFang SC YouYuan Microsoft Yahei'
-
-页面结构：
-
-bash
+```
 app/
-├── (main)/
-│   ├── page.tsx        # 首页
-│   ├── blog/
-│   │   ├── page.tsx    # 博客列表
-│   │   └── [slug]      # 博客详情（动态路由）
-│   ├── projects/       # 开发作品
-│   ├── aigc/           # AIGC画廊
-│   └── components/     # 私有组件
-├── layout.tsx          # 全局布局
-└── providers.tsx       # 主题/状态管理
+├── page.tsx                    # 首页入口
+├── layout.tsx                  # 全局布局配置
+├── middleware.ts               # Next.js中间件（匿名用户ID管理）
+├── providers.tsx               # 全局状态管理（主题等）
+├── fonts.ts                    # 字体配置
+├── globals.css                 # 全局样式
+├── assets/                     # 静态资源
+│   ├── fonts/                  # 字体文件
+│   │   ├── fzm-Old.Typewriter.ttf
+│   │   └── ZenKakuGothicNew-Medium.ttf
+│   ├── icon/                   # 图标文件
+│   │   ├── hand.svg            # 自定义鼠标指针
+│   │   └── icon.svg            # 网站图标
+│   └── images/                 # 图片资源
+│       └── avatar.png          # 用户头像
+├── home/                       # 首页模块
+│   ├── Hero.tsx                # 首页英雄区域
+│   ├── About.tsx               # 个人简介
+│   ├── Skills.tsx              # 技能展示
+│   └── LatestContent.tsx       # 最新内容预览
+├── blog/                       # 博客模块
+│   ├── page.tsx                # 博客列表页
+│   ├── new/                    # 新建博客
+│   │   └── page.tsx
+│   ├── [slug]/                 # 博客详情页（动态路由）
+│   │   ├── page.tsx            # 博客详情
+│   │   ├── edit/               # 编辑博客
+│   │   │   └── page.tsx
+│   │   ├── ClientBackToTop.tsx # 返回顶部组件
+│   │   ├── ClientCodeBlock.tsx # 代码块组件
+│   │   ├── ClientFadeIn.tsx    # 淡入动画组件
+│   │   ├── ClientLike.tsx      # 点赞组件
+│   │   ├── ClientLikesHeader.tsx # 点赞头部组件
+│   │   └── toc.tsx             # 目录组件
+│   └── components/             # 博客专用组件
+│       ├── ClientListLikeCount.tsx # 列表点赞数
+│       ├── EmptyState.tsx      # 空状态组件
+│       └── PostDeleteButton.tsx # 删除按钮
+├── projects/                   # 项目展示模块
+│   └── page.tsx                # 项目列表页
+├── aigc/                       # AIGC作品模块
+│   ├── page.tsx                # AIGC主页
+│   ├── components/             # AIGC组件
+│   │   ├── AddImageModal.tsx   # 添加图片弹窗
+│   │   ├── ConfirmModal.tsx    # 确认弹窗
+│   │   ├── CreateArtworkModal.tsx # 创建作品集弹窗
+│   │   ├── CreateMusicModal.tsx # 创建音乐弹窗
+│   │   ├── CreateVideoModal.tsx # 创建视频弹窗
+│   │   ├── FloatingPlayerBar.tsx # 浮动播放器
+│   │   ├── ImagePreview.tsx    # 图片预览
+│   │   └── MusicPlayer.tsx     # 音乐播放器
+│   └── sections/               # AIGC页面区块
+│       ├── ImagesSection.tsx   # 图片作品集区块
+│       ├── MusicSection.tsx    # 音乐作品区块
+│       └── VideosSection.tsx   # 视频作品区块
+├── components/                 # 全局共享组件
+│   ├── CodeCopyButton.tsx      # 代码复制按钮
+│   ├── ConfirmModal.tsx        # 全局确认弹窗
+│   ├── FileUpload.tsx          # 文件上传组件
+│   ├── Footer.tsx              # 页脚组件
+│   ├── LikeToggle.tsx          # 点赞切换组件
+│   ├── Navigation.tsx          # 导航栏组件
+│   └── icons/                  # 自定义图标
+│       └── FilePenLine.tsx     # 编辑图标
+└── api/                        # API路由
+    ├── blog/                   # 博客相关API
+    │   ├── route.ts            # 博客CRUD
+    │   └── [slug]/route.ts     # 博客详情API
+    ├── aigc/                   # AIGC相关API
+    │   ├── artworks/           # 作品集API
+    │   ├── music/              # 音乐API
+    │   ├── videos/             # 视频API
+    │   ├── proxy-image/        # 图片代理API
+    │   └── proxy-audio/        # 音频代理API
+    ├── likes/                  # 点赞相关API
+    │   ├── status/route.ts     # 点赞状态查询
+    │   └── toggle/route.ts     # 点赞切换
+    └── upload/route.ts         # 文件上传API
+```
+
+### 工具库目录结构
+
+```
+lib/                            # 工具库
+├── blog.ts                     # 博客相关工具函数
+├── database.ts                 # 数据库连接和查询
+├── tencent-cos.ts              # 腾讯云COS操作
+├── tencent-cos-config.ts       # 腾讯云COS配置
+└── models/                     # 数据模型定义
+    ├── artwork.ts              # 作品集模型
+    ├── blog.ts                 # 博客模型
+    ├── likes.ts                # 点赞模型
+    ├── music.ts                # 音乐模型
+    └── video.ts                # 视频模型
+```
+
+### 脚本目录结构
+
+```
+scripts/                        # 脚本工具
+├── git-hooks/                  # Git钩子
+│   └── pre-commit              # 提交前检查
+├── init-database.ts            # 数据库初始化
+├── init-aigc-db.ts             # AIGC数据库初始化
+├── manage-blog-db.ts           # 博客数据库管理
+├── manage-aigc-*.ts            # AIGC数据管理脚本
+├── test-*.ts                   # 测试脚本
+├── update-avatar.sh            # 头像更新脚本
+└── update-changelog.ts         # 变更日志更新脚本
+```
 
 ## 四、详细功能页面设计
 
@@ -90,14 +188,14 @@ app/
 
 **页面结构：**
 - **Hero区域**：
-  - 问候语、姓名和标题
+  - 问候语、姓名
   - 简短的个人标语（Typewriter效果）
 
 - **个人简介区域**：
   - 详细自我介绍
   - 头像
   - 个人成就/经历时间轴
-  - 联系方式卡片
+  - 个人技能
 
 - **技能展示区域**：
   - 技能标签云
@@ -105,26 +203,24 @@ app/
   - 技术栈图标墙
 
 - **最新内容预览**：
-  - 最新博客文章（3篇，卡片式）
-  - 最新项目作品（3个，缩略图+描述）
-  - 最新AIGC作品（3张，瀑布流布局）
+  - 最新博客文章（1篇，卡片式）
+  - 最新项目作品（1个，缩略图+描述）
+  - 最新AIGC作品（1张，瀑布流布局）
   - 滚动动画效果
 
 - **社交媒体区域**：
   - 社交媒体图标（悬停放大效果）
-  - 关注者数量显示
 
 ### 2. 博客系统详细设计
 
 **博客列表页：**
 - **筛选功能**：
-  - 分类筛选（技术、生活、思考等）
-  - 标签筛选（多选）
+  - 标签筛选（多选）（todo）
   - 时间轴筛选（年/月）
   - 搜索功能（标题+内容）
 
 - **文章卡片**：
-  - 标题、摘要、发布时间
+  - 标题、封面、摘要、发布时间
   - 阅读时间估算（todo）
   - 标签列表
 
@@ -196,7 +292,7 @@ app/
 
 **画廊主页：**
 - **筛选功能**：
-  - 作品类型筛选（AI绘画、AI写作、AI音乐等）
+  - 作品类型筛选（AI绘画、AI视频、AI音乐等）
 
 - **作品展示**：
   - 瀑布流布局（Masonry）
@@ -227,73 +323,7 @@ app/
   - 同系列作品
   - 相似风格作品
 
-## 五、UI/UX设计完善
-
-### 1. 响应式设计规范
-
-**断点设置：**
-- 移动端：< 768px
-- 平板端：768px - 1024px
-- 桌面端：> 1024px
-- 大屏端：> 1440px
-
-**布局适配：**
-- 移动端：单列布局，简化导航
-- 平板端：双列布局，保留主要功能
-- 桌面端：多列布局，完整功能展示
-
-### 2. 交互动效设计
-
-**页面切换动画：**
-- 淡入淡出效果
-- 滑动切换效果
-- 页面加载进度条
-
-**组件动画：**
-- 卡片悬停效果（阴影+缩放）
-- 按钮点击反馈
-- 表单输入焦点效果
-- 滚动触发动画
-
-**微交互：**
-- 鼠标跟随效果
-- 滚动视差效果
-- 技能标签跳动
-
-### 3. 主题系统设计
-
-**明暗主题：**
-- 自动检测系统主题
-- 手动切换按钮
-- 主题持久化存储
-- 平滑过渡动画
-
-**色彩变量：**
-```css
-:root {
-  /* 主色调 */
-  --primary: #6747ce;
-  --primary-light: #8a6fd8;
-  --primary-dark: #4f35a0;
-  
-  /* 辅助色 */
-  --secondary: #eeb8b8;
-  --accent: #fed336;
-  
-  /* 文字色 */
-  --text-primary: #34495e;
-  --text-secondary: #3c4858;
-  --text-muted: #6c757d;
-  --text-light: #c6c6c6;
-  
-  /* 背景色 */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
-}
-```
-
-### 4. 性能优化策略
+## 五、性能优化策略
 
 **图片优化：**
 - WebP格式支持
@@ -315,41 +345,11 @@ app/
 
 ## 六、技术实现细节
 
-### 1. 项目结构完善
-
-```
-<code_block_to_apply_changes_from>
-app/
-├── (main)/
-│   ├── page.tsx                    # 首页
-│   ├── blog/
-│   │   ├── page.tsx               # 博客列表
-│   │   ├── [slug]/
-│   │   │   └── page.tsx           # 博客详情
-│   │   └── components/            # 博客组件
-│   ├── projects/
-│   │   ├── page.tsx               # 项目列表
-│   │   ├── [slug]/
-│   │   │   └── page.tsx           # 项目详情
-│   │   └── components/            # 项目组件
-│   ├── aigc/
-│   │   ├── page.tsx               # AIGC画廊
-│   │   └── components/            # AIGC组件
-│   └── components/                # 全局组件
-├── layout.tsx                     # 全局布局
-├── providers.tsx                  # 主题/状态管理
-├── globals.css                    # 全局样式
-└── lib/                          # 工具函数
-    ├── markdown.ts               # Markdown处理
-    ├── utils.ts                  # 通用工具
-    └── constants.ts              # 常量定义
-```
-
-### 2. 数据管理方案
+### 1. 数据管理方案
 
 **内容管理：**
 - Markdown文件存储在 `content/` 目录
-- 图片资源存储在 `public/images/`
+- 图片资源存储在 `app/assets/images/`
 - 元数据使用Front Matter格式
 - 自动生成sitemap和RSS
 
@@ -361,86 +361,15 @@ app/
 
 这个完善后的设计文档涵盖了个人网站的所有核心功能，包括详细的页面结构、UI设计规范、交互效果和技术实现方案。你可以根据这个规划逐步实现各个功能模块。
 
+## 七、样式规范说明
 
-## 七、技术实现细节
+**注意**：详细的样式规范、设计原则、字体系统、组件样式等已迁移至 `style.md` 文档中，请参考该文档获取完整的样式规范信息。
 
-### 1.全局确认弹窗样式规范
-
-- 组件：`app/components/ConfirmModal.tsx`
-- 交互：
-  - 打开时背景使用 `bg-black bg-opacity-50` 遮罩，内容弹入动画（opacity + scale）
-  - 关闭/确认均可关闭弹窗，确认按钮触发回调
-- 尺寸：
-  - 最大宽度 `max-w-md`，左右留白 `mx-4`
-- 样式：
-  - 容器：白底（深色为 `dark:bg-gray-800`），圆角 `rounded-lg`，内边距 `p-6`，细边框并按类型变化（`danger/warning/info`）
-  - 文案：标题 `text-lg font-semibold`；正文 `text-sm`，采用 `font-body`
-  - 图标：左侧类型图标（danger=AlertTriangle 红色，warning=AlertCircle 黄色，info=Info 蓝色）
-  - 按钮：
-    - 取消：灰色系 `bg-gray-100 hover:bg-gray-200`（深色 `dark:bg-gray-700 dark:hover:bg-gray-600`）
-    - 确认：按类型着色（danger=红，warning=黄，info=蓝），hover 加深
-- 使用场景：AIGC 作品删除、Blog 文章删除、其他危险操作二次确认
-
-### 2.按钮风格统一规范（Blog）
-
-- 统一主按钮（如“新建博客”“保存”）：
-  - 类名：`inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark disabled:opacity-60 transition-colors font-blog text-sm shadow-sm`
-- 统一次按钮（如“取消”“普通操作”）：
-  - 类名：`inline-flex items-center px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-text-secondary hover:text-primary transition-colors font-blog text-sm shadow-sm`
-- 图标按钮（如编辑/删除）：
-  - 灰色圆形：`p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors`
-- 要求：页面内所有操作按钮遵守以上规范，保持颜色、阴影、字号、字体、hover、padding、高度一致
-
-### 3.详情页进入动画规范（Blog）
-
-- 组件：`app/blog/[slug]/ClientFadeIn.tsx`
-- 动画：
-  - 初始：`opacity: 0, y: 12`
-  - 目标：`opacity: 1, y: 0`
-  - 时长：`~0.28s`
-- 使用：在详情页主内容外层包裹，提升新建/编辑完成后跳转的进入体验
-
-### 4.字体样式规范
-
-#### 时间信息样式规范
-
-- 容器：`flex items-center gap-2`
-- 字体：`text-sm text-text-muted`
-- 位置：标题下方一行展示，元素之间用 `·` 分隔
-
-#### 标签信息样式规范
-
-- 标签 pill：`px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog`
-- 行容器：`flex flex-wrap gap-2`
-- 适用位置：Blog 列表与详情、AIGC 标签行
-
-#### 字体变量定义与绑定（同步）
-
-- 标题字体变量（博客标题“博客文章”等）
-  - 变量名：`--font-zen-kaku`
-  - 字体来源：`ZenKakuGothicNew-Medium.ttf`
-  - 字重：`500`
-  - 颜色：`var(--text-primary)`（类名：`text-text-primary`）
-  - 使用类名：`font-heading`
-
-- 副标题/英文变量（副标题“分享技术心得和生活感悟”等）
-  - 变量名：`--font-typewriter`
-  - 字体来源：`fzm-Old.Typewriter.ttf`
-  - 字重：`400`
-  - 颜色：`var(--text-secondary)`（类名：`text-text-secondary`）
-  - 使用类名：`font-english`
-
-- 正文字体（博客正文内容）
-  - 变量名：`--font-body`
-  - 字体栈：`'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif`
-  - 字重：`400`（正文段落在 `.blog-content` 内部为 300）
-  - 颜色：`var(--text-primary)`（类名：`text-text-primary`）
-  - 使用类名：`font-body`（已绑定 `var(--font-body)`）或复用变量类：`blog-body-text`
-
-应用位置：
-- 首页 About/Experience 描述文案（`app/components/About.tsx`）
-- 首页 Hero 副标语可选（若需要与正文完全一致）
-
-对照代码位置：
-- 标题与副标题：`app/blog/page.tsx` 顶部区域
-- 正文容器：`app/blog/[slug]/page.tsx` 中 `.blog-content` 外层容器类名
+主要包含：
+- 色彩系统与CSS变量定义
+- 字体系统与使用规范
+- 组件样式规范（按钮、弹窗、时间信息、标签等）
+- 动画与交互规范
+- 响应式设计规范
+- 主题系统设计
+- 应用位置对照

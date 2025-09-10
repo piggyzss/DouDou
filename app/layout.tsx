@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   creator: 'shanshan',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   icons: {
-    icon: '/icon.svg',
+    icon: '/app/assets/icon/icon.svg',
   },
   openGraph: {
     title: 'shanshan的个人网站',

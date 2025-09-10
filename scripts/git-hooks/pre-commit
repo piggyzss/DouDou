@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Git pre-commit hook
+# 在提交前检查是否有未记录的变更
+
+echo "🔍 检查变更日志..."
+
+# 检查是否有未提交的变更日志更新
+if git diff --cached --name-only | grep -q "CHANGELOG.md"; then
+    echo "✅ 变更日志已更新"
+else
+    echo "⚠️  警告: 本次提交没有更新变更日志"
+    echo "💡 建议使用以下命令记录变更:"
+    echo "   npm run changelog -- --type=feat --message=\"新功能描述\""
+    echo "   npm run changelog -- --type=fix --message=\"修复问题描述\""
+    echo ""
+    read -p "是否继续提交? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "❌ 提交已取消"
+        exit 1
+    fi
+fi
+
+echo "✅ 提交检查通过"

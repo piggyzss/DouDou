@@ -58,7 +58,7 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
   return (
     <div className="space-y-12">
       {artworks.map((artwork) => (
-        <div key={artwork.id} className="mb-12 relative group">
+        <div key={artwork.id} className="relative group">
           {/* 作品集信息 */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
@@ -144,6 +144,9 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
               ))}
             </div>
           </div>
+          
+          {/* 作品集分隔线 */}
+          <div className="mt-3 mb-4 border-b border-gray-200 dark:border-gray-700"></div>
         </div>
       ))}
     </div>
