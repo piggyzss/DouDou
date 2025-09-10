@@ -30,9 +30,10 @@
 - 修复AIGC作品集列表中的多余底部边距 (piggyzss, 2025/9/10)
 - 修复Vercel构建错误：将所有@/路径别名改为相对路径导入 (piggyzss, 2025/9/10)
 - 修复Vercel TypeScript构建错误：将TypeScript依赖移到dependencies并添加vercel.json配置 (piggyzss, 2025/9/10)
+- 删除vercel.json配置文件：让Vercel自动检测Next.js项目配置 (piggyzss, 2025/9/10)
 
 
-## [1.0.0] - 2024-01-10
+## [1.0.0] - 2025-08-10
 
 ### 新增
 - 博客系统：支持创建、编辑、删除博客文章
