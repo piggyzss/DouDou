@@ -37,27 +37,27 @@ export async function POST(
         return NextResponse.json({ error: '请提供有效的图片URL' }, { status: 400 })
       }
     }
-    
+
     // 验证作品集是否存在
     const collection = await ArtworkModel.findById(parseInt(collectionId))
     if (!collection) {
       return NextResponse.json({ error: '作品集不存在' }, { status: 404 })
     }
-    
+
     // 获取当前图片数量，用于设置sort_order
     const existingImages = await ArtworkModel.getImages(parseInt(collectionId))
     const startSortOrder = existingImages.length
-    
+
     // 添加图片到数据库
     const addedImages = [] as any[]
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i]
-      
+
       // 从URL中提取文件名
       const urlObj = new URL(url)
       const pathParts = urlObj.pathname.split('/')
       const filename = pathParts[pathParts.length - 1]
-      
+
       // 添加图片记录
       const image = await ArtworkModel.addImage(parseInt(collectionId), {
         filename: filename,
@@ -67,10 +67,10 @@ export async function POST(
         mime_type: 'image/jpeg', // 暂时设为image/jpeg，后续可以从文件扩展名判断
         sort_order: startSortOrder + i
       })
-      
+
       addedImages.push(image)
     }
-    
+
     return NextResponse.json({
       success: true,
       message: '图片添加成功',
@@ -79,11 +79,11 @@ export async function POST(
       images: addedImages,
       filesReceived: filesCount
     })
-    
+
   } catch (error) {
     console.error('添加图片失败:', error)
     return NextResponse.json(
-      { error: '添加图片失败' }, 
+      { error: '添加图片失败' },
       { status: 500 }
     )
   }

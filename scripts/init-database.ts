@@ -2,7 +2,7 @@ import { initDatabase } from '../lib/database'
 
 async function main() {
   console.log('🚀 Initializing database...')
-  
+
   try {
     await initDatabase()
     console.log('✅ Database initialized successfully!')

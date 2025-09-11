@@ -68,7 +68,7 @@ export default function LatestContent() {
   return (
     <section className="pt-12 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* 新的动画标题区域 */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -88,13 +88,13 @@ export default function LatestContent() {
               className="h-0.5 bg-text-primary flex-1 max-w-32"
               style={{ transformOrigin: 'right' }}
             />
-            
+
             {/* 中间的project文案 */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               whileInView={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                duration: 0.6, 
+              transition={{
+                duration: 0.6,
                 delay: 0.5,
                 type: "spring",
                 stiffness: 200,
@@ -105,7 +105,7 @@ export default function LatestContent() {
             >
               Project
             </motion.div>
-            
+
             {/* 右侧横线 */}
             <motion.div
               initial={{ scaleX: 0 }}

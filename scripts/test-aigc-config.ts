@@ -33,19 +33,19 @@ async function testCosConfig() {
 async function testDatabaseTables() {
   try {
     console.log('🔍 检查数据库表...')
-    
+
     const tables = [
       'artwork_collections',
-      'artwork_images', 
+      'artwork_images',
       'artwork_likes',
       'blog_posts'
     ]
-    
+
     for (const table of tables) {
       const result = await query(`SELECT COUNT(*) FROM ${table}`)
       console.log(`✅ 表 ${table} 存在，记录数: ${result.rows[0].count}`)
     }
-    
+
     return true
   } catch (error) {
     console.error('❌ 数据库表检查失败:', error)
@@ -55,16 +55,16 @@ async function testDatabaseTables() {
 
 async function main() {
   console.log('🧪 开始AIGC配置测试...\n')
-  
+
   const dbConnection = await testDatabaseConnection()
   const cosConfig = await testCosConfig()
   const dbTables = await testDatabaseTables()
-  
+
   console.log('\n📊 测试结果汇总:')
   console.log(`   数据库连接: ${dbConnection ? '✅' : '❌'}`)
   console.log(`   腾讯云COS配置: ${cosConfig ? '✅' : '❌'}`)
   console.log(`   数据库表: ${dbTables ? '✅' : '❌'}`)
-  
+
   if (dbConnection && cosConfig && dbTables) {
     console.log('\n🎉 所有配置测试通过！AIGC功能可以正常使用。')
     process.exit(0)

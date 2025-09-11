@@ -53,7 +53,7 @@ function parseArgs(): ChangelogEntry {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
-    
+
     if (arg.startsWith('--type=')) {
       const type = arg.split('=')[1] as ChangelogEntry['type']
       if (Object.keys(TYPE_MAP).includes(type)) {
@@ -81,10 +81,10 @@ function parseArgs(): ChangelogEntry {
 function updateChangelog(entry: ChangelogEntry): void {
   try {
     const content = readFileSync(CHANGELOG_PATH, 'utf8')
-    
+
     // 查找 [未发布] 部分
     const unreleasedRegex = /## \[未发布\]\s*\n\n### 新增\s*\n([\s\S]*?)\n\n### 变更\s*\n([\s\S]*?)\n\n### 修复\s*\n([\s\S]*?)\n\n##/
-    
+
     if (!unreleasedRegex.test(content)) {
       console.error('❌ 无法找到 [未发布] 部分，请检查 CHANGELOG.md 格式')
       process.exit(1)
@@ -92,7 +92,7 @@ function updateChangelog(entry: ChangelogEntry): void {
 
     const typeName = TYPE_MAP[entry.type]
     const newEntry = `- ${entry.message} (${entry.author}, ${entry.date})\n`
-    
+
     let updatedContent = content.replace(unreleasedRegex, (match, feat, change, fix) => {
       switch (entry.type) {
         case 'feat':
@@ -110,11 +110,11 @@ function updateChangelog(entry: ChangelogEntry): void {
     })
 
     writeFileSync(CHANGELOG_PATH, updatedContent, 'utf8')
-    
+
     console.log(`✅ 已添加 ${typeName} 记录: ${entry.message}`)
     console.log(`📝 作者: ${entry.author}`)
     console.log(`📅 日期: ${entry.date}`)
-    
+
   } catch (error) {
     console.error('❌ 更新变更日志失败:', error)
     process.exit(1)
@@ -150,7 +150,7 @@ function showHelp(): void {
 // 主程序
 function main(): void {
   const args = process.argv.slice(2)
-  
+
   if (args.includes('--help') || args.includes('-h')) {
     showHelp()
     return

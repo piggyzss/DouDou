@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
           file.type,
           'aigc/images'
         )
-        
+
         if (result.success && result.url) {
           uploadedFiles.push(result.url)
           // 第一张图片作为封面
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Create artwork error:', error)
     return NextResponse.json(
-      { error: '创建作品集失败' }, 
+      { error: '创建作品集失败' },
       { status: 500 }
     )
   }
@@ -110,7 +110,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Get artworks error:', error)
     return NextResponse.json(
-      { error: '获取作品集列表失败' }, 
+      { error: '获取作品集列表失败' },
       { status: 500 }
     )
   }

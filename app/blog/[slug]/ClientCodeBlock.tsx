@@ -6,19 +6,19 @@ export default function ClientCodeBlock() {
   useEffect(() => {
     // 为所有代码块添加复制按钮
     const codeBlocks = document.querySelectorAll('.blog-content pre')
-    
+
     codeBlocks.forEach((pre) => {
       // 检查是否已经有复制按钮
       if (pre.querySelector('.copy-button')) return
-      
+
       const code = pre.querySelector('code')
       if (!code) return
-      
+
       // 创建复制按钮容器
       const copyButtonContainer = document.createElement('div')
       copyButtonContainer.className = 'copy-button'
       copyButtonContainer.title = '复制代码'
-      
+
       // 创建复制图标
       const copyIcon = document.createElement('div')
       copyIcon.innerHTML = `
@@ -28,7 +28,7 @@ export default function ClientCodeBlock() {
         </svg>
       `
       copyIcon.className = 'copy-icon'
-      
+
       // 创建复制成功图标（隐藏）
       const copyCheckIcon = document.createElement('div')
       copyCheckIcon.innerHTML = `
@@ -47,10 +47,10 @@ export default function ClientCodeBlock() {
       copyCheckIcon.style.display = 'flex'
       copyCheckIcon.style.alignItems = 'center'
       copyCheckIcon.style.justifyContent = 'center'
-      
+
       copyButtonContainer.appendChild(copyIcon)
       copyButtonContainer.appendChild(copyCheckIcon)
-      
+
       // 添加点击事件
       copyButtonContainer.addEventListener('click', () => {
         const text = code.textContent || ''
@@ -58,7 +58,7 @@ export default function ClientCodeBlock() {
           copyIcon.style.display = 'none'
           copyCheckIcon.style.display = 'flex'
           copyButtonContainer.classList.add('copied')
-          
+
           setTimeout(() => {
             copyIcon.style.display = 'flex'
             copyCheckIcon.style.display = 'none'
@@ -66,7 +66,7 @@ export default function ClientCodeBlock() {
           }, 2000)
         })
       })
-      
+
       pre.appendChild(copyButtonContainer)
     })
   }, [])

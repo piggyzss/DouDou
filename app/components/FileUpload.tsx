@@ -11,8 +11,8 @@ interface FileUploadProps {
   className?: string
 }
 
-export function FileUpload({ 
-  onUpload, 
+export function FileUpload({
+  onUpload,
   folder = 'uploads',
   accept,
   multiple = false,
@@ -60,7 +60,7 @@ export function FileUpload({
     for (const file of Array.from(files)) {
       const result = await uploadFile(file)
       results.push({ file, ...result })
-      
+
       if (result.success && onUpload) {
         onUpload(result.url!)
       }
@@ -95,7 +95,7 @@ export function FileUpload({
           className="hidden"
           id="file-upload"
         />
-        
+
         <label
           htmlFor="file-upload"
           className="block cursor-pointer text-center"
@@ -122,7 +122,7 @@ export function FileUpload({
                 ) : (
                   <AlertCircle className="h-4 w-4 text-red-500" />
                 )}
-                
+
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {result.file.name}
@@ -132,7 +132,7 @@ export function FileUpload({
                   )}
                 </div>
               </div>
-              
+
               <button
                 onClick={() => removeResult(index)}
                 className="p-1 text-gray-400 hover:text-gray-600"

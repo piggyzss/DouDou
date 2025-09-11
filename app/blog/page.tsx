@@ -28,7 +28,7 @@ export default async function BlogPage({ searchParams }: Props) {
   const generatePaginationButtons = () => {
     const buttons = []
     const maxVisible = 5 // 最多显示5个按钮
-    
+
     if (result.totalPages <= maxVisible) {
       // 如果总页数少于等于最大显示数，显示所有页
       for (let i = 1; i <= result.totalPages; i++) {
@@ -53,7 +53,7 @@ export default async function BlogPage({ searchParams }: Props) {
         }
       }
     }
-    
+
     return buttons
   }
 
@@ -70,8 +70,8 @@ export default async function BlogPage({ searchParams }: Props) {
         {/* 新建博客按钮 */}
         {isDev && (
           <div className="mb-6">
-            <Link 
-              href="/blog/new" 
+            <Link
+              href="/blog/new"
               className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
             >
               新建博客
@@ -162,7 +162,7 @@ export default async function BlogPage({ searchParams }: Props) {
                 </div>
               )}
             </div>
-            
+
             {/* 分页按钮 */}
             {paginationButtons.map((pageNum) => (
               <div key={pageNum} className="w-8 h-8">
@@ -178,7 +178,7 @@ export default async function BlogPage({ searchParams }: Props) {
                 </Link>
               </div>
             ))}
-            
+
             {/* 下一页按钮 */}
             <div className="w-8 h-8">
               {result.currentPage < result.totalPages ? (

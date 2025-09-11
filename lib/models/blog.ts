@@ -44,8 +44,8 @@ export class BlogModel {
   // 创建博客文章
   static async create(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'views_count' | 'likes_count' | 'comments_count'>): Promise<BlogPost> {
     const result = await db.query(
-      `INSERT INTO blog_posts (title, slug, content, excerpt, cover_url, status, published_at) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      `INSERT INTO blog_posts (title, slug, content, excerpt, cover_url, status, published_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
         post.title,
@@ -76,21 +76,21 @@ export class BlogModel {
   // 获取所有已发布的博客文章
   static async findAllPublished(page: number = 1, limit: number = 10): Promise<{ posts: (BlogPost & { tags: string[] })[], total: number, totalPages: number, currentPage: number }> {
     const offset = (page - 1) * limit
-    
+
     // 获取总数
     const countResult = await db.query('SELECT COUNT(*) FROM blog_posts WHERE status = $1', ['published'])
     const total = parseInt(countResult.rows[0].count)
     const totalPages = Math.ceil(total / limit)
-    
+
     // 获取分页数据
     const result = await db.query(
-      `SELECT * FROM blog_posts 
-       WHERE status = $1 
-       ORDER BY published_at DESC, created_at DESC 
+      `SELECT * FROM blog_posts
+       WHERE status = $1
+       ORDER BY published_at DESC, created_at DESC
        LIMIT $2 OFFSET $3`,
       ['published', limit, offset]
     )
-    
+
     // 为每篇文章获取标签
     const postsWithTags = await Promise.all(
       result.rows.map(async (post) => {
@@ -101,7 +101,7 @@ export class BlogModel {
         }
       })
     )
-    
+
     return {
       posts: postsWithTags,
       total,
@@ -114,12 +114,12 @@ export class BlogModel {
   static async update(id: number, updates: Partial<BlogPost>): Promise<BlogPost | null> {
     const fields = Object.keys(updates).filter(key => key !== 'id' && key !== 'created_at' && key !== 'updated_at')
     const values = Object.values(updates).filter((_, index) => fields[index])
-    
+
     if (fields.length === 0) return null
-    
+
     const setClause = fields.map((field, index) => `${field} = $${index + 2}`).join(', ')
     const query = `UPDATE blog_posts SET ${setClause} WHERE id = $1 RETURNING *`
-    
+
     const result = await db.query(query, [id, ...values])
     return result.rows[0] || null
   }
@@ -168,9 +168,9 @@ export class BlogModel {
   // 获取博客文章的所有标签
   static async getPostTags(postId: number): Promise<BlogTag[]> {
     const result = await db.query(
-      `SELECT t.* FROM blog_tags t 
-       JOIN blog_post_tags pt ON t.id = pt.tag_id 
-       WHERE pt.post_id = $1 
+      `SELECT t.* FROM blog_tags t
+       JOIN blog_post_tags pt ON t.id = pt.tag_id
+       WHERE pt.post_id = $1
        ORDER BY t.name`,
       [postId]
     )

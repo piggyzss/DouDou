@@ -61,7 +61,7 @@ export default function AIGCPage() {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const [isAddImageModalOpen, setIsAddImageModalOpen] = useState(false)
   const [selectedArtworkForAdd, setSelectedArtworkForAdd] = useState<Artwork | null>(null)
-  
+
   // 确认弹窗状态
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
@@ -111,7 +111,7 @@ export default function AIGCPage() {
             comments: 0, // 暂时设为0，后续可以添加评论功能
             createdAt: collection.created_at.split('T')[0]
           }))
-          
+
           // 为所有图片生成代理URL
           const artworksWithProxyUrls = convertedArtworks.map((artwork) => {
             if (artwork.images.length > 0) {
@@ -126,7 +126,7 @@ export default function AIGCPage() {
             }
             return artwork
           })
-          
+
           setArtworks(artworksWithProxyUrls)
         }
       }
@@ -179,7 +179,7 @@ export default function AIGCPage() {
   const handleCreateArtwork = (artworkData: Omit<Artwork, 'id' | 'likes' | 'comments' | 'createdAt'>) => {
     // 创建成功后重新加载数据
     loadArtworks()
-    
+
     // 显示成功消息
     console.log('✅ 作品集创建成功:', artworkData.title)
   }
@@ -219,11 +219,11 @@ export default function AIGCPage() {
       const response = await fetch(`/api/aigc/artworks/${collectionId}/images/${imageId}`, {
         method: 'DELETE',
       })
-      
+
       if (response.ok) {
         // 从本地状态中移除图片
-        setArtworks(prev => prev.map(artwork => 
-          artwork.id === collectionId 
+        setArtworks(prev => prev.map(artwork =>
+          artwork.id === collectionId
             ? { ...artwork, images: artwork.images.filter(img => img.id !== imageId) }
             : artwork
         ))
@@ -248,7 +248,7 @@ export default function AIGCPage() {
           const response = await fetch(`/api/aigc/artworks/${artworkId}`, {
             method: 'DELETE',
           })
-          
+
           if (response.ok) {
             // 从本地状态中移除作品集
             setArtworks(prev => prev.filter(artwork => artwork.id !== artworkId))
@@ -300,17 +300,17 @@ export default function AIGCPage() {
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!selectedImage) return
-    
+
     const artwork = artworks.find(a => a.id === selectedImage.artworkId)
     if (!artwork) return
-    
+
     let newIndex = selectedImage.imageIndex
     if (direction === 'prev') {
       newIndex = newIndex > 0 ? newIndex - 1 : artwork.images.length - 1
     } else {
       newIndex = newIndex < artwork.images.length - 1 ? newIndex + 1 : 0
     }
-    
+
     setSelectedImage({
       url: artwork.images[newIndex].file_url,
       artworkId: selectedImage.artworkId,
@@ -320,7 +320,7 @@ export default function AIGCPage() {
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!selectedImage) return
-    
+
     if (e.key === 'ArrowLeft') {
       navigateImage('prev')
     } else if (e.key === 'ArrowRight') {
@@ -348,11 +348,11 @@ export default function AIGCPage() {
         },
         body: JSON.stringify({ urls: newImages })
       })
-      
+
       if (response.ok) {
         const result = await response.json()
         console.log('✅ 图片添加成功:', result)
-        
+
         // 重新加载作品集数据以获取最新的图片信息
         await loadArtworks()
       } else {
@@ -657,7 +657,7 @@ export default function AIGCPage() {
         currentIndex={selectedImage?.imageIndex}
         total={artworks.find(a => a.id === selectedImage?.artworkId)?.images.length || 0}
       />
-      
+
       {/* 确认弹窗 */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}

@@ -6,7 +6,7 @@ export default function ProjectsPage() {
           <h1 className="text-4xl font-bold text-text-primary mb-4">开发作品</h1>
           <p className="text-xl text-text-secondary">展示我的技术项目和创意作品</p>
         </div>
-        
+
         <div className="text-center py-20">
           <p className="text-text-muted">项目展示功能正在开发中...</p>
         </div>

@@ -119,7 +119,7 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
             <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
               {artwork.images.map((image, index) => (
                 <div key={index} className="relative group/image flex-shrink-0">
-                  <div 
+                  <div
                     className="w-80 h-60 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
                     onClick={() => onClickImage(artwork.id, index, image.file_url)}
                   >
@@ -144,7 +144,7 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
               ))}
             </div>
           </div>
-          
+
           {/* 作品集分隔线 */}
           <div className="mt-3 mb-4 border-b border-gray-200 dark:border-gray-700"></div>
         </div>

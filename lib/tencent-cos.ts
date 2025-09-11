@@ -20,11 +20,11 @@ export async function uploadFile(
   try {
     // 验证配置
     validateCosConfig()
-    
+
     // 生成唯一文件名
     const fileExtension = MIME_TYPE_MAP[mimeType as keyof typeof MIME_TYPE_MAP] || 'bin'
     const filename = `${folder}/${Date.now()}-${uuidv4()}.${fileExtension}`
-    
+
     // 上传参数
     const uploadParams: any = {
       Bucket: cosConfig.Bucket,
@@ -38,19 +38,19 @@ export async function uploadFile(
 
     // 执行上传
     const result = await cos.putObject(uploadParams)
-    
+
     if (result.statusCode === 200) {
       const fileUrl = `${cosConfig.Domain}/${filename}`
-      
+
       // 获取文件信息
       const fileSize = Buffer.isBuffer(file) ? file.length : Buffer.byteLength(file, 'utf8')
-      
+
       // 如果是图片，获取尺寸信息
       let mediaInfo: { width?: number; height?: number; duration?: number } = {}
       if (MEDIA_TYPE_MAP[mimeType as keyof typeof MEDIA_TYPE_MAP] === 'image') {
         mediaInfo = await getImageInfo(file)
       }
-      
+
       return {
         success: true,
         url: fileUrl,
@@ -81,13 +81,13 @@ export async function uploadFile(
 export async function deleteFile(filename: string): Promise<boolean> {
   try {
     validateCosConfig()
-    
+
     const result = await cos.deleteObject({
       Bucket: cosConfig.Bucket,
       Region: cosConfig.Region,
       Key: filename
     })
-    
+
     return result.statusCode === 200
   } catch (error) {
     console.error('Delete file error:', error)
@@ -135,10 +135,10 @@ export async function uploadMultipleFiles(
   files: Array<{ buffer: Buffer; originalname: string; mimetype: string }>,
   folder: string = 'uploads'
 ): Promise<UploadResult[]> {
-  const uploadPromises = files.map(file => 
+  const uploadPromises = files.map(file =>
     uploadFile(file.buffer, file.originalname, file.mimetype, folder)
   )
-  
+
   return Promise.all(uploadPromises)
 }
 
@@ -155,13 +155,13 @@ export function getFileUrl(filename: string): string {
 export async function fileExists(filename: string): Promise<boolean> {
   try {
     validateCosConfig()
-    
+
     const result = await cos.headObject({
       Bucket: cosConfig.Bucket,
       Region: cosConfig.Region,
       Key: filename
     })
-    
+
     return result.statusCode === 200
   } catch (error) {
     return false
@@ -174,14 +174,14 @@ export async function fileExists(filename: string): Promise<boolean> {
 export async function listFiles(prefix: string = '', maxKeys: number = 100) {
   try {
     validateCosConfig()
-    
+
     const result = await cos.getBucket({
       Bucket: cosConfig.Bucket,
       Region: cosConfig.Region,
       Prefix: prefix,
       MaxKeys: maxKeys
     })
-    
+
     return result.Contents || []
   } catch (error) {
     console.error('List files error:', error)

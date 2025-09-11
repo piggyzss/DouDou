@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
 
     const result = await BlogModel.findAllPublished(page, limit)
-    
+
     // 获取每篇文章的标签
     const postsWithTags = await Promise.all(
       result.posts.map(async (post) => {
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('获取博客列表失败:', error)
     return NextResponse.json(
-      { error: '获取博客列表失败' }, 
+      { error: '获取博客列表失败' },
       { status: 500 }
     )
   }
@@ -58,16 +58,16 @@ export async function POST(req: NextRequest) {
   try {
     if (process.env.NODE_ENV !== 'development') {
       return NextResponse.json(
-        { error: '只允许在开发模式下创建博客' }, 
+        { error: '只允许在开发模式下创建博客' },
         { status: 403 }
       )
     }
 
     const { title, slug: providedSlug, tags, content, cover_url } = await req.json()
-    
+
     if (!title || !content) {
       return NextResponse.json(
-        { error: '标题和内容不能为空' }, 
+        { error: '标题和内容不能为空' },
         { status: 400 }
       )
     }
@@ -77,12 +77,12 @@ export async function POST(req: NextRequest) {
       ? String(providedSlug)
       : generateSlug(title)
     ).normalize('NFC')
-    
+
     // 检查slug是否已存在
     const existingPost = await BlogModel.findBySlug(slug)
     if (existingPost) {
       return NextResponse.json(
-        { error: '该slug已存在' }, 
+        { error: '该slug已存在' },
         { status: 400 }
       )
     }
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
     if (tags && Array.isArray(tags) && tags.length > 0) {
       for (const tagName of tags) {
         const tagSlug = generateSlug(tagName)
-        
+
         // 查找或创建标签
         let tag = await BlogModel.findTagBySlug(tagSlug)
         if (!tag) {
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
             description: `标签: ${tagName}`
           })
         }
-        
+
         // 关联标签和文章
         await BlogModel.addTagToPost(post.id, tag.id)
       }
@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
         'text/markdown',
         'blog/content'
       )
-      
+
       if (uploadResult.success) {
         console.log('✅ 博客内容已上传到腾讯云COS:', uploadResult.url)
       } else {
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('创建博客失败:', error)
     return NextResponse.json(
-      { error: '创建博客失败' }, 
+      { error: '创建博客失败' },
       { status: 500 }
     )
   }

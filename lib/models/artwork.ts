@@ -71,23 +71,23 @@ export class ArtworkModel {
     currentPage: number
   }> {
     const offset = (page - 1) * limit
-    
+
     // 获取总数
     const countResult = await query(
       'SELECT COUNT(*) FROM artwork_collections WHERE status = $1',
       [status]
     )
     const total = parseInt(countResult.rows[0].count)
-    
+
     // 获取数据
     const collections = await getRows(
-      `SELECT * FROM artwork_collections 
-       WHERE status = $1 
-       ORDER BY created_at DESC 
+      `SELECT * FROM artwork_collections
+       WHERE status = $1
+       ORDER BY created_at DESC
        LIMIT $2 OFFSET $3`,
       [status, limit, offset]
     )
-    
+
     return {
       collections,
       total,
@@ -101,52 +101,52 @@ export class ArtworkModel {
     const fields = []
     const values = []
     let paramIndex = 1
-    
+
     if (data.title !== undefined) {
       fields.push(`title = $${paramIndex}`)
       values.push(data.title)
       paramIndex++
     }
-    
+
     if (data.description !== undefined) {
       fields.push(`description = $${paramIndex}`)
       values.push(data.description)
       paramIndex++
     }
-    
+
     if (data.tags !== undefined) {
       fields.push(`tags = $${paramIndex}`)
       values.push(data.tags)
       paramIndex++
     }
-    
+
     if (data.cover_image_url !== undefined) {
       fields.push(`cover_image_url = $${paramIndex}`)
       values.push(data.cover_image_url)
       paramIndex++
     }
-    
+
     if (data.status !== undefined) {
       fields.push(`status = $${paramIndex}`)
       values.push(data.status)
       paramIndex++
     }
-    
+
     if (fields.length === 0) {
       return await this.findById(id)
     }
-    
+
     fields.push(`updated_at = CURRENT_TIMESTAMP`)
     values.push(id)
-    
+
     const result = await query(
-      `UPDATE artwork_collections 
-       SET ${fields.join(', ')} 
+      `UPDATE artwork_collections
+       SET ${fields.join(', ')}
        WHERE id = $${paramIndex}
        RETURNING *`,
       values
     )
-    
+
     return result.rows[0] || null
   }
 
@@ -191,7 +191,7 @@ export class ArtworkModel {
          VALUES ($1, $2, $3)`,
         [collectionId, ipAddress, userAgent]
       )
-      
+
       // 增加点赞数
       await this.incrementLikes(collectionId)
       return true
@@ -213,8 +213,8 @@ export class ArtworkModel {
   // 获取作品集的所有图片
   static async getImages(collectionId: number): Promise<ArtworkImage[]> {
     return await getRows(
-      `SELECT * FROM artwork_images 
-       WHERE collection_id = $1 
+      `SELECT * FROM artwork_images
+       WHERE collection_id = $1
        ORDER BY sort_order ASC, created_at ASC`,
       [collectionId]
     )
@@ -233,7 +233,7 @@ export class ArtworkModel {
     sort_order?: number
   }): Promise<ArtworkImage> {
     const result = await query(
-      `INSERT INTO artwork_images 
+      `INSERT INTO artwork_images
        (collection_id, filename, original_name, file_url, thumbnail_url, file_size, width, height, mime_type, sort_order)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
@@ -278,27 +278,27 @@ export class ArtworkModel {
     currentPage: number
   }> {
     const offset = (page - 1) * limit
-    
+
     // 构建标签查询条件
     const tagConditions = tags.map((_, index) => `$${index + 1} = ANY(tags)`).join(' AND ')
-    
+
     // 获取总数
     const countResult = await query(
-      `SELECT COUNT(*) FROM artwork_collections 
+      `SELECT COUNT(*) FROM artwork_collections
        WHERE status = 'active' AND ${tagConditions}`,
       tags
     )
     const total = parseInt(countResult.rows[0].count)
-    
+
     // 获取数据
     const collections = await getRows(
-      `SELECT * FROM artwork_collections 
+      `SELECT * FROM artwork_collections
        WHERE status = 'active' AND ${tagConditions}
-       ORDER BY created_at DESC 
+       ORDER BY created_at DESC
        LIMIT $${tags.length + 1} OFFSET $${tags.length + 2}`,
       [...tags, limit, offset]
     )
-    
+
     return {
       collections,
       total,

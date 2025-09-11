@@ -23,15 +23,15 @@ export async function POST(request: NextRequest) {
 
     // 验证文件类型
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json({ 
-        error: `File type not allowed. Allowed types: ${ALLOWED_TYPES.join(', ')}` 
+      return NextResponse.json({
+        error: `File type not allowed. Allowed types: ${ALLOWED_TYPES.join(', ')}`
       }, { status: 400 })
     }
 
     // 验证文件大小
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ 
-        error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB` 
+      return NextResponse.json({
+        error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`
       }, { status: 400 })
     }
 
@@ -79,14 +79,14 @@ export async function PUT(request: NextRequest) {
     // 验证所有文件
     for (const file of files) {
       if (!ALLOWED_TYPES.includes(file.type)) {
-        return NextResponse.json({ 
-          error: `File type not allowed: ${file.name}` 
+        return NextResponse.json({
+          error: `File type not allowed: ${file.name}`
         }, { status: 400 })
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ 
-          error: `File too large: ${file.name}` 
+        return NextResponse.json({
+          error: `File too large: ${file.name}`
         }, { status: 400 })
       }
     }

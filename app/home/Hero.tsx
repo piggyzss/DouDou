@@ -18,7 +18,7 @@ export default function Hero() {
           />
         </div>
       </div>
-      
+
       <div className="max-w-4xl mx-auto text-center relative z-10">
         {/* 居中内容 */}
         <motion.div
@@ -39,7 +39,7 @@ export default function Hero() {
                 shanshan
               </span>
             </motion.h1>
-            
+
             <motion.p
               className="text-lg sm:text-xl text-text-secondary font-heading"
               initial={{ opacity: 0, y: 20 }}
@@ -48,7 +48,7 @@ export default function Hero() {
             >
               前端开发者、AI爱好者、创意工作者
             </motion.p>
-            
+
             <motion.p
               className="text-base sm:text-lg text-text-primary leading-8 font-blog"
               initial={{ opacity: 0, y: 20 }}

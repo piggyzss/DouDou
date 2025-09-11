@@ -32,7 +32,7 @@ export default function TOC() {
     })
     setHeadings(hs)
   }, [])
-  
+
   const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {

@@ -7,7 +7,7 @@ interface Props {
   tags: string[]
   coverUrl: string
   likes: number
-  isPlaying: boolean 
+  isPlaying: boolean
   currentTime: number
   duration: number
   repeatMode: 'one' | 'all' | 'shuffle'

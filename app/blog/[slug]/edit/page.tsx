@@ -93,7 +93,7 @@ export default function EditBlogPage() {
     <div className="min-h-screen pt-16">
       <div className="w-full py-8">
         <h1 className="text-2xl font-semibold text-text-primary mb-4 font-blog">编辑博客</h1>
-        
+
         <div className="mb-6 flex justify-between items-center">
           <div className="flex space-x-3">
             <button onClick={save} disabled={saving || uploading} className={PRIMARY_BTN}>{saving ? '保存中...' : (uploading ? '上传封面中...' : '保存')}</button>
@@ -101,7 +101,7 @@ export default function EditBlogPage() {
           </div>
           {error && <div className="text-red-500 text-sm font-blog">{error}</div>}
         </div>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-text-muted mb-1 font-blog">标题（编辑状态不可修改）</label>

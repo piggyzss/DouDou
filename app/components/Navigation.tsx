@@ -4,16 +4,16 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { 
-  Menu, 
-  X, 
-  Sun, 
-  Moon, 
-  Search, 
-  Home, 
-  FileText, 
-  Code, 
-  Palette 
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Search,
+  Home,
+  FileText,
+  Code,
+  Palette
 } from 'lucide-react'
 import { useTheme } from '../providers'
 
@@ -48,8 +48,8 @@ export default function Navigation() {
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg' 
+        scrolled
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg'
           : 'bg-transparent'
       }`}
       initial={{ y: -100 }}
@@ -154,7 +154,7 @@ export default function Navigation() {
                 <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
               </div>
             </form>
-            
+
             {navItems.map((item) => {
               const Icon = item.icon
               return (
@@ -182,4 +182,4 @@ export default function Navigation() {
       </div>
     </motion.nav>
   )
-} 
+}

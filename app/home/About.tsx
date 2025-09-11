@@ -95,8 +95,8 @@ export default function About() {
     const x = ((info.point.x - rect.left) / rect.width) * 100
     const y = ((info.point.y - rect.top) / rect.height) * 100
 
-    setCards(prev => prev.map(card => 
-      card.id === cardId 
+    setCards(prev => prev.map(card =>
+      card.id === cardId
         ? { ...card, x: Math.max(5, Math.min(90, x)), y: Math.max(5, Math.min(90, y)) }
         : card
     ))
@@ -124,12 +124,12 @@ export default function About() {
               className="h-0.5 bg-text-primary flex-1 max-w-32"
               style={{ transformOrigin: 'right' }}
             />
-            
+
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               whileInView={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                duration: 0.6, 
+              transition={{
+                duration: 0.6,
                 delay: 0.5,
                 type: "spring",
                 stiffness: 200,
@@ -140,7 +140,7 @@ export default function About() {
             >
               About
             </motion.div>
-            
+
             <motion.div
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
@@ -154,7 +154,7 @@ export default function About() {
 
         {/* 主要内容区域 - 左右布局 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          
+
           {/* 左侧：Links、Skills、Experience */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -207,7 +207,7 @@ export default function About() {
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
-                  <span 
+                  <span
                     key={skill}
                     className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium hover:border-primary hover:text-primary transition-colors cursor-pointer font-english"
                   >
@@ -287,9 +287,9 @@ export default function About() {
                   dragElastic={0.1}
                   onDragEnd={(event, info) => handleDragEnd(card.id, info)}
                 >
-                  <div 
+                  <div
                     className="w-40 h-40 p-4 rounded-lg shadow-lg blog-body-text hover:shadow-xl transition-shadow duration-200 font-body"
-                    style={{ 
+                    style={{
                       backgroundColor: `${card.color}95`,
                       backdropFilter: 'blur(10px)'
                     }}

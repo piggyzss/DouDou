@@ -1,0 +1,62 @@
+# 自动检测文本文件并执行换行符规范化
+* text=auto
+
+# 明确指定文本文件
+*.ts text
+*.tsx text
+*.js text
+*.jsx text
+*.json text
+*.md text
+*.txt text
+*.yaml text
+*.yml text
+*.xml text
+*.html text
+*.css text
+*.scss text
+*.sass text
+*.less text
+
+# 明确指定二进制文件
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+
+# Git 和编辑器相关文件
+.gitignore text
+.gitattributes text
+.editorconfig text
+
+# 包管理文件
+package.json text
+package-lock.json text
+yarn.lock text
+pnpm-lock.yaml text
+
+# 配置文件
+*.config.js text
+*.config.ts text
+tsconfig.json text
+next.config.js text
+tailwind.config.js text
+postcss.config.js text
+
+# 文档文件
+README.md text
+CHANGELOG.md text
+LICENSE text
+
+# 环境文件
+.env text
+.env.* text

@@ -18,30 +18,30 @@ const pool = new Pool({
 async function initDatabase() {
   try {
     console.log('🚀 开始初始化生产数据库...')
-    
+
     // 读取 SQL 文件
     const sqlPath = path.join(__dirname, '../database/schema.sql')
     const sql = fs.readFileSync(sqlPath, 'utf8')
-    
+
     // 执行 SQL
     await pool.query(sql)
     console.log('✅ 数据库表结构创建成功')
-    
+
     // 检查表是否创建成功
     const result = await pool.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
+      SELECT table_name
+      FROM information_schema.tables
       WHERE table_schema = 'public'
       ORDER BY table_name
     `)
-    
+
     console.log('📊 已创建的表:')
     result.rows.forEach(row => {
       console.log(`  - ${row.table_name}`)
     })
-    
+
     console.log('🎉 数据库初始化完成!')
-    
+
   } catch (error) {
     console.error('❌ 数据库初始化失败:', error)
     process.exit(1)

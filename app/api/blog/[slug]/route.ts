@@ -16,12 +16,12 @@ export async function GET(
 ) {
   try {
     const slug = normalizeSlug(params.slug)
-    
+
     // 获取博客文章
     const post = await BlogModel.findBySlug(slug)
     if (!post) {
       return NextResponse.json(
-        { error: '博客文章不存在' }, 
+        { error: '博客文章不存在' },
         { status: 404 }
       )
     }
@@ -46,7 +46,7 @@ export async function GET(
   } catch (error) {
     console.error('获取博客文章失败:', error)
     return NextResponse.json(
-      { error: '获取博客文章失败' }, 
+      { error: '获取博客文章失败' },
       { status: 500 }
     )
   }
@@ -59,7 +59,7 @@ export async function PUT(
   try {
     if (process.env.NODE_ENV !== 'development') {
       return NextResponse.json(
-        { error: '只允许在开发模式下编辑博客' }, 
+        { error: '只允许在开发模式下编辑博客' },
         { status: 403 }
       )
     }
@@ -71,7 +71,7 @@ export async function PUT(
     const post = await BlogModel.findBySlug(slug)
     if (!post) {
       return NextResponse.json(
-        { error: '博客文章不存在' }, 
+        { error: '博客文章不存在' },
         { status: 404 }
       )
     }
@@ -86,7 +86,7 @@ export async function PUT(
     const updatedPost = await BlogModel.update(post.id, updates)
     if (!updatedPost) {
       return NextResponse.json(
-        { error: '更新博客文章失败' }, 
+        { error: '更新博客文章失败' },
         { status: 500 }
       )
     }
@@ -101,7 +101,7 @@ export async function PUT(
   } catch (error) {
     console.error('更新博客文章失败:', error)
     return NextResponse.json(
-      { error: '更新博客文章失败' }, 
+      { error: '更新博客文章失败' },
       { status: 500 }
     )
   }
@@ -114,7 +114,7 @@ export async function DELETE(
   try {
     if (process.env.NODE_ENV !== 'development') {
       return NextResponse.json(
-        { error: '只允许在开发模式下删除博客' }, 
+        { error: '只允许在开发模式下删除博客' },
         { status: 403 }
       )
     }
@@ -125,7 +125,7 @@ export async function DELETE(
     const post = await BlogModel.findBySlug(slug)
     if (!post) {
       return NextResponse.json(
-        { error: '博客文章不存在' }, 
+        { error: '博客文章不存在' },
         { status: 404 }
       )
     }
@@ -151,7 +151,7 @@ export async function DELETE(
     const success = await BlogModel.delete(post.id)
     if (!success) {
       return NextResponse.json(
-        { error: '删除博客文章失败' }, 
+        { error: '删除博客文章失败' },
         { status: 500 }
       )
     }
@@ -160,7 +160,7 @@ export async function DELETE(
   } catch (error) {
     console.error('删除博客文章失败:', error)
     return NextResponse.json(
-      { error: '删除博客文章失败' }, 
+      { error: '删除博客文章失败' },
       { status: 500 }
     )
   }

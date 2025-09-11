@@ -20,20 +20,20 @@ const TARGET_DB_PASSWORD = 'doudou_password'
 
 async function setupDatabase() {
   console.log('🔧 开始设置数据库...')
-  
+
   // 连接到默认的postgres数据库
   const client = new Client(DB_CONFIG)
-  
+
   try {
     await client.connect()
     console.log('✅ 连接到PostgreSQL成功')
-    
+
     // 检查目标数据库是否存在
     const dbExistsResult = await client.query(
       "SELECT 1 FROM pg_database WHERE datname = $1",
       [TARGET_DB_NAME]
     )
-    
+
     if (dbExistsResult.rows.length === 0) {
       console.log(`📦 创建数据库: ${TARGET_DB_NAME}`)
       await client.query(`CREATE DATABASE ${TARGET_DB_NAME}`)
@@ -41,13 +41,13 @@ async function setupDatabase() {
     } else {
       console.log(`✅ 数据库 ${TARGET_DB_NAME} 已存在`)
     }
-    
+
     // 检查用户是否存在
     const userExistsResult = await client.query(
       "SELECT 1 FROM pg_user WHERE usename = $1",
       [TARGET_DB_USER]
     )
-    
+
     if (userExistsResult.rows.length === 0) {
       console.log(`👤 创建用户: ${TARGET_DB_USER}`)
       await client.query(`CREATE USER ${TARGET_DB_USER} WITH PASSWORD '${TARGET_DB_PASSWORD}'`)
@@ -55,18 +55,18 @@ async function setupDatabase() {
     } else {
       console.log(`✅ 用户 ${TARGET_DB_USER} 已存在`)
     }
-    
+
     // 授予权限
     console.log('🔐 授予数据库权限...')
     await client.query(`GRANT ALL PRIVILEGES ON DATABASE ${TARGET_DB_NAME} TO ${TARGET_DB_USER}`)
     console.log('✅ 权限授予成功')
-    
+
     await client.end()
-    
+
     // 现在连接到新创建的数据库来创建表
     console.log('📋 创建数据库表结构...')
     await createTables()
-    
+
     console.log('🎉 数据库设置完成！')
     console.log('\n📝 环境变量配置:')
     console.log(`DB_HOST=${DB_CONFIG.host}`)
@@ -74,7 +74,7 @@ async function setupDatabase() {
     console.log(`DB_NAME=${TARGET_DB_NAME}`)
     console.log(`DB_USER=${TARGET_DB_USER}`)
     console.log(`DB_PASSWORD=${TARGET_DB_PASSWORD}`)
-    
+
   } catch (error) {
     console.error('❌ 数据库设置失败:', error)
     await client.end()
@@ -90,13 +90,13 @@ async function createTables() {
     user: TARGET_DB_USER,
     password: TARGET_DB_PASSWORD
   })
-  
+
   try {
     await client.connect()
-    
+
     // 创建AIGC图片相关表
     console.log('🖼️  创建AIGC图片表...')
-    
+
     // 作品集表
     await client.query(`
       CREATE TABLE IF NOT EXISTS artwork_collections (
@@ -112,7 +112,7 @@ async function createTables() {
         cover_image_url VARCHAR(500)
       )
     `)
-    
+
     // 图片资源表
     await client.query(`
       CREATE TABLE IF NOT EXISTS artwork_images (
@@ -130,7 +130,7 @@ async function createTables() {
         sort_order INTEGER DEFAULT 0
       )
     `)
-    
+
     // 点赞记录表
     await client.query(`
       CREATE TABLE IF NOT EXISTS artwork_likes (
@@ -142,10 +142,10 @@ async function createTables() {
         UNIQUE(collection_id, ip_address)
       )
     `)
-    
+
     // 创建博客相关表
     console.log('📝 创建博客表...')
-    
+
     // 博客文章表
     await client.query(`
       CREATE TABLE IF NOT EXISTS blog_posts (
@@ -163,7 +163,7 @@ async function createTables() {
         comments_count INTEGER DEFAULT 0
       )
     `)
-    
+
     // 博客标签表
     await client.query(`
       CREATE TABLE IF NOT EXISTS blog_tags (
@@ -174,7 +174,7 @@ async function createTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
-    
+
     // 博客文章标签关联表
     await client.query(`
       CREATE TABLE IF NOT EXISTS blog_post_tags (
@@ -183,7 +183,7 @@ async function createTables() {
         PRIMARY KEY (post_id, tag_id)
       )
     `)
-    
+
     // 博客评论表
     await client.query(`
       CREATE TABLE IF NOT EXISTS blog_comments (
@@ -197,7 +197,7 @@ async function createTables() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
-    
+
     // 创建索引
     console.log('🔍 创建数据库索引...')
     await client.query(`CREATE INDEX IF NOT EXISTS idx_artwork_collections_created_at ON artwork_collections(created_at)`)
@@ -211,7 +211,7 @@ async function createTables() {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_blog_post_tags_tag_id ON blog_post_tags(tag_id)`)
     await client.query(`CREATE INDEX IF NOT EXISTS idx_blog_comments_post_id ON blog_comments(post_id)`)
     await client.query(`CREATE INDEX IF NOT EXISTS idx_blog_comments_status ON blog_comments(status)`)
-    
+
     // 创建更新时间触发器
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -222,12 +222,12 @@ async function createTables() {
       END;
       $$ language 'plpgsql'
     `)
-    
+
     await client.query(`CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`)
     await client.query(`CREATE TRIGGER update_blog_comments_updated_at BEFORE UPDATE ON blog_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`)
-    
+
     console.log('✅ 所有表结构创建完成')
-    
+
   } catch (error) {
     console.error('❌ 创建表结构失败:', error)
     throw error

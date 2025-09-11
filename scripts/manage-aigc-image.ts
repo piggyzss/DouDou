@@ -46,14 +46,14 @@ async function listAllCollections() {
   try {
     console.log('\n📋 所有作品集列表:')
     console.log('-'.repeat(80))
-    
+
     const result = await ArtworkModel.findAll(1, 100)
-    
+
     if (result.collections.length === 0) {
       console.log('暂无作品集')
       return
     }
-    
+
     result.collections.forEach((collection: DatabaseRecord) => {
       console.log(`ID: ${collection.id}`)
       console.log(`标题: ${collection.title}`)
@@ -64,7 +64,7 @@ async function listAllCollections() {
       console.log(`浏览数: ${collection.views_count}`)
       console.log('-'.repeat(40))
     })
-    
+
     console.log(`总计: ${result.total} 个作品集`)
   } catch (error) {
     console.error('❌ 获取作品集列表失败:', error)
@@ -77,18 +77,18 @@ async function showCollectionDetail() {
       input: process.stdin,
       output: process.stdout
     })
-    
+
     const id = await new Promise<string>((resolve) => {
       readline.question('请输入作品集ID: ', resolve)
     })
     readline.close()
-    
+
     const collection = await ArtworkModel.findById(parseInt(id))
     if (!collection) {
       console.log('❌ 未找到该作品集')
       return
     }
-    
+
     console.log('\n📖 作品集详情:')
     console.log('-'.repeat(50))
     console.log(`ID: ${collection.id}`)
@@ -101,7 +101,7 @@ async function showCollectionDetail() {
     console.log(`点赞数: ${collection.likes_count}`)
     console.log(`浏览数: ${collection.views_count}`)
     console.log(`封面图片: ${collection.cover_image_url || '无'}`)
-    
+
     // 获取图片列表
     const images = await ArtworkModel.getImages(collection.id)
     console.log(`\n图片数量: ${images.length}`)
@@ -123,22 +123,22 @@ async function showCollectionImages() {
       input: process.stdin,
       output: process.stdout
     })
-    
+
     const id = await new Promise<string>((resolve) => {
       readline.question('请输入作品集ID: ', resolve)
     })
     readline.close()
-    
+
     const images = await ArtworkModel.getImages(parseInt(id))
-    
+
     if (images.length === 0) {
       console.log('❌ 该作品集没有图片')
       return
     }
-    
+
     console.log(`\n🖼️  作品集 ${id} 的图片列表:`)
     console.log('-'.repeat(80))
-    
+
     images.forEach((img: ImageRecord, index: number) => {
       console.log(`${index + 1}. 图片ID: ${img.id}`)
       console.log(`   原始文件名: ${img.original_name}`)
@@ -159,21 +159,21 @@ async function deleteCollection() {
       input: process.stdin,
       output: process.stdout
     })
-    
+
     const id = await new Promise<string>((resolve) => {
       readline.question('请输入要删除的作品集ID: ', resolve)
     })
-    
+
     const confirm = await new Promise<string>((resolve) => {
       readline.question('确认删除？这将同时删除所有相关图片记录 (y/N): ', resolve)
     })
     readline.close()
-    
+
     if (confirm.toLowerCase() !== 'y') {
       console.log('❌ 取消删除')
       return
     }
-    
+
     const success = await ArtworkModel.delete(parseInt(id))
     if (success) {
       console.log('✅ 作品集删除成功')
@@ -191,21 +191,21 @@ async function deleteImage() {
       input: process.stdin,
       output: process.stdout
     })
-    
+
     const id = await new Promise<string>((resolve) => {
       readline.question('请输入要删除的图片ID: ', resolve)
     })
-    
+
     const confirm = await new Promise<string>((resolve) => {
       readline.question('确认删除这张图片？ (y/N): ', resolve)
     })
     readline.close()
-    
+
     if (confirm.toLowerCase() !== 'y') {
       console.log('❌ 取消删除')
       return
     }
-    
+
     const success = await ArtworkModel.deleteImage(parseInt(id))
     if (success) {
       console.log('✅ 图片删除成功')
@@ -223,40 +223,40 @@ async function updateCollection() {
       input: process.stdin,
       output: process.stdout
     })
-    
+
     const id = await new Promise<string>((resolve) => {
       readline.question('请输入要更新的作品集ID: ', resolve)
     })
-    
+
     const title = await new Promise<string>((resolve) => {
       readline.question('新标题 (留空保持不变): ', resolve)
     })
-    
+
     const description = await new Promise<string>((resolve) => {
       readline.question('新描述 (留空保持不变): ', resolve)
     })
-    
+
     const tags = await new Promise<string>((resolve) => {
       readline.question('新标签 (用逗号分隔，留空保持不变): ', resolve)
     })
-    
+
     const status = await new Promise<string>((resolve) => {
       readline.question('新状态 (active/draft/archived，留空保持不变): ', resolve)
     })
-    
+
     readline.close()
-    
+
     const updateData: any = {}
     if (title.trim()) updateData.title = title.trim()
     if (description.trim()) updateData.description = description.trim()
     if (tags.trim()) updateData.tags = tags.split(',').map(t => t.trim())
     if (status.trim()) updateData.status = status.trim()
-    
+
     if (Object.keys(updateData).length === 0) {
       console.log('❌ 没有提供任何更新数据')
       return
     }
-    
+
     const result = await ArtworkModel.update(parseInt(id), updateData)
     if (result) {
       console.log('✅ 作品集更新成功')
@@ -277,40 +277,40 @@ async function showDatabaseStats() {
   try {
     console.log('\n📊 数据库统计信息:')
     console.log('-'.repeat(50))
-    
+
     // 作品集统计
     const collectionsResult = await query('SELECT COUNT(*) as count FROM artwork_collections')
     const collectionsCount = collectionsResult.rows[0].count
-    
+
     const activeCollectionsResult = await query("SELECT COUNT(*) as count FROM artwork_collections WHERE status = 'active'")
     const activeCollectionsCount = activeCollectionsResult.rows[0].count
-    
+
     // 图片统计
     const imagesResult = await query('SELECT COUNT(*) as count FROM artwork_images')
     const imagesCount = imagesResult.rows[0].count
-    
+
     // 点赞统计
     const likesResult = await query('SELECT COUNT(*) as count FROM artwork_likes')
     const likesCount = likesResult.rows[0].count
-    
+
     // 总点赞数
     const totalLikesResult = await query('SELECT SUM(likes_count) as total FROM artwork_collections')
     const totalLikes = totalLikesResult.rows[0].total || 0
-    
+
     console.log(`作品集总数: ${collectionsCount}`)
     console.log(`活跃作品集: ${activeCollectionsCount}`)
     console.log(`图片总数: ${imagesCount}`)
     console.log(`点赞记录数: ${likesCount}`)
     console.log(`总点赞数: ${totalLikes}`)
-    
+
     // 最近创建的作品集
     const recentCollections = await query(`
-      SELECT title, created_at, likes_count 
-      FROM artwork_collections 
-      ORDER BY created_at DESC 
+      SELECT title, created_at, likes_count
+      FROM artwork_collections
+      ORDER BY created_at DESC
       LIMIT 5
     `)
-    
+
     if (recentCollections.rows.length > 0) {
       console.log('\n最近创建的作品集:')
       recentCollections.rows.forEach((row: any) => {
@@ -324,7 +324,7 @@ async function showDatabaseStats() {
 
 async function main() {
   console.log('🔧 AIGC图片作品集数据库管理工具启动...')
-  
+
   // 测试数据库连接
   try {
     await query('SELECT NOW()')
@@ -333,19 +333,19 @@ async function main() {
     console.error('❌ 数据库连接失败:', error)
     process.exit(1)
   }
-  
+
   const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
   })
-  
+
   while (true) {
     await showMenu()
-    
+
     const choice = await new Promise<string>((resolve) => {
       readline.question('请选择操作 (0-7): ', resolve)
     })
-    
+
     switch (choice) {
       case '1':
         await listAllCollections()
@@ -375,7 +375,7 @@ async function main() {
       default:
         console.log('❌ 无效选择，请重新输入')
     }
-    
+
     await new Promise<void>((resolve) => {
       readline.question('\n按回车键继续...', () => resolve())
     })

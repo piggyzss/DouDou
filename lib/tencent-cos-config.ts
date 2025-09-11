@@ -4,7 +4,7 @@ export const cosConfig = {
   Bucket: process.env.COS_BUCKET!,
   Region: process.env.COS_REGION || 'ap-beijing',
   AppId: process.env.COS_APP_ID!,
-  Domain: process.env.COS_DOMAIN || 
+  Domain: process.env.COS_DOMAIN ||
     `https://${process.env.COS_BUCKET}.cos.${process.env.COS_REGION || 'ap-beijing'}.myqcloud.com`
 }
 
