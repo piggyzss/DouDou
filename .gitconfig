@@ -1,0 +1,21 @@
+[core]
+	fileMode = false
+	autocrlf = input
+	safecrlf = false
+	whitespace = trailing-space,space-before-tab
+
+[diff]
+	renames = true
+	noprefix = false
+
+[apply]
+	whitespace = fix
+
+[merge]
+	tool = vimdiff
+
+[push]
+	default = simple
+
+[pull]
+	rebase = false
