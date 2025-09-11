@@ -153,7 +153,7 @@ CREATE TABLE likes (
 
 ---
 
-## 🛠️ 管理工具命令command
+## 🛠️ 管理工具
 
 ### AIGC 内容管理
 ```bash
@@ -184,7 +184,7 @@ npm run db:manage-blog          # 博客文章管理
 
 ---
 
-## 📋 常用命令
+## 📋 常用命令command
 
 ### 环境检查
 ```bash
@@ -206,38 +206,67 @@ npm run preflight:fix-missing-images  # 清理无效图片记录
 
 ---
 
-## 🚨 故障排除
+## ❓ 常见问题 Q&A
 
-### 连接问题
+### Q: 如何切换到本地数据库？
+**A**: 编辑 `.env.local` 文件：
+```env
+# 注释云数据库URL
+# DATABASE_URL="postgres://..."
 
-#### 问题: 数据库连接失败
-**解决方案**:
-1. 检查 `.env.local` 文件是否存在
-2. 运行 `npm run db:info` 确认环境
-3. 验证网络连接和数据库服务状态
+# 启用本地配置
+DB_HOST="localhost"
+DB_NAME="doudou_db"
+DB_USER="doudou_user"
+DB_PASSWORD="your_password"
+```
+然后重启应用并运行 `npm run db:info` 确认。
 
-#### 问题: 环境混淆
-**解决方案**:
+### Q: 如何切换到云数据库？
+**A**: 在 `.env.local` 文件中设置：
+```env
+DATABASE_URL="postgres://user:pass@host:5432/db"
+```
+`DATABASE_URL` 优先级最高，会覆盖本地配置。
+
+### Q: 数据库连接失败怎么办？
+**A**: 按顺序检查：
 1. 运行 `npm run db:info` 确认当前环境
-2. 检查环境变量优先级 (`DATABASE_URL` > 单独变量)
-3. 重启应用使配置生效
+2. 检查 `.env.local` 文件是否存在和格式正确
+3. 确认数据库服务是否运行
+4. 验证网络连接
 
-### 权限问题
+### Q: 我不知道连接的是哪个数据库？
+**A**: 运行 `npm run db:info` 查看详细信息：
+- **本地**: 显示 `localhost`
+- **Vercel**: 显示 `vercel-storage.com`
+- **Prisma**: 显示 `db.prisma.io`
 
-#### 问题: 表操作权限不足
-**解决方案**:
+### Q: 表操作提示权限不足？
+**A**: 以管理员身份执行：
 ```sql
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO doudou_user;
-ALTER TABLE <table_name> OWNER TO doudou_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO doudou_user;
 ```
 
-### 性能问题
+### Q: 查询速度很慢怎么优化？
+**A**: 
+1. 检查是否有合适的索引
+2. 使用 `EXPLAIN ANALYZE` 分析查询计划
+3. 优化查询语句，避免全表扫描
 
-#### 问题: 查询速度慢
-**解决方案**:
-1. 检查索引是否存在
-2. 分析查询计划
-3. 优化查询语句
+### Q: 修改环境变量后没有生效？
+**A**: 
+1. 重启开发服务器 (`Ctrl+C` 然后 `npm run dev`)
+2. 运行 `npm run db:info` 确认环境变量已更新
+3. 检查环境变量优先级：`DATABASE_URL` > `POSTGRES_URL` > 单独变量
+
+### Q: 数据库表不存在？
+**A**: 运行初始化命令：
+```bash
+npm run db:init     # 初始化 AIGC 表
+npm run db:setup    # 完整数据库设置
+```
 
 ---
 
