@@ -199,6 +199,7 @@ async function createTables() {
       status VARCHAR(20) DEFAULT 'draft',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      published_at TIMESTAMP,
       views_count INTEGER DEFAULT 0,
       likes_count INTEGER DEFAULT 0
     )

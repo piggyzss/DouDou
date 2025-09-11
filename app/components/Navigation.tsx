@@ -11,7 +11,7 @@ import {
   Moon,
   Search,
   Carrot,
-  PenTool,
+  SquarePen,
   Code,
   Palette
 } from 'lucide-react'
@@ -19,7 +19,7 @@ import { useTheme } from '../providers'
 
 const navItems = [
   { name: 'Hello', href: '/', icon: Carrot },
-  { name: 'Write', href: '/blog', icon: PenTool },
+  { name: 'Write', href: '/blog', icon: SquarePen },
   { name: 'App', href: '/projects', icon: Code },
   { name: 'AIGC', href: '/aigc', icon: Palette },
 ]
