@@ -11,7 +11,10 @@
     "env": {
       "NEXT_TELEMETRY_DISABLED": "1",
       "GIT_CONFIG_NOSYSTEM": "1",
-      "GIT_CONFIG_GLOBAL": "/dev/null"
+      "GIT_CONFIG_GLOBAL": "/dev/null",
+      "NEXT_BUILD_TRACE": "false",
+      "DISABLE_COLLECT_BUILD_TRACES": "true",
+      "NODE_OPTIONS": "--max-old-space-size=4096"
     }
   }
 }

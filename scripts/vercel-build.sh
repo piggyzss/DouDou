@@ -38,7 +38,19 @@ echo "✅ Git 环境配置完成"
 export NEXT_TELEMETRY_DISABLED=1
 export NODE_ENV=production
 
+# 禁用构建追踪相关功能以解决 micromatch 问题
+export NEXT_BUILD_TRACE=false
+export DISABLE_COLLECT_BUILD_TRACES=true
+export NEXT_DISABLE_SOURCEMAPS=true
+
+# 设置内存限制
+export NODE_OPTIONS="--max-old-space-size=4096"
+
 echo "🚀 开始构建..."
+
+# 清理可能的缓存问题
+rm -rf .next
+rm -rf node_modules/.cache
 
 # 执行构建
 npm run build

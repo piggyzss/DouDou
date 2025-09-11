@@ -28,3 +28,21 @@ build/
 *.bak
 *.backup
 *.old
+
+# 添加更多可能导致构建追踪问题的模式
+**/.git/**
+**/node_modules/**
+**/.next/**
+**/coverage/**
+**/.cache/**
+**/tmp/**
+**/temp/**
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+
+# 忽略可能导致 micromatch 堆栈溢出的深层嵌套
+**/**/node_modules/**
+**/**/.git/**
+**/**/.next/**
+**/**/.cache/**
