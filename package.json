@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "vercel-build": "GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null NEXT_TELEMETRY_DISABLED=1 NEXT_BUILD_TRACE=false DISABLE_COLLECT_BUILD_TRACES=true NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "vercel-build-simple": "rm -rf .next && rm -rf node_modules/.cache && NEXT_TELEMETRY_DISABLED=1 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null NEXT_BUILD_TRACE=false DISABLE_COLLECT_BUILD_TRACES=true NODE_OPTIONS='--max-old-space-size=4096' npx next build",
     "prestart": "npm run preflight",
     "start": "next start",
     "preview": "npm run build && NODE_ENV=production next start -p 3000",

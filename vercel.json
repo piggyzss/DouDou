@@ -1,5 +1,5 @@
 {
-  "buildCommand": "bash scripts/simple-build.sh",
+  "buildCommand": "npm run vercel-build-simple",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {

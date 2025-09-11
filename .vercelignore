@@ -1,5 +1,20 @@
 # 排除可能导致构建问题的文件和目录
-scripts/
+# 排除大部分脚本，但保留构建脚本
+scripts/*.ts
+scripts/git-hooks/
+scripts/manage-*.ts
+scripts/test-*.ts
+scripts/init-*.ts
+scripts/setup-*.ts
+scripts/repair-*.ts
+scripts/update-*.ts
+scripts/deploy-*.ts
+scripts/verify-*.ts
+scripts/preflight.ts
+# 保留构建脚本
+!scripts/simple-build.sh
+!scripts/vercel-build.sh
+
 docs/
 database/
 *.log
