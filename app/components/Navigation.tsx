@@ -18,7 +18,7 @@ import {
 import { useTheme } from '../providers'
 
 const navItems = [
-  { name: 'Hi', href: '/', icon: Carrot },
+  { name: 'Hello', href: '/', icon: Carrot },
   { name: 'Write', href: '/blog', icon: PenTool },
   { name: 'App', href: '/projects', icon: Code },
   { name: 'AIGC', href: '/aigc', icon: Palette },
@@ -75,7 +75,7 @@ export default function Navigation() {
                         : 'text-text-secondary hover:text-primary'
                     }`}
                   >
-                    <Icon size={16} className="icon-hover-rotate" />
+                    <Icon size={16} className="icon-hover-rotate text-current" strokeWidth={1.5} />
                     <span>{item.name}</span>
                     {pathname === item.href && (
                       <motion.div
@@ -171,7 +171,7 @@ export default function Navigation() {
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <Icon size={16} className="icon-hover-rotate" />
+                    <Icon size={16} className="icon-hover-rotate text-current" strokeWidth={1.5} />
                     <span>{item.name}</span>
                   </Link>
                 </div>
