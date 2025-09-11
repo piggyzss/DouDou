@@ -1,16 +1,32 @@
 import { Pool, PoolClient } from 'pg'
 
 // 数据库配置
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'doudou_db',
-  user: process.env.DB_USER || 'doudou_user',
-  password: process.env.DB_PASSWORD || 'doudou_password',
-  max: 20, // 连接池最大连接数
-  idleTimeoutMillis: 30000, // 连接空闲超时
-  connectionTimeoutMillis: 2000, // 连接超时
+function getDatabaseConfig() {
+  // 优先使用 DATABASE_URL（Vercel 推荐方式）
+  if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+    return {
+      connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
+      max: 20, // 连接池最大连接数
+      idleTimeoutMillis: 30000, // 连接空闲超时
+      connectionTimeoutMillis: 2000, // 连接超时
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    }
+  }
+  
+  // 回退到单独的环境变量（本地开发）
+  return {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'doudou_db',
+    user: process.env.DB_USER || 'doudou_user',
+    password: process.env.DB_PASSWORD || 'doudou_password',
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  }
 }
+
+const dbConfig = getDatabaseConfig()
 
 // 创建连接池
 const pool = new Pool(dbConfig)
