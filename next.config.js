@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 优化构建配置以解决 micromatch 堆栈溢出问题
+  webpack: (config, { isServer }) => {
+    // 优化文件解析，避免路径匹配问题
+    config.resolve.symlinks = false;
+    return config;
+  },
   images: {
     domains: ['localhost'],
     formats: ['image/webp', 'image/avif'],
