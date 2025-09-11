@@ -256,7 +256,7 @@ export default function About() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-sm"></div>
                 <div className="relative w-full h-full">
                   <Image
-                    src="/app/assets/images/avatar.png?v=20240821"
+                    src="/images/avatar.png?v=20240821"
                     alt="shanshan的头像"
                     width={208}
                     height={208}
