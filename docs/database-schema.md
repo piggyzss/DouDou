@@ -252,6 +252,210 @@ GROUP BY ac.id, ac.title, ac.created_at, ac.likes_count, ac.views_count
 ORDER BY ac.created_at DESC;
 ```
 
+## 👍 点赞系统表结构
+
+### 1. 统一点赞表 (likes)
+
+```sql
+CREATE TABLE likes (
+    id SERIAL PRIMARY KEY,
+    target_type VARCHAR(20) NOT NULL,  -- 'blog', 'artwork', 'music', 'video'
+    target_id INTEGER NOT NULL,
+    anon_id VARCHAR(64),               -- 匿名用户标识
+    ip_hash VARCHAR(128),              -- IP 地址哈希
+    ua_hash VARCHAR(128),              -- User Agent 哈希
+    status VARCHAR(10) DEFAULT 'liked', -- 'liked' 或 'unliked'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 唯一索引：防止重复点赞
+CREATE UNIQUE INDEX idx_likes_unique_anon 
+ON likes(target_type, target_id, anon_id) 
+WHERE anon_id IS NOT NULL;
+
+CREATE UNIQUE INDEX idx_likes_unique_ipua 
+ON likes(target_type, target_id, ip_hash, ua_hash) 
+WHERE anon_id IS NULL;
+
+-- 查询索引
+CREATE INDEX idx_likes_target ON likes(target_type, target_id);
+CREATE INDEX idx_likes_created_at ON likes(created_at);
+CREATE INDEX idx_likes_status ON likes(status);
+```
+
+### 2. 点赞计数同步触发器
+
+```sql
+-- 自动更新业务表的点赞计数
+CREATE OR REPLACE FUNCTION sync_likes_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+        -- 计算当前有效点赞数
+        DECLARE
+            current_count INTEGER;
+            table_name TEXT;
+        BEGIN
+            SELECT COUNT(*) INTO current_count
+            FROM likes 
+            WHERE target_type = NEW.target_type 
+            AND target_id = NEW.target_id 
+            AND status = 'liked';
+            
+            -- 根据目标类型更新对应业务表
+            CASE NEW.target_type
+                WHEN 'artwork' THEN
+                    UPDATE artwork_collections 
+                    SET likes_count = current_count 
+                    WHERE id = NEW.target_id;
+                WHEN 'blog' THEN
+                    UPDATE blog_posts 
+                    SET likes_count = current_count 
+                    WHERE id = NEW.target_id;
+                WHEN 'music' THEN
+                    UPDATE music_tracks 
+                    SET likes_count = current_count 
+                    WHERE id = NEW.target_id;
+                WHEN 'video' THEN
+                    UPDATE videos 
+                    SET likes_count = current_count 
+                    WHERE id = NEW.target_id;
+            END CASE;
+        END;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        -- 删除时同样需要更新计数
+        DECLARE
+            current_count INTEGER;
+        BEGIN
+            SELECT COUNT(*) INTO current_count
+            FROM likes 
+            WHERE target_type = OLD.target_type 
+            AND target_id = OLD.target_id 
+            AND status = 'liked';
+            
+            CASE OLD.target_type
+                WHEN 'artwork' THEN
+                    UPDATE artwork_collections 
+                    SET likes_count = current_count 
+                    WHERE id = OLD.target_id;
+                WHEN 'blog' THEN
+                    UPDATE blog_posts 
+                    SET likes_count = current_count 
+                    WHERE id = OLD.target_id;
+                WHEN 'music' THEN
+                    UPDATE music_tracks 
+                    SET likes_count = current_count 
+                    WHERE id = OLD.target_id;
+                WHEN 'video' THEN
+                    UPDATE videos 
+                    SET likes_count = current_count 
+                    WHERE id = OLD.target_id;
+            END CASE;
+        END;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 创建触发器
+CREATE TRIGGER trigger_sync_likes_count
+    AFTER INSERT OR UPDATE OR DELETE ON likes
+    FOR EACH ROW
+    EXECUTE FUNCTION sync_likes_count();
+```
+
+### 3. 点赞统计视图
+
+```sql
+-- 点赞排行榜视图
+CREATE VIEW likes_ranking AS
+SELECT 
+    target_type,
+    target_id,
+    COUNT(*) as likes_count,
+    MAX(created_at) as last_liked_at
+FROM likes 
+WHERE status = 'liked'
+GROUP BY target_type, target_id
+ORDER BY likes_count DESC, last_liked_at DESC;
+
+-- 每日点赞统计视图
+CREATE VIEW daily_likes_stats AS
+SELECT 
+    DATE(created_at) as date,
+    target_type,
+    COUNT(*) as likes_count
+FROM likes 
+WHERE status = 'liked'
+GROUP BY DATE(created_at), target_type
+ORDER BY date DESC, target_type;
+```
+
+### 4. 点赞数据维护
+
+```sql
+-- 修复点赞计数不一致的存储过程
+CREATE OR REPLACE FUNCTION fix_likes_count()
+RETURNS void AS $$
+DECLARE
+    r RECORD;
+BEGIN
+    -- 修复 artwork_collections 表
+    FOR r IN 
+        SELECT target_id, COUNT(*) as actual_count
+        FROM likes 
+        WHERE target_type = 'artwork' AND status = 'liked'
+        GROUP BY target_id
+    LOOP
+        UPDATE artwork_collections 
+        SET likes_count = r.actual_count 
+        WHERE id = r.target_id;
+    END LOOP;
+    
+    -- 修复 blog_posts 表
+    FOR r IN 
+        SELECT target_id, COUNT(*) as actual_count
+        FROM likes 
+        WHERE target_type = 'blog' AND status = 'liked'
+        GROUP BY target_id
+    LOOP
+        UPDATE blog_posts 
+        SET likes_count = r.actual_count 
+        WHERE id = r.target_id;
+    END LOOP;
+    
+    -- 修复 music_tracks 表
+    FOR r IN 
+        SELECT target_id, COUNT(*) as actual_count
+        FROM likes 
+        WHERE target_type = 'music' AND status = 'liked'
+        GROUP BY target_id
+    LOOP
+        UPDATE music_tracks 
+        SET likes_count = r.actual_count 
+        WHERE id = r.target_id;
+    END LOOP;
+    
+    -- 修复 videos 表
+    FOR r IN 
+        SELECT target_id, COUNT(*) as actual_count
+        FROM likes 
+        WHERE target_type = 'video' AND status = 'liked'
+        GROUP BY target_id
+    LOOP
+        UPDATE videos 
+        SET likes_count = r.actual_count 
+        WHERE id = r.target_id;
+    END LOOP;
+    
+    RAISE NOTICE '点赞计数修复完成';
+END;
+$$ LANGUAGE plpgsql;
+```
+
 ## 🚀 部署方案
 
 ### 方案一：本地PostgreSQL（开发环境）

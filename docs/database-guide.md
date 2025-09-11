@@ -74,7 +74,7 @@ DB_PASSWORD="your_password"
 
 ---
 
-## 📊 表结构
+## 📊 表结构schema
 
 ### AIGC 内容表
 
@@ -153,7 +153,7 @@ CREATE TABLE likes (
 
 ---
 
-## 🛠️ 管理工具
+## 🛠️ 管理工具命令command
 
 ### AIGC 内容管理
 ```bash
@@ -243,8 +243,7 @@ ALTER TABLE <table_name> OWNER TO doudou_user;
 
 ## 📚 相关文档
 
-- **[数据库内容架构](./database-content-architecture.md)** - 详细的内容架构设计
-- **[点赞系统设计](./likes-system-design.md)** - 点赞系统架构分析
+- **[数据库内容架构](./database-content-architecture.md)** - 详细的内容架构设计和点赞系统分析
 - **[Vercel 数据库配置](./vercel-database-setup.md)** - Vercel Postgres 配置
 - **[腾讯云 COS 配置](./cos-setup.md)** - 文件存储配置
 - **[部署指南](./deployment-guide.md)** - 生产环境部署
