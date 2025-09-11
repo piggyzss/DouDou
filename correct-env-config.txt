@@ -1,0 +1,19 @@
+# 正确的环境变量配置
+# 你的项目使用 pg 库，不是 Prisma，所以需要直连的数据库 URL
+
+# ✅ 使用这个（postgres:// 开头的直连 URL）
+DATABASE_URL="postgres://..."
+
+# ❌ 不需要这些 Prisma 相关的变量
+# PRISMA_DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+
+# 如果你有 Vercel Postgres，应该使用类似这样的格式：
+# DATABASE_URL="postgresql://default:xxxx@ep-xxxx.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+
+# 或者如果你从 Vercel Dashboard 复制的是 POSTGRES_URL，也可以这样设置：
+# POSTGRES_URL="postgresql://default:xxxx@ep-xxxx.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+# DATABASE_URL="postgresql://default:xxxx@ep-xxxx.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+
+# 其他环境变量
+NEXT_PUBLIC_SITE_URL="http://localhost:3001"
+NODE_ENV="development"

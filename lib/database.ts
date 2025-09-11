@@ -6,10 +6,16 @@ function getDatabaseConfig() {
   if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
     return {
       connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-      max: 20, // 连接池最大连接数
-      idleTimeoutMillis: 30000, // 连接空闲超时
-      connectionTimeoutMillis: 2000, // 连接超时
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      max: 10, // 减少连接池大小
+      min: 1, // 最小连接数
+      idleTimeoutMillis: 10000, // 减少空闲超时时间
+      connectionTimeoutMillis: 10000, // 增加连接超时时间
+      acquireTimeoutMillis: 10000, // 获取连接超时
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      // 添加重连配置
+      reconnect: true,
+      reconnectTries: 3,
+      reconnectInterval: 1000
     }
   }
   
@@ -20,9 +26,11 @@ function getDatabaseConfig() {
     database: process.env.DB_NAME || 'doudou_db',
     user: process.env.DB_USER || 'doudou_user',
     password: process.env.DB_PASSWORD || 'doudou_password',
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    max: 10,
+    min: 1,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000,
+    acquireTimeoutMillis: 10000,
   }
 }
 

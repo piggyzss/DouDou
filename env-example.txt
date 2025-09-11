@@ -1,0 +1,17 @@
+# Vercel Postgres 数据库配置示例
+# 从 Vercel Dashboard > Storage > 你的数据库 > .env.local 复制实际值
+
+POSTGRES_URL="postgresql://username:password@ep-xxx.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+POSTGRES_PRISMA_URL="postgresql://username:password@ep-xxx.us-east-1.postgres.vercel-storage.com:5432/verceldb?pgbouncer=true&connect_timeout=15"
+POSTGRES_URL_NON_POOLING="postgresql://username:password@ep-xxx.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+POSTGRES_USER="username"
+POSTGRES_HOST="ep-xxx.us-east-1.postgres.vercel-storage.com"
+POSTGRES_PASSWORD="password"
+POSTGRES_DATABASE="verceldb"
+
+# 为了兼容现有代码，也可以设置 DATABASE_URL
+DATABASE_URL="postgresql://username:password@ep-xxx.us-east-1.postgres.vercel-storage.com:5432/verceldb"
+
+# 其他环境变量
+NEXT_PUBLIC_SITE_URL="http://localhost:3001"
+NODE_ENV="development"

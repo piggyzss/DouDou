@@ -14,6 +14,7 @@
     "lint": "next lint",
     "preflight": "ts-node -P tsconfig.scripts.json scripts/preflight.ts",
     "preflight:fix-missing-images": "FIX=delete ts-node -P tsconfig.scripts.json scripts/repair-aigc-images.ts",
+    "test:db": "ts-node -P tsconfig.scripts.json scripts/test-database-connection.ts",
     "dev:preflight": "npm run preflight && npm run dev",
     "db:manage": "npm run db:manage-blog",
     "db:setup": "ts-node -P tsconfig.scripts.json scripts/setup-database.ts",
