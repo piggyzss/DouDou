@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ArtworkModel } from '../../../../../lib/models/artwork'
-import { deleteFile } from '../../../../../lib/tencent-cos'
+import { ArtworkModel } from '@/lib/models/artwork'
+import { deleteFile } from '@/lib/tencent-cos'
 
 export async function DELETE(
   req: NextRequest,

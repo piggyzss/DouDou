@@ -3,7 +3,7 @@ export const revalidate = 0
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { BlogModel } from '../../../lib/models/blog'
+import { BlogModel } from '@/lib/models/blog'
 import { unified } from 'unified'
 import remarkParse from 'remark-parse'
 import remarkGfm from 'remark-gfm'

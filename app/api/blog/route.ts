@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { BlogModel } from '../../../lib/models/blog'
-import { uploadFile } from '../../../lib/tencent-cos'
+import { BlogModel } from '@/lib/models/blog'
+import { uploadFile } from '@/lib/tencent-cos'
 
 // 生成slug
 function generateSlug(title: string): string {

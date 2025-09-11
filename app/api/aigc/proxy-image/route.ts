@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import COS from 'cos-nodejs-sdk-v5'
-import { cosConfig } from '../../../../lib/tencent-cos-config'
+import { cosConfig } from '@/lib/tencent-cos-config'
 
 export const dynamic = 'force-dynamic'
 

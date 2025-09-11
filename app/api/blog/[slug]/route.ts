@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { BlogModel } from '../../../../lib/models/blog'
-import { deleteFile } from '../../../../lib/tencent-cos'
+import { BlogModel } from '@/lib/models/blog'
+import { deleteFile } from '@/lib/tencent-cos'
 
 function normalizeSlug(input: string) {
   try {
