@@ -13,7 +13,7 @@
 - **[数据库架构设计](./database-schema.md)**
   - 详细的表结构设计和关系说明
   
-- **[AIGC 内容架构](./aigc-content-architecture.md)**
+- **[数据库内容架构](./database-content-architecture.md)**
   - AIGC 内容的组织方式和设计理念
   
 - **[点赞系统设计](./likes-system-design.md)**

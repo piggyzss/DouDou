@@ -454,7 +454,7 @@ SET likes_count = (
 ## 📚 相关文档
 
 - [数据库架构设计](./database-schema.md)
-- [AIGC 内容架构](./aigc-content-architecture.md)
+- [数据库内容架构](./database-content-architecture.md)
 - [点赞系统设计](./likes-system-design.md)
 - [数据库环境识别](./database-environment-guide.md)
 - [Vercel 数据库配置](./vercel-database-setup.md)
