@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "functions": {
@@ -9,8 +9,9 @@
   },
   "build": {
     "env": {
-      "NEXT_TELEMETRY_DISABLED": "1"
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "GIT_CONFIG_GLOBAL": "/dev/null"
     }
-  },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./"
+  }
 }

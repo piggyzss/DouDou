@@ -6,6 +6,7 @@
     "predev": "npm run preflight",
     "dev": "next dev",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
+    "vercel-build": "GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null NEXT_TELEMETRY_DISABLED=1 next build",
     "prestart": "npm run preflight",
     "start": "next start",
     "preview": "npm run build && NODE_ENV=production next start -p 3000",
