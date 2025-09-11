@@ -201,7 +201,11 @@ async function createTables() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       published_at TIMESTAMP,
       views_count INTEGER DEFAULT 0,
-      likes_count INTEGER DEFAULT 0
+      likes_count INTEGER DEFAULT 0,
+      author_id INTEGER,
+      featured_image_url VARCHAR(500),
+      meta_title VARCHAR(255),
+      meta_description TEXT
     )
   `)
 
