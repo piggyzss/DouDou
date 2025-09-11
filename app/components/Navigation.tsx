@@ -10,16 +10,16 @@ import {
   Sun,
   Moon,
   Search,
-  Home,
-  FileText,
+  Carrot,
+  PenTool,
   Code,
   Palette
 } from 'lucide-react'
 import { useTheme } from '../providers'
 
 const navItems = [
-  { name: 'Home', href: '/', icon: Home },
-  { name: 'Blog', href: '/blog', icon: FileText },
+  { name: 'Hi', href: '/', icon: Carrot },
+  { name: 'Write', href: '/blog', icon: PenTool },
   { name: 'App', href: '/projects', icon: Code },
   { name: 'AIGC', href: '/aigc', icon: Palette },
 ]
