@@ -179,7 +179,7 @@ export default function AIGCPage() {
   const handleCreateArtwork = (artworkData: Omit<Artwork, 'id' | 'likes' | 'comments' | 'createdAt'>) => {
     // 创建成功后重新加载数据
     loadArtworks()
-
+    
     // 显示成功消息
     console.log('✅ 作品集创建成功:', artworkData.title)
   }
@@ -300,17 +300,17 @@ export default function AIGCPage() {
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (!selectedImage) return
-
+    
     const artwork = artworks.find(a => a.id === selectedImage.artworkId)
     if (!artwork) return
-
+    
     let newIndex = selectedImage.imageIndex
     if (direction === 'prev') {
       newIndex = newIndex > 0 ? newIndex - 1 : artwork.images.length - 1
     } else {
       newIndex = newIndex < artwork.images.length - 1 ? newIndex + 1 : 0
     }
-
+    
     setSelectedImage({
       url: artwork.images[newIndex].file_url,
       artworkId: selectedImage.artworkId,
@@ -320,7 +320,7 @@ export default function AIGCPage() {
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!selectedImage) return
-
+    
     if (e.key === 'ArrowLeft') {
       navigateImage('prev')
     } else if (e.key === 'ArrowRight') {

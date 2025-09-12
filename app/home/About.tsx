@@ -2,14 +2,13 @@
 
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useState } from 'react'
-import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, PawPrint } from 'lucide-react'
+import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, PawPrint, Carrot } from 'lucide-react'
 import Image from 'next/image'
 
 interface ExperienceCard {
   id: number
   title: string
   company: string
-  period: string
   description: string
   color: string
   x: number
@@ -23,7 +22,6 @@ export default function About() {
       id: 1,
       title: "前端开发工程师",
       company: "某科技公司",
-      period: "2022 - 至今",
       description: "负责公司核心产品的前端开发，使用React、TypeScript等技术栈",
       color: "#6747ce",
       x: 35,
@@ -34,7 +32,6 @@ export default function About() {
       id: 2,
       title: "UI/UX设计师",
       company: "设计工作室",
-      period: "2020 - 2022",
       description: "专注于用户体验设计，创造直观易用的数字产品界面",
       color: "#fdded9",
       x: 72,
@@ -45,7 +42,6 @@ export default function About() {
       id: 3,
       title: "全栈开发者",
       company: "创业公司",
-      period: "2018 - 2020",
       description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
       color: "#84a5f4",
       x: 5,
@@ -56,7 +52,6 @@ export default function About() {
       id: 4,
       title: "技术顾问",
       company: "咨询公司",
-      period: "2016 - 2018",
       description: "为客户提供技术解决方案，优化业务流程和系统架构",
       color: "#fed336",
       x: 52,
@@ -67,7 +62,6 @@ export default function About() {
       id: 5,
       title: "产品经理",
       company: "互联网公司",
-      period: "2014 - 2016",
       description: "负责产品规划和管理，协调开发团队实现产品目标",
       color: "#8ccc79",
       x: 17,
@@ -78,7 +72,6 @@ export default function About() {
       id: 6,
       title: "软件工程师",
       company: "传统企业",
-      period: "2012 - 2014",
       description: "参与企业级软件开发，积累丰富的项目经验",
       color: "#53b88f",
       x: 46,
@@ -161,7 +154,7 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="space-y-8"
+            className="space-y-12"
           >
             {/* Links */}
             <div>
@@ -203,13 +196,13 @@ export default function About() {
             </div>
 
             {/* Skills */}
-            <div className="mt-6">
+            <div>
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
                   <span
                     key={skill}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium hover:border-primary hover:text-primary transition-colors cursor-pointer font-english"
+                    className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium hover:border-primary hover:text-primary transition-colors cursor-pointer font-english"
                   >
                     {skill}
                   </span>
@@ -218,23 +211,21 @@ export default function About() {
             </div>
 
             {/* Experience */}
-            <div className="mt-6">
+            <div>
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Experience</h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <PawPrint className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <Carrot className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0" strokeWidth={1.5} />
                   <div>
-                    <h4 className="font-semibold text-text-primary">前端开发工程师</h4>
-                    <p className="text-sm blog-body-text mt-2 mb-2">某科技公司 • 2022 ～ 至今</p>
-                    <p className="text-sm blog-body-text">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
+                    <h4 className="font-semibold text-text-primary">ByteDance</h4>
+                    <p className="text-sm blog-body-text mt-2">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <PawPrint className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <Carrot className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0" strokeWidth={1.5} />
                   <div>
-                    <h4 className="font-semibold text-text-primary">UI/UX设计师</h4>
-                    <p className="text-sm blog-body-text mt-2 mb-2">设计工作室 • 2020 ～ 2022</p>
-                    <p className="text-sm blog-body-text">专注于用户体验设计，创造直观易用的数字产品界面</p>
+                    <h4 className="font-semibold text-text-primary">Horizon Robotics</h4>
+                    <p className="text-sm blog-body-text mt-2">专注于用户体验设计，创造直观易用的数字产品界面</p>
                   </div>
                 </div>
               </div>
@@ -296,7 +287,6 @@ export default function About() {
                   >
                     <h4 className="font-semibold text-sm mb-1">{card.title}</h4>
                     <p className="text-xs opacity-90 mb-2">{card.company}</p>
-                    <p className="text-xs opacity-75 mb-2">{card.period}</p>
                     <p className="text-xs opacity-80 leading-relaxed">{card.description}</p>
                   </div>
                 </motion.div>

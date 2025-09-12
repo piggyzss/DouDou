@@ -1,6 +1,6 @@
 # 项目部署指南
 
-## 一、申请域名
+## 1、申请域名
 
 ### 1.1 选择域名注册商
 推荐使用以下服务商：
@@ -10,7 +10,8 @@ GoDaddy
 Namecheap
 
 ### 1.2 域名选择建议
-主域名：yourname.com 或 yourname.cn
+
+主域名：建议选择 `.com` 或 `.cn` 域名，yourname.com 或 yourname.cn
 备选方案：yourname.dev、yourname.site、yourname.tech
 价格范围：.com 域名约 60-100元/年，.cn 域名约 30-50元/年
 
@@ -22,7 +23,7 @@ Namecheap
 5、完成实名认证（国内域名必需）
 6、支付费用
 
-## 二、部署到 Vercel（推荐）
+## 2、部署到 Vercel（推荐）
 ### 2.1 准备项目
 首先确保项目可以正常构建：构建成功！
 
@@ -48,7 +49,7 @@ Install Command: npm install
 让我创建一个部署配置文档：deployment-guide.md
 
 
-## 三、配置 DNS 解析
+## 3、配置 DNS 解析
 
 ###3.1 获取 Vercel 域名信息
 在 Vercel 项目设置中找到 "Domains" 选项
@@ -72,7 +73,7 @@ TTL: 600
 TTL: 600
 ```
 
-## 四、设置生产数据库
+## 4、设置生产数据库
 
 ## 4.1 选择数据库服务
 推荐选项：
@@ -92,7 +93,7 @@ Supabase（免费额度大）
 ## 4.3 数据库初始化
 部署后需要运行数据库初始化脚本：deploy-init.ts
 
-## 五、配置腾讯云 COS
+## 5、配置腾讯云 COS
 
 ### 5.1 创建存储桶
 1、登录腾讯云控制台
@@ -120,7 +121,7 @@ Supabase（免费额度大）
 创建密钥，获取 SecretId 和 SecretKey
 在 Vercel 环境变量中配置
 
-## 六、部署和验证
+## 6、部署和验证
 
 ### 6.1 提交代码到 GitHub
 ```
@@ -139,14 +140,14 @@ git push origin main
 按照提示配置 DNS
 等待 SSL 证书自动配置
 
-## 七、生产环境验证
+## 7、生产环境验证
 运行验证脚本：npm run deploy:verify
 
-## 八、添加部署脚本到 package.json
+## 8、添加部署脚本到 package.json
 
 
 
-## 九、预估成本
+## 9、预估成本
 域名：60-100元/年（.com 域名）
 Vercel：免费（个人项目）
 Vercel Postgres：免费（1GB 存储）
@@ -163,6 +164,8 @@ docs/deployment-guide.md - 详细部署文档
 部署到 Vercel：连接 GitHub 仓库开始部署
 配置环境变量：按照文档配置所有必要的环境变量
 验证部署：使用提供的脚本验证所有服务
+
+
 
 
 ## Q&A
@@ -307,10 +310,7 @@ NODE_ENV=production
 
 ## 部署步骤
 
-### 1. 域名申请
-- 推荐使用腾讯云域名注册
-- 选择 `.com` 或 `.cn` 域名
-- 完成实名认证
+
 
 ### 2. Vercel 部署
 1. 注册 Vercel 账号

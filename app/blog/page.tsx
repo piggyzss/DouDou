@@ -63,8 +63,8 @@ export default async function BlogPage({ searchParams }: Props) {
     <div className="min-h-screen pt-16">
       <div className="w-full py-12 relative">
         <div className="mb-8">
-          <h1 className="text-3xl text-text-primary font-heading">博客文章</h1>
-          <p className="text-text-secondary mt-1 font-english">分享技术心得和生活感悟</p>
+          <h1 className="text-3xl font-bold text-text-primary font-heading">博客文章</h1>
+          <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
         </div>
 
         {/* 新建博客按钮 */}

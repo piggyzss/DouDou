@@ -6,9 +6,22 @@ import Image from 'next/image'
 export default function Hero() {
   return (
     <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 relative overflow-hidden">
-      {/* 背景图片 */}
-      <div className="absolute inset-0 flex justify-end items-center pointer-events-none">
-        <div className="relative w-96 h-96" style={{ opacity: 0.18 }}>
+      {/* 左侧背景图片 - background.svg */}
+      {/* <div className="absolute inset-0 flex justify-start items-center pointer-events-none" >
+        <div className="relative w-[700px] h-[700px]" style={{opacity: 0.18, transform: 'translateX(-100px)'}}>
+          <Image
+            src="/images/background.svg"
+            alt="背景装饰"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+      </div> */}
+
+      {/* 右侧背景图片 - avatar.png */}
+      <div className="absolute inset-0 flex justify-end items-center pointer-events-none" >
+        <div className="relative w-96 h-96" style={{ opacity: 0.18 }} >
           <Image
             src="/images/avatar.png?v=20240821"
             alt="shanshan头像背景"
@@ -19,7 +32,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto text-center relative z-10">
+      <div className="max-w-4xl mx-auto text-center relative z-10" >
         {/* 居中内容 */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}

@@ -2,6 +2,7 @@ import Hero from './home/Hero'
 import About from './home/About'
 import Skills from './home/Skills'
 import LatestContent from './home/LatestContent'
+import Update from './home/Update'
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <About />
       <Skills />
       <LatestContent />
+      <Update />
     </div>
   )
 }

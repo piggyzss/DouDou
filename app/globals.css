@@ -527,7 +527,7 @@ h4 {
 
 /* 全局品牌手型光标（链接、按钮、range、以及显式 cursor-pointer 的元素） */
 a, button, [role="button"], input[type="range"], .cursor-pointer {
-  cursor: url('/app/assets/icon/hand.svg') 6 2, pointer;
+  cursor: url('/assets/icon/hand.svg') 6 2, pointer;
 }
 
 /* 自定义滚动条 */
