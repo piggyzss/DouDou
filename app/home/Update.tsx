@@ -24,6 +24,16 @@ export default function Update() {
     const startDate = new Date(`${year}-01-01`)
     const endDate = new Date(`${year}-12-31`)
     
+    // 找到该年第一天是星期几 (0=Sunday, 1=Monday, ..., 6=Saturday)
+    const firstDayOfYear = startDate.getDay()
+    
+    // 从该年第一天开始，但需要补齐前面的空白格子
+    // 如果第一天不是星期天，需要添加空白格子
+    for (let i = 0; i < firstDayOfYear; i++) {
+      contributions.push({ date: '', count: -1 }) // -1 表示空白格子
+    }
+    
+    // 添加该年的所有日期
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
       const dateStr = date.toISOString().split('T')[0]
       
@@ -49,7 +59,7 @@ export default function Update() {
   }
 
   const contributions = generateContributions(selectedYear)
-  const totalContributions = contributions.reduce((sum, c) => sum + c.count, 0)
+  const totalContributions = contributions.reduce((sum, c) => sum + (c.count === -1 ? 0 : c.count), 0)
 
   // 获取贡献颜色
   const getContributionColorCustom = (count: number, date: string) => {
@@ -97,7 +107,7 @@ export default function Update() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
               viewport={{ once: false }}
-              className="text-3xl font-bold text-text-primary font-heading mx-8"
+              className="text-2xl font-medium text-text-primary font-english mx-6 px-4 py-2"
             >
               Update
             </motion.h2>
@@ -124,7 +134,7 @@ export default function Update() {
         >
           {/* 标题和设置 */}
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-text-secondary">
+            <span className="text-sm font-medium text-text-secondary ml-2">
               {isMounted ? totalContributions : 0} contributions in {selectedYear}
             </span>
             <div className="relative group">
@@ -134,7 +144,7 @@ export default function Update() {
                 className="inline-block p-2 -m-2 flex items-center"
               >
                 <CalendarRange 
-                  className="w-5 h-5 text-text-secondary cursor-pointer hover:text-primary transition-colors" 
+                  className="w-5 h-5 text-text-secondary cursor-pointer hover:text-primary transition-colors mr-4" 
                   strokeWidth={1.5}
                 />
                 
@@ -145,7 +155,7 @@ export default function Update() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10"
+                    className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10"
                     onMouseEnter={() => setShowYearPanel(true)}
                     onMouseLeave={() => setShowYearPanel(false)}
                   >
@@ -229,9 +239,10 @@ export default function Update() {
                 <div className="flex">
                   {/* 星期标签 */}
                   <div className="flex flex-col justify-between mr-2" style={{ height: '112px' }}>
-                    <span className="text-xs text-text-muted">Mon</span>
-                    <span className="text-xs text-text-muted">Wed</span>
-                    <span className="text-xs text-text-muted">Fri</span>
+                    <span className="text-xs text-text-muted">Sun</span>
+                    <span className="text-xs text-text-muted">Tue</span>
+                    <span className="text-xs text-text-muted">Thu</span>
+                    <span className="text-xs text-text-muted">Sat</span>
                   </div>
 
                   {/* 贡献方块网格 */}
@@ -253,7 +264,40 @@ export default function Update() {
                       return (
                       <div key={weekDay} className="flex mb-1">
                         {weekContributions.map((contribution, dayIndex) => {
-                          const isDecember = new Date(contribution.date).getMonth() === 11
+                          // 如果是空白格子，显示占位但不绘制色块
+                          if (contribution.count === -1) {
+                            return (
+                              <div
+                                key={`${weekDay}-${dayIndex}`}
+                                style={{
+                                  width: '11px',
+                                  height: '11px',
+                                  marginRight: '2px',
+                                  marginBottom: '2px'
+                                }}
+                              />
+                            )
+                          }
+                          
+                          const contributionDate = new Date(contribution.date)
+                          const contributionYear = contributionDate.getFullYear()
+                          
+                          // 只显示当前选中年份的日期
+                          if (contributionYear !== selectedYear) {
+                            return (
+                              <div
+                                key={`${weekDay}-${dayIndex}`}
+                                style={{
+                                  width: '11px',
+                                  height: '11px',
+                                  marginRight: '2px',
+                                  marginBottom: '2px'
+                                }}
+                              />
+                            )
+                          }
+                          
+                          const isDecember = contributionDate.getMonth() === 11
                           const color = getContributionColorCustom(contribution.count, contribution.date)
                           
                           if (isMounted && isDecember && weekDay === 0) {
@@ -263,7 +307,7 @@ export default function Update() {
                           return (
                             <motion.div
                               key={`${weekDay}-${dayIndex}`}
-                              className="rounded-sm"
+                              className="rounded-sm relative group cursor-pointer"
                               style={{
                                 width: '11px',
                                 height: '11px',
@@ -273,16 +317,31 @@ export default function Update() {
                                 marginBottom: '2px'
                               }}
                               whileHover={{ 
-                                scale: 1.2
+                                scale: 1.3,
+                                zIndex: 10
                               }}
-                              transition={{ duration: 0.2 }}
-                              title={`${contribution.count} contributions on ${contribution.date} (${new Date(contribution.date).toLocaleDateString('zh-CN', { 
-                                weekday: 'long', 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })})`}
-                            />
+                              transition={{ 
+                                duration: 0.15,
+                                ease: "easeOut"
+                              }}
+                            >
+                              {/* 自定义Tooltip */}
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-[10px] rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
+                                <div className="font-medium">
+                                  {contribution.count} {contribution.count === 1 ? 'contribution' : 'contributions'}
+                                </div>
+                                <div className="text-gray-300">
+                                  {new Date(contribution.date).toLocaleDateString('en-US', { 
+                                    weekday: 'long', 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  })}
+                                </div>
+                                {/* 小三角箭头 */}
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-t-3 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                              </div>
+                            </motion.div>
                           )
                         })}
                       </div>
@@ -295,7 +354,7 @@ export default function Update() {
           </div>
 
           {/* 图例 */}
-          <div className="flex items-center justify-center mt-4">
+          <div className="flex items-center justify-end mt-4 mr-4">
             <span className="text-xs text-text-muted mr-2">Less</span>
             <div className="flex gap-1">
               {[0, 1, 2, 3, 4].map(level => (
