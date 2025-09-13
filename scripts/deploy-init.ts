@@ -8,6 +8,10 @@
 import { Pool } from 'pg'
 import fs from 'fs'
 import path from 'path'
+import dotenv from 'dotenv'
+
+// 加载环境变量
+dotenv.config({ path: '.env.local' })
 
 // 从环境变量获取数据库连接信息
 const pool = new Pool({

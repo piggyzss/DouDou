@@ -202,7 +202,7 @@ export default function About() {
                 {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
                   <span
                     key={skill}
-                    className="px-2 py-1 border border-gray-300 rounded-md text-sm font-medium hover:border-primary hover:text-primary transition-colors cursor-pointer font-english"
+                    className="px-3 py-0.5 border border-gray-300 rounded text-xs blog-body-text hover:border-primary hover:text-primary transition-colors cursor-pointer"
                   >
                     {skill}
                   </span>

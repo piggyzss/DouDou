@@ -34,8 +34,8 @@
   --accent: #fed336;
   
   /* 文字色 */
-  --text-primary: #34495e;
-  --text-secondary: #3c4858;
+  --text-primary: #000C2A;
+  --text-secondary: #444A6E;
   --text-muted: #6c757d;
   --text-light: #c6c6c6;
   

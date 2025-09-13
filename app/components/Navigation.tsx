@@ -76,7 +76,7 @@ export default function Navigation() {
                     }`}
                   >
                     <Icon size={16} className="icon-hover-rotate text-current" strokeWidth={1.5} />
-                    <span>{item.name}</span>
+                    <span className="font-medium">{item.name}</span>
                     {pathname === item.href && (
                       <motion.div
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
@@ -172,7 +172,7 @@ export default function Navigation() {
                     onClick={() => setIsOpen(false)}
                   >
                     <Icon size={16} className="icon-hover-rotate text-current" strokeWidth={1.5} />
-                    <span>{item.name}</span>
+                    <span className="font-medium">{item.name}</span>
                   </Link>
                 </div>
               )
