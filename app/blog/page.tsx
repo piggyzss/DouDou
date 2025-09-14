@@ -15,62 +15,31 @@ export default async function BlogPage() {
           <div className="space-y-6">
             {result.posts && result.posts.length > 0 ? (
               result.posts.map((post: any) => (
-                <div key={post.id} className="group rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
-                  <h2 className="text-xl font-semibold text-text-primary font-heading mb-3">
-                    {post.title}
-                  </h2>
-                  {post.excerpt && (
-                    <p className="text-text-secondary leading-7 font-blog mb-3 line-clamp-2">
-                      {post.excerpt}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 text-text-muted text-sm">
-                    <time>{new Date(post.published_at || post.created_at).toLocaleDateString('zh-CN')}</time>
-                    {post.tags && post.tags.length > 0 && (
-                      <>
-                        <span>·</span>
-                        <div className="flex gap-1">
-                          {post.tags.slice(0, 3).map((tag: string) => (
-                            <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-xs">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                <div key={post.id} className="border p-3 mb-2">
+                  <h4>{post.title}</h4>
+                  <p>状态: {post.status}</p>
+                  <p>创建时间: {post.created_at}</p>
                 </div>
               ))
             ) : (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-text-primary mb-2">暂无博客文章</h3>
-                <p className="text-text-secondary">内容正在准备中，敬请期待...</p>
-              </div>
+              <p>暂无博客文章</p>
             )}
           </div>
         </div>
       </div>
     )
   } catch (error: any) {
-    console.error('博客页面加载失败:', error)
+    console.error('博客页面错误:', error)
     
     return (
       <div className="min-h-screen pt-16">
         <div className="w-full py-12 relative">
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-red-600 mb-2">页面加载失败</h3>
-            <p className="text-text-secondary">抱歉，页面暂时无法加载，请稍后再试</p>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-red-600">博客页面错误</h1>
+          </div>
+          <div className="bg-red-100 p-4 rounded">
+            <p><strong>错误信息:</strong> {error.message}</p>
+            <pre className="text-xs mt-2 overflow-auto">{error.stack}</pre>
           </div>
         </div>
       </div>
