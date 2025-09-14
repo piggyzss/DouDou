@@ -1,9 +1,11 @@
+import Link from 'next/link'
 import { PenSquare } from 'lucide-react'
 import { BlogModel } from '../../lib/models/blog'
 
 export default async function BlogPage() {
   try {
     const result = await BlogModel.findAllPublished(1, 10)
+    const isDev = process.env.NODE_ENV === 'development'
     
     return (
       <div className="min-h-screen pt-16">
@@ -12,6 +14,18 @@ export default async function BlogPage() {
             <h1 className="text-3xl font-bold text-text-primary font-heading">博客文章</h1>
             <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
           </div>
+
+          {/* 新建博客按钮 - 仅在开发模式下显示 */}
+          {isDev && (
+            <div className="mb-6">
+              <Link
+                href="/blog/new"
+                className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
+              >
+                新建博客
+              </Link>
+            </div>
+          )}
           
           <div className="space-y-6">
             {result.posts && result.posts.length > 0 ? (
