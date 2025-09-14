@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { BlogModel } from '../../lib/models/blog'
 
 // 统一的日期格式化函数
@@ -31,7 +32,11 @@ export default async function BlogPage({ searchParams }: Props) {
             {result.posts && result.posts.length > 0 ? (
               result.posts.map((post: any) => (
                 <div key={post.id || post.slug} className="border p-4 rounded-lg">
-                  <h2 className="text-xl font-semibold">{post.title}</h2>
+                  <h2 className="text-xl font-semibold">
+                    <Link href={`/blog/${post.slug}`} className="hover:text-blue-600">
+                      {post.title}
+                    </Link>
+                  </h2>
                   <p className="text-gray-600 mt-2">{post.excerpt || '暂无摘要'}</p>
                   <p className="text-sm text-gray-500 mt-2">
                     发布时间: {formatDate(post.published_at || post.created_at)}
