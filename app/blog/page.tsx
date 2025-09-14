@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { PenSquare } from 'lucide-react'
-import { BlogModel } from '../../lib/models/blog'
 
 export default function BlogPage() {
   const [loading, setLoading] = useState(true)
@@ -13,8 +12,14 @@ export default function BlogPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await BlogModel.findAllPublished(1, 10)
-        setResult(data)
+        const response = await fetch('/api/blog/posts?page=1&limit=10')
+        const data = await response.json()
+        
+        if (data.success) {
+          setResult(data.data)
+        } else {
+          setError(data.error || '数据加载失败')
+        }
       } catch (err) {
         console.error('博客页面加载失败:', err)
         setError('数据加载失败')
