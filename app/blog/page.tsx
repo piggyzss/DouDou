@@ -54,6 +54,9 @@ export default async function BlogPage({ searchParams }: Props) {
       </div>
     )
   } catch (error: any) {
+    console.error('博客页面错误:', error)
+    console.error('错误堆栈:', error.stack)
+    
     return (
       <div className="min-h-screen pt-16">
         <div className="w-full py-12 relative">
@@ -62,7 +65,9 @@ export default async function BlogPage({ searchParams }: Props) {
           </div>
           <div className="bg-red-100 p-4 rounded">
             <p><strong>错误信息:</strong> {error.message}</p>
-            <pre className="text-xs mt-2">{error.stack}</pre>
+            <p><strong>错误名称:</strong> {error.name}</p>
+            <p><strong>错误代码:</strong> {error.code}</p>
+            <pre className="text-xs mt-2 max-h-96 overflow-auto">{error.stack}</pre>
           </div>
         </div>
       </div>
