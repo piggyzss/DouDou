@@ -90,7 +90,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public - Next.js需要public目录，不应该忽略
 
 # Vuepress build output
 .vuepress/dist
