@@ -22,8 +22,8 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    // 禁用图片优化以避免生产环境问题
-    unoptimized: process.env.NODE_ENV === 'production',
+    // 启用图片优化，Vercel支持图片优化
+    unoptimized: false,
   },
   
   // 添加缓存控制头
