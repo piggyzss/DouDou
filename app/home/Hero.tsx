@@ -23,7 +23,7 @@ export default function Hero() {
       <div className="absolute inset-0 flex justify-end items-center pointer-events-none" >
         <div className="relative w-96 h-96" style={{ opacity: 0.18 }} >
           <Image
-            src="/images/avatar.png?v=20240821"
+            src="/images/avatar.png"
             alt="shanshan头像背景"
             fill
             className="object-cover"

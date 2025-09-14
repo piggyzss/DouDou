@@ -22,8 +22,8 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    // 启用图片优化，Vercel支持图片优化
-    unoptimized: false,
+    // 在Vercel上禁用图片优化以避免400错误
+    unoptimized: true,
   },
   
   // 添加缓存控制头

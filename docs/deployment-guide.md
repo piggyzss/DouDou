@@ -53,6 +53,7 @@ Install Command: npm install
 
 ###3.1 获取 Vercel 域名信息
 在 Vercel 项目设置中找到 "Domains" 选项
+进入项目-> Project Settings -> Domains
 添加你的自定义域名（如：yourname.com）
 Vercel 会提供 DNS 配置信息
 
@@ -146,6 +147,13 @@ git push origin main
 
 ## 8、添加部署脚本到 package.json
 
+
+
+修复验证: 运行 npm run deploy:verify
+监控Vercel部署
+登录Vercel控制台
+查看项目的部署进度
+等待部署状态变为 "Ready"
 
 
 ## 9、预估成本
