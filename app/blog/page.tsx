@@ -1,3 +1,4 @@
+import { PenSquare } from 'lucide-react'
 import { BlogModel } from '../../lib/models/blog'
 
 export default async function BlogPage() {
@@ -22,7 +23,11 @@ export default async function BlogPage() {
                 </div>
               ))
             ) : (
-              <p>暂无博客文章</p>
+              <div className="text-center py-12">
+                <PenSquare className="mx-auto text-gray-400 mb-4" size={48} />
+                <p className="text-text-secondary">暂无博客</p>
+                <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一篇博客</p>
+              </div>
             )}
           </div>
         </div>
