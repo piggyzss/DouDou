@@ -7,6 +7,7 @@ import { BlogModel } from '../../lib/models/blog'
 export default function BlogPage() {
   const [loading, setLoading] = useState(true)
   const [result, setResult] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
   const isDev = process.env.NODE_ENV === 'development'
 
   useEffect(() => {
@@ -14,9 +15,9 @@ export default function BlogPage() {
       try {
         const data = await BlogModel.findAllPublished(1, 10)
         setResult(data)
-      } catch (error) {
-        console.error('博客页面加载失败:', error)
-        setResult({ posts: [], total: 0, totalPages: 0, currentPage: 1 })
+      } catch (err) {
+        console.error('博客页面加载失败:', err)
+        setError('数据加载失败')
       } finally {
         setLoading(false)
       }
@@ -55,6 +56,7 @@ export default function BlogPage() {
     )
   }
 
+  if (error) {
     return (
       <div className="min-h-screen pt-16">
         <div className="w-full py-12 relative">
@@ -62,7 +64,7 @@ export default function BlogPage() {
             <h1 className="text-3xl font-bold text-red-600">博客页面错误</h1>
           </div>
           <div className="bg-red-100 p-4 rounded">
-            <p><strong>错误信息:</strong> 数据加载失败</p>
+            <p><strong>错误信息:</strong> {error}</p>
           </div>
         </div>
       </div>
@@ -90,7 +92,7 @@ export default function BlogPage() {
         )}
         
         <div className="space-y-6">
-          {result.posts && result.posts.length > 0 ? (
+          {result?.posts && result.posts.length > 0 ? (
             result.posts.map((post: any) => (
               <div key={post.id} className="border p-3 mb-2">
                 <h4>{post.title}</h4>
