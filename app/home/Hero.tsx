@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 
 export default function Hero() {
   return (
@@ -22,12 +21,10 @@ export default function Hero() {
       {/* 右侧背景图片 - avatar.png */}
       <div className="absolute inset-0 flex justify-end items-center pointer-events-none" >
         <div className="relative w-96 h-96" style={{ opacity: 0.18 }} >
-          <Image
+          <img
             src="/images/avatar.png"
             alt="shanshan头像背景"
-            fill
-            className="object-cover"
-            priority
+            className="w-full h-full object-cover"
           />
         </div>
       </div>

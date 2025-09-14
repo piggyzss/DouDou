@@ -3,7 +3,6 @@
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useState } from 'react'
 import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, PawPrint, Carrot } from 'lucide-react'
-import Image from 'next/image'
 
 interface ExperienceCard {
   id: number
@@ -246,13 +245,10 @@ export default function About() {
                 {/* 装饰性背景圆圈 */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-sm"></div>
                 <div className="relative w-full h-full">
-                  <Image
+                  <img
                     src="/images/avatar.png"
                     alt="shanshan的头像"
-                    width={208}
-                    height={208}
                     className="w-full h-full object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 hover:scale-105"
-                    priority
                   />
                 </div>
               </div>
