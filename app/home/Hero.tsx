@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 relative overflow-hidden">
 
-      <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: 'translateY(-5%)' }}>
+      <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: 'translateY(-16%)' }}>
         {/* 导航提示 - 参考示例图片的顶部导航 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -24,8 +24,8 @@ export default function Hero() {
             className="inline-flex items-center gap-2 text-sm text-text-muted font-blog hover:text-primary transition-colors cursor-pointer"
           >
             <span className="w-2 h-2 bg-primary rounded-full"></span>
-            <span>About Me</span>
-            <span className="text-primary">{'>'}</span>
+            <span className="text-primary">{'>_'}</span>
+            <span>More About Me</span>
           </button>
         </motion.div>
 
@@ -41,15 +41,21 @@ export default function Hero() {
             <motion.h1
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-bold font-heading leading-tight whitespace-nowrap"
               style={{
-                fontWeight: 800,
-                fontSize: '60px',
-                letterSpacing: '-1.5px'
+                
+ 
               }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-english">
+              <span 
+                className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-english"
+                style={{
+                  fontWeight: 800,
+                  fontSize: '58px',
+                  letterSpacing: '-1.5px'
+                }}
+              >
                 Hello, I'm shanshan
               </span>
             </motion.h1>
@@ -72,7 +78,7 @@ export default function Hero() {
 
           {/* 描述文字 */}
           <motion.div
-            className="max-w-3xl mx-auto"
+            className="max-w-3xl mx-auto mt-20"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}

@@ -42,7 +42,6 @@ export default function Navigation() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     // 这里可以添加搜索逻辑
-    console.log('Search Keys:', searchQuery)
   }
 
   return (

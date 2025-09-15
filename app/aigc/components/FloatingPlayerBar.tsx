@@ -53,7 +53,7 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
       <div className="relative w-[92%] md:w-1/2 mx-auto rounded overflow-visible hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 player-pop">
         {/* 内容层：移除背景色，保留磨砂与圆角 */}
         <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded">
-        <div className="relative py-3.5 md:py-4 px-2.5">
+        <div className="relative py-3.5 md:py-4 px-2.5 z-10">
         <button
           onClick={onClose}
           className="absolute -right-3 -top-3 h-7 w-7 flex items-center justify-center rounded-full bg-white text-text-secondary transform transition-transform duration-150 hover:scale-110 z-50"

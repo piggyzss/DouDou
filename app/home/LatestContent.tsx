@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, ArrowRight, Pointer } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Calendar, Pointer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface BlogPost {
@@ -14,41 +15,61 @@ interface BlogPost {
   created_at: string
 }
 
+interface ArtworkImage {
+  id: number
+  file_url: string
+  original_name: string
+  file_size?: number
+  width?: number
+  height?: number
+  mime_type?: string
+  created_at: string
+}
+
 interface ArtworkCollection {
   id: string
   title: string
   description?: string
   created_at: string
-  images: any[]
+  images: ArtworkImage[]
 }
 
 export default function LatestContent() {
+  const router = useRouter()
   const [latestBlog, setLatestBlog] = useState<BlogPost | null>(null)
   const [latestArtwork, setLatestArtwork] = useState<ArtworkCollection | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchLatestContent = async () => {
       try {
+        setError(null)
+        
         // 获取最新博客
         const blogResponse = await fetch('/api/blog?limit=1')
         if (blogResponse.ok) {
           const blogData = await blogResponse.json()
-          if (blogData.data.posts.length > 0) {
+          if (blogData.data?.posts?.length > 0) {
             setLatestBlog(blogData.data.posts[0])
           }
+        } else {
+          console.warn('获取博客数据失败:', blogResponse.status)
         }
 
         // 获取最新AIGC作品
         const artworkResponse = await fetch('/api/aigc/artworks?limit=1')
         if (artworkResponse.ok) {
           const artworkData = await artworkResponse.json()
-          if (artworkData.data.collections.length > 0) {
+          if (artworkData.data?.collections?.length > 0) {
             setLatestArtwork(artworkData.data.collections[0])
           }
+        } else {
+          console.warn('获取AIGC作品数据失败:', artworkResponse.status)
         }
       } catch (error) {
         console.error('获取最新内容失败:', error)
+        setError('获取内容失败，请稍后重试')
       } finally {
         setLoading(false)
       }
@@ -126,7 +147,16 @@ export default function LatestContent() {
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: false }}
             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
-            onClick={() => window.location.href = '/blog'}
+            onClick={() => router.push('/blog')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                router.push('/blog')
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label="查看最新博客"
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
@@ -174,7 +204,16 @@ export default function LatestContent() {
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: false }}
             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
-            onClick={() => window.location.href = '/projects'}
+            onClick={() => router.push('/projects')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                router.push('/projects')
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label="查看最新项目"
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
@@ -201,7 +240,16 @@ export default function LatestContent() {
             transition={{ duration: 0.8, delay: 0.6 }}
             viewport={{ once: false }}
             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
-            onClick={() => window.location.href = '/aigc'}
+            onClick={() => router.push('/aigc')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                router.push('/aigc')
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label="查看最新AIGC作品"
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">

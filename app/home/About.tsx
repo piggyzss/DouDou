@@ -248,7 +248,7 @@ export default function About() {
                   <img
                     src="/images/avatar.png"
                     alt="shanshan的头像"
-                    className="w-full h-full object-cover rounded shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 hover:scale-105"
+                    className="w-full h-full object-cover rounded shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                   />
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function About() {
                   onDragEnd={(event, info) => handleDragEnd(card.id, info)}
                 >
                   <div
-                    className="w-40 h-40 p-4 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 blog-body-text font-body group"
+                    className="w-40 h-40 p-4 rounded hover:shadow-lg transition-all duration-300 blog-body-text font-body group"
                     style={{
                       backgroundColor: `${card.color}95`,
                       backdropFilter: 'blur(10px)'
