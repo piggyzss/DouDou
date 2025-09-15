@@ -5,69 +5,83 @@ import { motion } from 'framer-motion'
 export default function Hero() {
   return (
     <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 relative overflow-hidden">
-      {/* 左侧背景图片 - background.svg */}
-      {/* <div className="absolute inset-0 flex justify-start items-center pointer-events-none" >
-        <div className="relative w-[700px] h-[700px]" style={{opacity: 0.18, transform: 'translateX(-100px)'}}>
-          <Image
-            src="/images/background.svg"
-            alt="背景装饰"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-      </div> */}
 
-      {/* 右侧背景图片 - avatar.png */}
-      <div className="absolute inset-0 flex justify-end items-center pointer-events-none" >
-        <div className="relative w-96 h-96" style={{ opacity: 0.18 }} >
-          <img
-            src="/images/avatar.png"
-            alt="shanshan头像背景"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </div>
+      <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: 'translateY(-5%)' }}>
+        {/* 导航提示 - 参考示例图片的顶部导航 */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+          <button 
+            onClick={() => {
+              const aboutSection = document.getElementById('about');
+              if (aboutSection) {
+                aboutSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="inline-flex items-center gap-2 text-sm text-text-muted font-blog hover:text-primary transition-colors cursor-pointer"
+          >
+            <span className="w-2 h-2 bg-primary rounded-full"></span>
+            <span>About Me</span>
+            <span className="text-primary">{'>'}</span>
+          </button>
+        </motion.div>
 
-      <div className="max-w-4xl mx-auto text-center relative z-10" >
-        {/* 居中内容 */}
+        {/* 主要内容 */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="space-y-8"
         >
-          <div className="space-y-6">
+          {/* 主标题 */}
+          <div className="space-y-4">
             <motion.h1
-              className="text-3xl sm:text-4xl lg:text-5xl text-text-primary font-heading"
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-bold font-heading leading-tight whitespace-nowrap"
+              style={{
+                fontWeight: 800,
+                fontSize: '60px',
+                letterSpacing: '-1.5px'
+              }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <span className="font-english">Hello, I'm</span>{' '}
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-english">
-                shanshan
+                Hello, I'm shanshan
               </span>
             </motion.h1>
 
-            <motion.p
-              className="text-lg sm:text-xl text-text-secondary font-heading"
+            <motion.h2
+              className="text-text-primary"
+              style={{
+                fontFamily: 'Epilogue, sans-serif',
+                fontWeight: 800,
+                fontSize: '38px',
+                letterSpacing: '-1.5px'
+              }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
             >
-              前端开发者、AI爱好者、创意工作者
-            </motion.p>
-
-            <motion.p
-              className="text-base sm:text-lg text-text-primary leading-8 font-blog"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-            >
-              用代码创造美好，用AI探索未来，让创意与技术完美融合
-            </motion.p>
+              Welcome to my world!
+            </motion.h2>
           </div>
+
+          {/* 描述文字 */}
+          <motion.div
+            className="max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+          >
+            <p className="text-sm sm:text-base lg:text-lg text-text-secondary leading-relaxed font-blog">
+              用代码创造美好，用AI探索未来，让创意与技术完美融合
+            </p>
+          </motion.div>
+
         </motion.div>
       </div>
     </section>

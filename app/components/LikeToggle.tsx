@@ -33,97 +33,86 @@ export default function LikeToggle({
   likedColorClass?: string
   ignoreExternalEvents?: boolean
 }) {
+  // 极简状态管理：只维护显示状态
   const [liked, setLiked] = useState<boolean>(initialLiked)
   const [count, setCount] = useState<number>(initialCount)
   const [busy, setBusy] = useState(false)
-  const [lastFetchTime, setLastFetchTime] = useState<number>(0)
-  const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false)
 
+  // 只在组件首次加载时获取一次真实状态
   useEffect(() => {
-    const fetchStatus = async () => {
-      const now = Date.now()
-      // 如果用户刚刚交互过，不要重新获取状态
-      if (hasUserInteracted && now - lastFetchTime < 2000) return
-      
+    const fetchRealStatus = async () => {
       try {
         const res = await fetch('/api/likes/status', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targets: [{ type: targetType, id: targetId }] })
         })
-        if (!res.ok) return
-        const json = await res.json()
-        const s = json.statuses?.[0]
-        if (s && typeof s.liked === 'boolean') {
-          setLiked(s.liked)
+        
+        if (res.ok) {
+          const json = await res.json()
+          const status = json.statuses?.[0]
+          if (status) {
+            setLiked(status.liked || false)
+            setCount(status.likesCount || 0)
+          }
         }
-        if (s && typeof s.likesCount === 'number') {
-          setCount(s.likesCount)
-        }
-        setLastFetchTime(now)
-      } catch {}
-    }
-    fetchStatus()
-  }, [targetType, targetId, lastFetchTime, hasUserInteracted])
-
-  // 同步跨组件的点赞状态（例如预览模式与列表 hover 图标之间）
-  useEffect(() => {
-    if (ignoreExternalEvents) return
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { targetType: 'blog' | 'artwork' | 'artwork_image'; targetId: number; liked: boolean; count: number }
-      if (!detail) return
-      if (detail.targetType === targetType && detail.targetId === targetId) {
-        setLiked(detail.liked)
-        setCount(detail.count)
+      } catch (err) {
+        console.error('Failed to fetch like status:', err)
       }
     }
-    if (typeof window !== 'undefined') {
-      window.addEventListener('like:changed', handler as EventListener)
-      return () => window.removeEventListener('like:changed', handler as EventListener)
-    }
-  }, [targetType, targetId, ignoreExternalEvents])
+    
+    fetchRealStatus()
+  }, []) // 空依赖数组，只在组件挂载时执行一次
 
   const toggle = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (busy) return
+    
     setBusy(true)
-    setHasUserInteracted(true) // 标记用户已交互
-    const nextLiked = !liked
-    const prevCount = count
-    setLiked(nextLiked)
-    setCount(c => Math.max(0, c + (nextLiked ? 1 : -1)))
+    
+    // 保存当前状态用于回滚
+    const oldLiked = liked
+    const oldCount = count
+    
+    // 立即切换状态和数量（乐观更新）
+    const newLiked = !liked
+    const newCount = Math.max(0, count + (newLiked ? 1 : -1))
+    setLiked(newLiked)
+    setCount(newCount)
+    
+    // 立即通知父组件（使用乐观更新的状态）
+    onChanged?.(newLiked, newCount)
+    
     try {
+      // 调用后端
       const res = await fetch('/api/likes/toggle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetType, targetId, action: nextLiked ? 'like' : 'unlike' })
+        body: JSON.stringify({ targetType, targetId, action: newLiked ? 'like' : 'unlike' })
       })
+      
       if (!res.ok) {
-        let msg = ''
-        try { msg = await res.text() } catch {}
-        console.error('Toggle like failed:', msg)
-        throw new Error('toggle failed')
+        throw new Error(`HTTP ${res.status}`)
       }
+      
       const json = await res.json()
-      const finalLiked = typeof json.liked === 'boolean' ? json.liked : nextLiked
-      const finalCount = typeof json.likesCount === 'number' ? json.likesCount : Math.max(0, prevCount + (finalLiked ? 1 : -1))
-      setLiked(finalLiked)
-      setCount(finalCount)
-      setLastFetchTime(Date.now()) // 更新最后获取时间，防止立即重新获取
-      onChanged?.(finalLiked, finalCount)
-      // 广播全局事件，供展示组件同步
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('like:changed', {
-          detail: { targetType, targetId, liked: finalLiked, count: finalCount }
-        }))
-        try {
-          localStorage.setItem(`likes:${targetType}:${targetId}`, String(finalCount))
-        } catch {}
+      
+      // 如果后端返回的状态与前端乐观更新不一致，则使用后端数据
+      if (typeof json.liked === 'boolean' && json.liked !== newLiked) {
+        setLiked(json.liked)
+        onChanged?.(json.liked, json.likesCount || newCount)
       }
+      if (typeof json.likesCount === 'number' && json.likesCount !== newCount) {
+        setCount(json.likesCount)
+        onChanged?.(json.liked || newLiked, json.likesCount)
+      }
+      
     } catch (err) {
-      // 回滚到之前的状态
-      setLiked(liked)
-      setCount(prevCount)
+      console.error('Like toggle error:', err)
+      // 回滚状态
+      setLiked(oldLiked)
+      setCount(oldCount)
+      onChanged?.(oldLiked, oldCount)
     } finally {
       setBusy(false)
     }

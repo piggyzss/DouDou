@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, ArrowRight } from 'lucide-react'
+import { Calendar, ArrowRight, Pointer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface BlogPost {
@@ -125,10 +125,14 @@ export default function LatestContent() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: false }}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
+            onClick={() => window.location.href = '/blog'}
           >
             <div className="p-6">
-              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300">最新博客</h3>
+              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
+                最新博客
+                <Pointer size={16} className="rotate-90" />
+              </h3>
               {loading ? (
                 <div className="space-y-4">
                   <div className="animate-pulse">
@@ -147,9 +151,6 @@ export default function LatestContent() {
                   <p className="text-sm blog-body-text line-clamp-5">
                     {latestBlog.excerpt || '暂无摘要...'}
                   </p>
-                  <Link href={`/blog/${latestBlog.slug}`} className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                    阅读更多 <ArrowRight size={16} className="ml-1" />
-                  </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -161,9 +162,6 @@ export default function LatestContent() {
                   <p className="text-text-secondary text-sm font-light leading-relaxed">
                     还没有发布任何博客文章...
                   </p>
-                  <Link href="/blog" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                    查看博客 <ArrowRight size={16} className="ml-1" />
-                  </Link>
                 </div>
               )}
             </div>
@@ -175,10 +173,14 @@ export default function LatestContent() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: false }}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
+            onClick={() => window.location.href = '/projects'}
           >
             <div className="p-6">
-              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300">最新项目</h3>
+              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
+                最新项目
+                <Pointer size={16} className="rotate-90" />
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
                   <Calendar size={16} />
@@ -188,9 +190,6 @@ export default function LatestContent() {
                 <p className="text-sm blog-body-text">
                   基于OpenAI API的智能聊天应用，支持多轮对话...
                 </p>
-                <Link href="/projects" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                  查看项目 <ArrowRight size={16} className="ml-1" />
-                </Link>
               </div>
             </div>
           </motion.div>
@@ -201,10 +200,14 @@ export default function LatestContent() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
             viewport={{ once: false }}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
+            onClick={() => window.location.href = '/aigc'}
           >
             <div className="p-6">
-              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300">最新AIGC作品</h3>
+              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
+                最新AIGC作品
+                <Pointer size={16} className="rotate-90" />
+              </h3>
               {loading ? (
                 <div className="space-y-4">
                   <div className="animate-pulse">
@@ -229,9 +232,6 @@ export default function LatestContent() {
                       />
                     </div>
                   ) : null}
-                  <Link href="/aigc" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                    浏览作品 <ArrowRight size={16} className="ml-1" />
-                  </Link>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -243,9 +243,6 @@ export default function LatestContent() {
                   <p className="text-text-secondary text-sm font-light leading-relaxed">
                     还没有创建任何AIGC作品...
                   </p>
-                  <Link href="/aigc" className="text-primary text-sm font-normal hover:underline inline-flex items-center">
-                    查看作品 <ArrowRight size={16} className="ml-1" />
-                  </Link>
                 </div>
               )}
             </div>

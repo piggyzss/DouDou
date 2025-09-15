@@ -95,7 +95,7 @@ export default function About() {
   }
 
   return (
-    <section className="py-16">
+    <section id="about" className="py-16">
       <div className="max-w-7xl mx-auto">
         {/* 新的动画标题区域 */}
         <motion.div

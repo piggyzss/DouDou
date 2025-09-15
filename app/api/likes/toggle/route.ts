@@ -63,7 +63,6 @@ export async function POST(req: NextRequest) {
           [targetType, idNum, ipHash, uaHash]
         )
       }
-      await bumpCount(targetType, idNum, +1)
     } else {
       if (anonId) {
         await query(
@@ -76,44 +75,72 @@ export async function POST(req: NextRequest) {
           [targetType, idNum, ipHash, uaHash]
         )
       }
-      await bumpCount(targetType, idNum, -1)
     }
 
-    const likesCount = await getCount(targetType, idNum)
-    return NextResponse.json({ success: true, liked: action === 'like', likesCount })
+    // 重新计算并更新 likes_count
+    await updateLikesCount(targetType, idNum)
+    
+    // 获取用户当前状态和总数
+    const userLiked = await getUserLikeStatus(targetType, idNum, ipHash, uaHash, anonId)
+    const likesCount = await getActualLikesCount(targetType, idNum)
+    
+    return NextResponse.json({ success: true, liked: userLiked, likesCount })
   } catch (e: any) {
     console.error('toggle like error', e)
     return NextResponse.json({ error: 'server error', message: e?.message || String(e) }, { status: 500 })
   }
 }
 
-async function bumpCount(targetType: string, targetId: number, delta: number) {
+// 重新计算并更新 likes_count 字段
+async function updateLikesCount(targetType: string, targetId: number) {
   try {
+    // 从 likes 表计算实际数量
+    const countResult = await query(
+      'SELECT COUNT(*) as count FROM likes WHERE target_type=$1 AND target_id=$2 AND status=$3',
+      [targetType, targetId, 'liked']
+    )
+    const actualCount = parseInt(countResult.rows[0]?.count || '0')
+    
+    // 更新对应表的 likes_count 字段
     if (targetType === 'blog') {
-      await query('UPDATE blog_posts SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+      await query('UPDATE blog_posts SET likes_count = $1 WHERE id=$2', [actualCount, targetId])
     } else if (targetType === 'artwork') {
-      await query('UPDATE artwork_collections SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+      await query('UPDATE artwork_collections SET likes_count = $1 WHERE id=$2', [actualCount, targetId])
     } else if (targetType === 'music') {
-      await query('UPDATE music_tracks SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+      await query('UPDATE music_tracks SET likes_count = $1 WHERE id=$2', [actualCount, targetId])
     }
   } catch (error) {
-    console.error('Error bumping count:', error)
+    console.error('Error updating likes count:', error)
     throw error
   }
 }
 
-async function getCount(targetType: string, targetId: number) {
-  if (targetType === 'blog') {
-    const r = await query('SELECT likes_count FROM blog_posts WHERE id=$1', [targetId])
-    return r.rows[0]?.likes_count ?? 0
+// 获取用户是否喜欢过
+async function getUserLikeStatus(targetType: string, targetId: number, ipHash: string, uaHash: string, anonId: string | null) {
+  try {
+    const result = await query(
+      `SELECT status FROM likes WHERE target_type = $1 AND target_id = $2 AND (
+         (ip_hash = $3 AND ua_hash = $4) OR (anon_id IS NOT NULL AND anon_id = $5)
+       ) ORDER BY created_at DESC LIMIT 1`,
+      [targetType, targetId, ipHash, uaHash, anonId]
+    )
+    return result.rows[0]?.status === 'liked'
+  } catch (error) {
+    console.error('Error getting user like status:', error)
+    return false
   }
-  if (targetType === 'artwork') {
-    const r = await query('SELECT likes_count FROM artwork_collections WHERE id=$1', [targetId])
-    return r.rows[0]?.likes_count ?? 0
+}
+
+// 获取实际的喜欢数量
+async function getActualLikesCount(targetType: string, targetId: number) {
+  try {
+    const result = await query(
+      'SELECT COUNT(*) as count FROM likes WHERE target_type=$1 AND target_id=$2 AND status=$3',
+      [targetType, targetId, 'liked']
+    )
+    return parseInt(result.rows[0]?.count || '0')
+  } catch (error) {
+    console.error('Error getting actual likes count:', error)
+    return 0
   }
-  if (targetType === 'music') {
-    const r = await query('SELECT likes_count FROM music_tracks WHERE id=$1', [targetId])
-    return r.rows[0]?.likes_count ?? 0
-  }
-  return 0
 }
