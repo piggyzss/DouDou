@@ -56,9 +56,9 @@ export default function MusicSection({ tracks, currentTrackId, setCurrentTrackId
           <Play size={16} />
         )
         return (
-          <div key={track.id} className="flex items-center gap-4 py-4 group hover:bg-gray-50/40 dark:hover:bg-gray-800/40 rounded-lg px-2 transition-colors">
+          <div key={track.id} className="flex items-center gap-4 py-4 group hover:bg-gray-50/40 dark:hover:bg-gray-800/40 rounded px-2 transition-colors">
             {/* 封面 */}
-            <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <div className="relative flex-shrink-0 w-16 h-16 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
               {track.coverUrl ? (
                 <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
               ) : (
@@ -69,7 +69,7 @@ export default function MusicSection({ tracks, currentTrackId, setCurrentTrackId
               <button
                 onClick={() => playTrack(track)}
                 title={isCurrent && isAudioPlaying ? '暂停' : '播放'}
-                className={`absolute inset-0 flex items-center justify-center rounded-md bg-black/0 group-hover:bg-black/10 transition-colors opacity-0 group-hover:opacity-100`}
+                className={`absolute inset-0 flex items-center justify-center rounded bg-black/0 group-hover:bg-black/10 transition-colors opacity-0 group-hover:opacity-100`}
               >
                 <span className={`h-8 w-8 flex items-center justify-center rounded-full bg-primary/80 text-white`}>
                   {overlayIcon}

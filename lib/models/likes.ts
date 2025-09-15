@@ -4,11 +4,18 @@ export type TargetType = 'blog' | 'artwork' | 'artwork_image' | string
 
 export class LikesModel {
   static async getLikesCount(targetType: TargetType, targetId: number): Promise<number> {
-    const res = await query(
-      `SELECT COUNT(*)::int AS cnt FROM likes WHERE target_type = $1 AND target_id = $2 AND status = 'liked'`,
-      [targetType, targetId]
-    )
-    return res.rows[0]?.cnt || 0
+    // 从各个表的 likes_count 字段获取数据，而不是从 likes 表计算
+    if (targetType === 'blog') {
+      const res = await query('SELECT likes_count FROM blog_posts WHERE id = $1', [targetId])
+      return res.rows[0]?.likes_count ?? 0
+    } else if (targetType === 'artwork') {
+      const res = await query('SELECT likes_count FROM artwork_collections WHERE id = $1', [targetId])
+      return res.rows[0]?.likes_count ?? 0
+    } else if (targetType === 'music') {
+      const res = await query('SELECT likes_count FROM music_tracks WHERE id = $1', [targetId])
+      return res.rows[0]?.likes_count ?? 0
+    }
+    return 0
   }
 
   static async getUserLike(targetType: TargetType, targetId: number, ipHash?: string, uaHash?: string, anonId?: string) {

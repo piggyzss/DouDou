@@ -130,11 +130,11 @@ export default function Update() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           viewport={{ once: true }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 p-6 group"
         >
           {/* 标题和设置 */}
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-text-secondary ml-2">
+            <span className="text-sm font-medium text-text-secondary ml-2 group-hover:text-text-primary transition-colors duration-300">
               {isMounted ? totalContributions : 0} contributions in {selectedYear}
             </span>
             <div className="relative group">
@@ -155,7 +155,7 @@ export default function Update() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10"
+                    className="absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 p-2 z-10"
                     onMouseEnter={() => setShowYearPanel(true)}
                     onMouseLeave={() => setShowYearPanel(false)}
                   >
@@ -186,7 +186,7 @@ export default function Update() {
             <div className="flex justify-center">
               <div className="inline-block">
                 {/* 月份标签 */}
-                <div className="flex mb-2" style={{ paddingLeft: "24px" }}>
+                <div className="flex mb-2 group-hover:scale-[1.01] transition-transform duration-300" style={{ paddingLeft: "24px" }}>
                   {displayMonths.map((month, index) => {
                     // 计算该月份在贡献方块网格中的实际列位置
                     const monthStartDate = new Date(`${selectedYear}-${String(index + 1).padStart(2, "0")}-01`)
@@ -214,10 +214,6 @@ export default function Update() {
                     const monthColumns = Math.max(nextMonthStartColumn - startColumn, 4)
                     const finalWidth = monthColumns * 13
                     
-                    // 调试信息
-                    if (isMounted && (index === 7 || index === 8 || index === 11)) {
-                      console.log(`${month}标签: 起始列${startColumn}, 结束列${nextMonthStartColumn}, 跨越${monthColumns}列, 宽度${finalWidth}px`)
-                    }
                     
                     return (
                       <div
@@ -236,9 +232,9 @@ export default function Update() {
                 </div>
 
                 {/* 星期标签和贡献方块 */}
-                <div className="flex">
+                <div className="flex group-hover:scale-[1.01] transition-transform duration-300">
                   {/* 星期标签 */}
-                  <div className="flex flex-col justify-between mr-2" style={{ height: '112px' }}>
+                  <div className="flex flex-col justify-between mr-2 group-hover:scale-105 transition-transform duration-300" style={{ height: '112px' }}>
                     <span className="text-xs text-text-muted">Sun</span>
                     <span className="text-xs text-text-muted">Tue</span>
                     <span className="text-xs text-text-muted">Thu</span>
@@ -254,12 +250,6 @@ export default function Update() {
                         return date.getMonth() === 11
                       })
                       
-                      if (isMounted && weekDay === 0) {
-                        console.log(`星期${weekDay}: ${weekContributions.length}天, 12月数据${decemberInWeek.length}天`)
-                        if (decemberInWeek.length > 0) {
-                          console.log(`星期${weekDay}的12月数据:`, decemberInWeek.map(c => c.date))
-                        }
-                      }
                       
                       return (
                       <div key={weekDay} className="flex mb-1">
@@ -300,15 +290,13 @@ export default function Update() {
                           const isDecember = contributionDate.getMonth() === 11
                           const color = getContributionColorCustom(contribution.count, contribution.date)
                           
-                          if (isMounted && isDecember && weekDay === 0) {
-                            console.log(`渲染12月方块: ${contribution.date}, 贡献数: ${contribution.count}, 颜色: ${color}`)
-                          }
                           
                           return (
                             <motion.div
                               key={`${weekDay}-${dayIndex}`}
-                              className="rounded-sm relative group cursor-pointer"
+                              className="relative cursor-pointer hover:scale-110 transition-transform duration-200 group/date"
                               style={{
+                                borderRadius: '0.1rem',
                                 width: '11px',
                                 height: '11px',
                                 backgroundColor: color,
@@ -326,7 +314,7 @@ export default function Update() {
                               }}
                             >
                               {/* 自定义Tooltip */}
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-[10px] rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-[10px] rounded shadow-lg opacity-0 group-hover/date:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
                                 <div className="font-medium">
                                   {contribution.count} {contribution.count === 1 ? 'contribution' : 'contributions'}
                                 </div>
@@ -354,21 +342,31 @@ export default function Update() {
           </div>
 
           {/* 图例 */}
-          <div className="flex items-center justify-end mt-4 mr-4">
+          <div className="flex items-center justify-end mt-4 mr-4 group-hover:scale-105 transition-transform duration-300">
             <span className="text-xs text-text-muted mr-2">Less</span>
             <div className="flex gap-1">
-              {[0, 1, 2, 3, 4].map(level => (
-                <div
-                  key={level}
-                  className="rounded-sm"
-                  style={{
-                    width: '10px',
-                    height: '10px',
-                    backgroundColor: level === 0 ? '#ebedf0' : getContributionColorCustom(level, '2025-01-01'),
-                    border: 'none'
-                  }}
-                />
-              ))}
+              {[0, 1, 2, 3, 4].map(level => {
+                // 为图例创建固定的颜色级别，从最浅到最深
+                const getLegendColor = (level: number) => {
+                  if (level === 0) return '#ebedf0' // 最浅
+                  const intensity = level / 4 // 0.25, 0.5, 0.75, 1
+                  const alpha = 0.15 + (intensity * 0.85)
+                  return `rgba(103, 71, 206, ${alpha})`
+                }
+                
+                return (
+                  <div
+                    key={level}
+                    style={{
+                      borderRadius: '0.1rem',
+                      width: '10px',
+                      height: '10px',
+                      backgroundColor: getLegendColor(level),
+                      border: 'none'
+                    }}
+                  />
+                )
+              })}
             </div>
             <span className="text-xs text-text-muted ml-2">More</span>
           </div>

@@ -88,12 +88,17 @@ export async function POST(req: NextRequest) {
 }
 
 async function bumpCount(targetType: string, targetId: number, delta: number) {
-  if (targetType === 'blog') {
-    await query('UPDATE blog_posts SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
-  } else if (targetType === 'artwork') {
-    await query('UPDATE artwork_collections SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
-  } else if (targetType === 'music') {
-    await query('UPDATE music_tracks SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+  try {
+    if (targetType === 'blog') {
+      await query('UPDATE blog_posts SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+    } else if (targetType === 'artwork') {
+      await query('UPDATE artwork_collections SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+    } else if (targetType === 'music') {
+      await query('UPDATE music_tracks SET likes_count = GREATEST(likes_count + $1, 0) WHERE id=$2', [delta, targetId])
+    }
+  } catch (error) {
+    console.error('Error bumping count:', error)
+    throw error
   }
 }
 

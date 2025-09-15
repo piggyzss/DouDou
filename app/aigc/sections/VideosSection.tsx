@@ -184,7 +184,7 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
     <>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {videos.map((video) => (
-        <div key={video.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border-unified group hover:shadow-xl transition-all duration-300 relative">
+        <div key={video.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group relative">
           <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
             {video.coverUrl ? (
               <img src={video.coverUrl} alt={video.title} className="w-full h-full object-cover transform transition-transform duration-150 ease-out group-hover:scale-[1.03] group-hover:animate-[breatheScale_800ms_ease-in-out_infinite] group-hover:brightness-[1.03]" />
@@ -197,7 +197,7 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-100">
               <button
                 onClick={() => openPlayer(video)}
-                className="absolute inset-0 flex items-center justify-center rounded-md bg-black/0 group-hover:bg-black/10 transition-colors"
+                className="absolute inset-0 flex items-center justify-center rounded bg-black/0 group-hover:bg-black/10 transition-colors"
                 aria-label="播放"
                 title="播放"
               >
@@ -246,7 +246,7 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
           onClick={closePlayer}
         />
         <motion.div
-          className="relative w-[92%] md:w-[960px] bg-transparent rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+          className="relative w-[92%] md:w-[960px] bg-transparent rounded hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden"
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -356,7 +356,7 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
                       <Settings size={16} />
                     </button>
                     {showSettings && (
-                      <div className="absolute right-0 bottom-10 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg p-1">
+                        <div className="absolute right-0 bottom-10 w-28 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 p-1">
                         {[1, 1.25, 1.5, 2].map(r => (
                           <button
                             key={r}

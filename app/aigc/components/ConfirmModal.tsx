@@ -48,7 +48,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className={`bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 relative border ${styles.border}`}
+        className={`bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative border ${styles.border}`}
       >
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">

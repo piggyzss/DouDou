@@ -50,9 +50,9 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
 
   return (
     <div className="fixed left-0 right-0 bottom-4 md:bottom-6 flex justify-center z-40">
-      <div className="relative w-[92%] md:w-1/2 mx-auto rounded-lg overflow-visible shadow-lg border border-gray-200 dark:border-gray-700 player-pop">
+      <div className="relative w-[92%] md:w-1/2 mx-auto rounded overflow-visible hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 player-pop">
         {/* 内容层：移除背景色，保留磨砂与圆角 */}
-        <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-lg">
+        <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded">
         <div className="relative py-3.5 md:py-4 px-2.5">
         <button
           onClick={onClose}
@@ -64,7 +64,7 @@ export default function FloatingPlayerBar({ title, tags, coverUrl, /* likes */ i
         <div className="flex items-center gap-3 md:gap-3 py-2">
           {/* 封面 */}
           <div className="relative w-11 h-11 md:w-12 md:h-12">
-            <img src={coverUrl} alt={title} className="w-full h-full rounded-md object-cover" />
+            <img src={coverUrl} alt={title} className="w-full h-full rounded object-cover" />
             {isPlaying && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="p-1 bg-white bg-opacity-90 rounded-full shadow-lg">

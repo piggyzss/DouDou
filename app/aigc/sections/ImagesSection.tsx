@@ -103,13 +103,13 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
                 <LikeToggle
                   targetType="artwork"
                   targetId={parseInt(artwork.id, 10)}
+                  initialCount={artwork.likes}
                   size={14}
-                  showCount={false}
+                  showCount={true}
                   unlikedColorClass="text-text-muted"
                   likedColorClass="text-red-500"
                   onChanged={(liked, count) => onUpdateArtworkLikes(artwork.id, count)}
                 />
-                <span>{formatNumber(artwork.likes)}</span>
               </div>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
               {artwork.images.map((image, index) => (
                 <div key={index} className="relative group/image flex-shrink-0">
                   <div
-                    className="w-80 h-60 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer"
+                    className="w-80 h-60 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden cursor-pointer"
                     onClick={() => onClickImage(artwork.id, index, image.file_url)}
                   >
                     {/* 覆盖层与视频卡片一致的淡入（仅当前图片触发） */}

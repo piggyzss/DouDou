@@ -125,10 +125,10 @@ export default function LatestContent() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: false }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group"
           >
             <div className="p-6">
-              <h3 className="text-lg font-normal text-text-primary mb-4">最新博客</h3>
+              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300">最新博客</h3>
               {loading ? (
                 <div className="space-y-4">
                   <div className="animate-pulse">
@@ -143,7 +143,7 @@ export default function LatestContent() {
                     <Calendar size={16} />
                     <span>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
                   </div>
-                  <h4 className="font-normal text-text-primary text-base">{latestBlog.title}</h4>
+                  <h4 className="font-normal text-text-primary text-base group-hover:scale-[1.02] transition-transform duration-300">{latestBlog.title}</h4>
                   <p className="text-sm blog-body-text line-clamp-5">
                     {latestBlog.excerpt || '暂无摘要...'}
                   </p>
@@ -175,16 +175,16 @@ export default function LatestContent() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: false }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group"
           >
             <div className="p-6">
-              <h3 className="text-lg font-normal text-text-primary mb-4">最新项目</h3>
+              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300">最新项目</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
                   <Calendar size={16} />
                   <span>2024-01-10</span>
                 </div>
-                <h4 className="font-normal text-text-primary text-base">AI聊天助手</h4>
+                <h4 className="font-normal text-text-primary text-base group-hover:scale-[1.02] transition-transform duration-300">AI聊天助手</h4>
                 <p className="text-sm blog-body-text">
                   基于OpenAI API的智能聊天应用，支持多轮对话...
                 </p>
@@ -201,10 +201,10 @@ export default function LatestContent() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
             viewport={{ once: false }}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 overflow-hidden group"
           >
             <div className="p-6">
-              <h3 className="text-lg font-normal text-text-primary mb-4">最新AIGC作品</h3>
+              <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300">最新AIGC作品</h3>
               {loading ? (
                 <div className="space-y-4">
                   <div className="animate-pulse">
@@ -219,9 +219,9 @@ export default function LatestContent() {
                     <Calendar size={16} />
                     <span>{formatDate(latestArtwork.created_at)}</span>
                   </div>
-                  <h4 className="font-normal text-text-primary text-base">{latestArtwork.title}</h4>
+                  <h4 className="font-normal text-text-primary text-base group-hover:scale-[1.02] transition-transform duration-300">{latestArtwork.title}</h4>
                   {latestArtwork.images && latestArtwork.images.length > 0 ? (
-                    <div className="relative w-full h-40 overflow-hidden rounded-md border border-gray-100 dark:border-gray-700">
+                    <div className="relative w-full h-40 overflow-hidden rounded border border-gray-100 dark:border-gray-700">
                       <img
                         src={latestArtwork.images[0].file_url.startsWith('/') ? latestArtwork.images[0].file_url : `/api/aigc/proxy-image?url=${encodeURIComponent(latestArtwork.images[0].file_url)}`}
                         alt={latestArtwork.title}

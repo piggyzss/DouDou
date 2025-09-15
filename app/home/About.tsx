@@ -243,12 +243,12 @@ export default function About() {
             <div className="text-center mb-8 ml-4">
               <div className="relative w-52 h-52 mx-auto mb-6">
                 {/* 装饰性背景圆圈 */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-sm"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded blur-sm"></div>
                 <div className="relative w-full h-full">
                   <img
                     src="/images/avatar.png"
                     alt="shanshan的头像"
-                    className="w-full h-full object-cover rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 hover:scale-105"
+                    className="w-full h-full object-cover rounded shadow-lg hover:shadow-xl transition-all duration-300 border-4 border-white dark:border-gray-800 hover:scale-105"
                   />
                 </div>
               </div>
@@ -275,15 +275,15 @@ export default function About() {
                   onDragEnd={(event, info) => handleDragEnd(card.id, info)}
                 >
                   <div
-                    className="w-40 h-40 p-4 rounded-lg shadow-lg blog-body-text hover:shadow-xl transition-shadow duration-200 font-body"
+                    className="w-40 h-40 p-4 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 blog-body-text font-body group"
                     style={{
                       backgroundColor: `${card.color}95`,
                       backdropFilter: 'blur(10px)'
                     }}
                   >
-                    <h4 className="font-semibold text-sm mb-1">{card.title}</h4>
-                    <p className="text-xs opacity-90 mb-2">{card.company}</p>
-                    <p className="text-xs opacity-80 leading-relaxed">{card.description}</p>
+                    <h4 className="font-semibold text-sm mb-1 group-hover:scale-105 transition-transform duration-300">{card.title}</h4>
+                    <p className="text-xs opacity-90 mb-2 group-hover:opacity-100 transition-opacity duration-300">{card.company}</p>
+                    <p className="text-xs opacity-80 leading-relaxed group-hover:opacity-90 transition-opacity duration-300">{card.description}</p>
                   </div>
                 </motion.div>
               ))}

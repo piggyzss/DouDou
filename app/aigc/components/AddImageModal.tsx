@@ -78,7 +78,7 @@ export default function AddImageModal({ isOpen, onClose, onSubmit, artworkTitle,
   if (!isOpen) return null
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
           <X size={20} />
         </button>
@@ -133,7 +133,7 @@ export default function AddImageModal({ isOpen, onClose, onSubmit, artworkTitle,
         {error && <div className="mt-3 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">{error}</div>}
         <div className="flex gap-3 justify-end mt-4">
           <button className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm" onClick={() => { resetForm(); onClose() }} disabled={isSubmitting}>取消</button>
-          <button className="px-4 py-2 bg-primary text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center" onClick={handleSubmit} disabled={isSubmitting || files.length === 0}>
+          <button className="px-4 py-2 bg-primary text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center" onClick={handleSubmit} disabled={isSubmitting || files.length === 0}>
             {isSubmitting ? (<><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>上传中...</>) : '完成'}
           </button>
         </div>

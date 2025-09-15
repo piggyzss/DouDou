@@ -493,7 +493,7 @@ export default function AIGCPage() {
             {activeTab === 'images' && (
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
+                className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
               >
                 新建作品集
               </button>
@@ -501,7 +501,7 @@ export default function AIGCPage() {
             {activeTab === 'music' && (
               <button
                 onClick={() => setIsMusicModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
+                className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
               >
                 新建音乐
               </button>
@@ -509,7 +509,7 @@ export default function AIGCPage() {
             {activeTab === 'videos' && (
               <button
                 onClick={() => setIsVideoModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
+                className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
               >
                 新建视频
               </button>

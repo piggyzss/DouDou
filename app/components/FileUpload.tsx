@@ -82,7 +82,7 @@ export function FileUpload({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 文件上传区域 */}
-      <div className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+      <div className={`border-2 border-dashed rounded p-6 transition-colors ${
         uploading ? 'border-gray-300 bg-gray-50' : 'border-gray-300 hover:border-primary'
       }`}>
         <input
@@ -115,7 +115,7 @@ export function FileUpload({
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-900">Upload Results</h4>
           {uploadResults.map((result, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
               <div className="flex items-center space-x-3 flex-1">
                 {result.success ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />

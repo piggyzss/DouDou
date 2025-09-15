@@ -82,7 +82,7 @@ export default function ImagePreview({ isOpen, imageUrl, hasPrev, hasNext, onClo
                   </motion.button>
                 )}
 
-                <img src={imageUrl} alt="预览图片" className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
+                <img src={imageUrl} alt="预览图片" className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl" />
               </div>
             </div>
           </motion.div>

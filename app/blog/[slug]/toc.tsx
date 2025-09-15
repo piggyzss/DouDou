@@ -56,7 +56,7 @@ export default function TOC() {
 
   return (
     <nav className="text-sm font-blog">
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded p-4">
         <div className="font-medium text-text-primary mb-3 text-base">目录</div>
         <ul className="space-y-2">
           {headings.map((h) => (

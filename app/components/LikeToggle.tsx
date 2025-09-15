@@ -36,9 +36,15 @@ export default function LikeToggle({
   const [liked, setLiked] = useState<boolean>(initialLiked)
   const [count, setCount] = useState<number>(initialCount)
   const [busy, setBusy] = useState(false)
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0)
+  const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(false)
 
   useEffect(() => {
     const fetchStatus = async () => {
+      const now = Date.now()
+      // 如果用户刚刚交互过，不要重新获取状态
+      if (hasUserInteracted && now - lastFetchTime < 2000) return
+      
       try {
         const res = await fetch('/api/likes/status', {
           method: 'POST',
@@ -48,11 +54,17 @@ export default function LikeToggle({
         if (!res.ok) return
         const json = await res.json()
         const s = json.statuses?.[0]
-        if (s && typeof s.liked === 'boolean') setLiked(s.liked)
+        if (s && typeof s.liked === 'boolean') {
+          setLiked(s.liked)
+        }
+        if (s && typeof s.likesCount === 'number') {
+          setCount(s.likesCount)
+        }
+        setLastFetchTime(now)
       } catch {}
     }
     fetchStatus()
-  }, [targetType, targetId])
+  }, [targetType, targetId, lastFetchTime, hasUserInteracted])
 
   // 同步跨组件的点赞状态（例如预览模式与列表 hover 图标之间）
   useEffect(() => {
@@ -75,6 +87,7 @@ export default function LikeToggle({
     e.stopPropagation()
     if (busy) return
     setBusy(true)
+    setHasUserInteracted(true) // 标记用户已交互
     const nextLiked = !liked
     const prevCount = count
     setLiked(nextLiked)
@@ -96,6 +109,7 @@ export default function LikeToggle({
       const finalCount = typeof json.likesCount === 'number' ? json.likesCount : Math.max(0, prevCount + (finalLiked ? 1 : -1))
       setLiked(finalLiked)
       setCount(finalCount)
+      setLastFetchTime(Date.now()) // 更新最后获取时间，防止立即重新获取
       onChanged?.(finalLiked, finalCount)
       // 广播全局事件，供展示组件同步
       if (typeof window !== 'undefined') {
@@ -107,8 +121,9 @@ export default function LikeToggle({
         } catch {}
       }
     } catch (err) {
-      setLiked(!nextLiked)
-      setCount(c => Math.max(0, c + (nextLiked ? -1 : 1)))
+      // 回滚到之前的状态
+      setLiked(liked)
+      setCount(prevCount)
     } finally {
       setBusy(false)
     }

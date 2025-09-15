@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
-const PRIMARY_BTN = 'inline-flex items-center px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark disabled:opacity-60 transition-colors font-blog text-sm shadow-sm'
-const SECONDARY_BTN = 'inline-flex items-center px-4 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-text-secondary hover:text-primary transition-colors font-blog text-sm shadow-sm'
+const PRIMARY_BTN = 'inline-flex items-center px-4 py-2 rounded bg-primary text-white hover:bg-primary-dark disabled:opacity-60 transition-colors font-blog text-sm shadow-sm'
+const SECONDARY_BTN = 'inline-flex items-center px-4 py-2 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-text-secondary hover:text-primary transition-colors font-blog text-sm shadow-sm'
 
 export default function EditBlogPage() {
   const { slug } = useParams() as { slug: string }

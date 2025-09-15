@@ -74,7 +74,7 @@ export default async function BlogDetailPage({ params }: Params) {
                 <img
                   src={(post as any).cover_url.startsWith('/') ? (post as any).cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent((post as any).cover_url)}`}
                   alt={post.title}
-                  className="w-full max-h-[360px] object-cover rounded-lg border border-gray-100 dark:border-gray-700"
+                  className="w-full max-h-[360px] object-cover rounded border border-gray-100 dark:border-gray-700"
                 />
               </div>
               )}

@@ -140,7 +140,7 @@ export default function Navigation() {
           }}
           transition={{ duration: 0.3 }}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 rounded-lg mt-2 shadow-lg">
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 mt-2">
             {/* 移动端搜索栏 */}
             <form onSubmit={handleSearch} className="px-3 py-2">
               <div className="relative">
