@@ -18,6 +18,10 @@
   --bg-card: #ffffff;
   /* 博客正文字体变量 */
   --font-body: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  /* 终端窗口控制按钮颜色 */
+  --terminal-green: #8ccc79;
+  /* 代码内容文字颜色 */
+  --code-green: #53b88f;
 }
 
 .dark {

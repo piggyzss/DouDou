@@ -1,7 +1,7 @@
 import Hero from './home/Hero'
 import About from './home/About'
 import Skills from './home/Skills'
-import LatestContent from './home/LatestContent'
+import Project from './home/Project'
 import Update from './home/Update'
 import BackToTop from './components/BackToTop'
 
@@ -11,7 +11,7 @@ export default function Home() {
       <Hero />
       <About />
       <Skills />
-      <LatestContent />
+      <Project />
       <Update />
       <BackToTop />
     </div>

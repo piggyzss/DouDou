@@ -25,8 +25,8 @@ export default function Footer() {
             <p className="text-text-secondary text-sm">
               前端开发者 | AI爱好者 | 创意工作者
             </p>
-            <p className="text-text-muted text-xs">
-              用代码创造美好，用AI探索未来
+            <p className="text-text-muted text-xs font-blog">
+              用代码创造美好，用AI探索未来，让创意与技术完美融合
             </p>
           </div>
 

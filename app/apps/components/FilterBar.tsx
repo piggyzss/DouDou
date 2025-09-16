@@ -1,8 +1,7 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { Filter } from 'lucide-react'
-import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Code, Smartphone, Gamepad2, Grid3X3 } from 'lucide-react'
 
 interface FilterBarProps {
   onFilter: (type: string) => void
@@ -10,58 +9,39 @@ interface FilterBarProps {
 }
 
 function FilterBar({ onFilter, selectedType }: FilterBarProps) {
-  const [isHovered, setIsHovered] = useState(false)
-
   const typeOptions = [
-    { value: 'all', label: '全部' },
-    { value: 'app', label: '应用' },
-    { value: 'miniprogram', label: '小程序' },
-    { value: 'game', label: '游戏' }
+    { value: 'all', label: '全部', icon: Grid3X3 },
+    { value: 'app', label: '应用', icon: Code },
+    { value: 'miniprogram', label: '小程序', icon: Smartphone },
+    { value: 'game', label: '游戏', icon: Gamepad2 }
   ]
-
-  const handleTypeChange = (type: string) => {
-    onFilter(type)
-    setIsHovered(false)
-  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="flex space-x-4"
     >
-      <div className="flex items-center gap-2 cursor-pointer">
-        <Filter size={16} className="text-text-secondary" />
-      </div>
-
-      <AnimatePresence>
-        {isHovered && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-5 left-0 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 w-[100px]"
+      {typeOptions.map((option) => {
+        const Icon = option.icon
+        return (
+          <motion.button
+            key={option.value}
+            onClick={() => onFilter(option.value)}
+            className={`p-2 rounded-full transition-all duration-300 ${
+              selectedType === option.value
+                ? 'bg-primary text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-text-secondary hover:text-text-primary'
+            }`}
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
+            title={option.label}
           >
-            {typeOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => handleTypeChange(option.value)}
-                className={`w-full px-3 py-2 text-left text-sm font-blog transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                  selectedType === option.value
-                    ? 'text-primary bg-primary/10'
-                    : 'text-text-primary'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Icon size={20} />
+          </motion.button>
+        )
+      })}
     </motion.div>
   )
 }
