@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Calendar, Pointer } from 'lucide-react'
+import { Calendar, Terminal } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface BlogPost {
@@ -110,22 +110,16 @@ export default function LatestContent() {
               style={{ transformOrigin: 'right' }}
             />
 
-            {/* 中间的project文案 */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              whileInView={{ scale: 1, rotate: 0 }}
-              transition={{
-                duration: 0.6,
-                delay: 0.5,
-                type: "spring",
-                stiffness: 200,
-                damping: 10
-              }}
+            {/* 标题 */}
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
               viewport={{ once: false }}
-              className="mx-6 px-4 py-2 text-text-primary text-2xl font-medium font-english"
+              className="text-2xl font-medium text-text-primary font-english mx-6 px-4 py-2"
             >
               Project
-            </motion.div>
+            </motion.h2>
 
             {/* 右侧横线 */}
             <motion.div
@@ -160,8 +154,8 @@ export default function LatestContent() {
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
+                <Terminal size={16} />
                 最新博客
-                <Pointer size={16} className="rotate-90" />
               </h3>
               {loading ? (
                 <div className="space-y-4">
@@ -217,8 +211,8 @@ export default function LatestContent() {
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
+                <Terminal size={16} />
                 最新项目
-                <Pointer size={16} className="rotate-90" />
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 text-sm text-text-muted font-light">
@@ -253,8 +247,8 @@ export default function LatestContent() {
           >
             <div className="p-6">
               <h3 className="text-lg font-normal text-text-primary mb-4 group-hover:text-primary transition-colors duration-300 flex items-center gap-2">
+                <Terminal size={16} />
                 最新AIGC作品
-                <Pointer size={16} className="rotate-90" />
               </h3>
               {loading ? (
                 <div className="space-y-4">

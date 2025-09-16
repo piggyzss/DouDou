@@ -20,7 +20,7 @@ import { useTheme } from '../providers'
 const navItems = [
   { name: 'Hello', href: '/', icon: Carrot },
   { name: 'Write', href: '/blog', icon: PenSquare },
-  { name: 'App', href: '/projects', icon: Code },
+  { name: 'App', href: '/apps', icon: Code },
   { name: 'AIGC', href: '/aigc', icon: Palette },
 ]
 
@@ -68,14 +68,14 @@ export default function Navigation() {
                 >
                   <Link
                     href={item.href}
-                    className={`relative px-3 py-2 rounded-md text-sm transition-colors flex items-center space-x-2 ${
+                    className={`relative px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-center space-x-2 ${
                       pathname === item.href
                         ? 'text-primary'
                         : 'text-text-secondary hover:text-primary'
                     }`}
                   >
-                    <Icon size={16} className="icon-hover-rotate text-current" strokeWidth={1.5} />
-                    <span className="font-medium">{item.name}</span>
+                    <Icon size={16} className="icon-hover-rotate text-current flex-shrink-0" strokeWidth={1.5} />
+                    <span className="font-medium leading-none">{item.name}</span>
                     {pathname === item.href && (
                       <motion.div
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
@@ -163,15 +163,15 @@ export default function Navigation() {
                 >
                   <Link
                     href={item.href}
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors flex items-center space-x-2 ${
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-center space-x-2 ${
                       pathname === item.href
                         ? 'text-primary bg-primary/10'
                         : 'text-text-secondary hover:text-primary hover:bg-gray-100 transition-all duration-300 dark:hover:bg-gray-800'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <Icon size={16} className="icon-hover-rotate text-current" strokeWidth={1.5} />
-                    <span className="font-medium">{item.name}</span>
+                    <Icon size={16} className="icon-hover-rotate text-current flex-shrink-0" strokeWidth={1.5} />
+                    <span className="font-medium leading-none">{item.name}</span>
                   </Link>
                 </div>
               )

@@ -40,7 +40,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/projects" className="text-text-secondary hover:text-primary transition-colors text-sm">
+                <a href="/apps" className="text-text-secondary hover:text-primary transition-colors text-sm">
                   开发作品
                 </a>
               </li>

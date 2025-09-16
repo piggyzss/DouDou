@@ -148,7 +148,7 @@ export default function BlogPage() {
                       <div className="flex-1 pl-6 flex flex-col justify-between">
                         {/* 标题和操作按钮 */}
                         <div className="flex items-center gap-3 mb-4">
-                          <h2 className="text-2xl font-bold text-text-primary font-heading group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                          <h2 className="text-xl font-bold text-text-primary font-heading group-hover:text-primary transition-colors line-clamp-2 flex-1">
                             <Link href={`/blog/${post.slug}`}>
                               {post.title}
                             </Link>

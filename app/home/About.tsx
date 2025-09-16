@@ -117,21 +117,16 @@ export default function About() {
               style={{ transformOrigin: 'right' }}
             />
 
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              whileInView={{ scale: 1, rotate: 0 }}
-              transition={{
-                duration: 0.6,
-                delay: 0.5,
-                type: "spring",
-                stiffness: 200,
-                damping: 10
-              }}
+            {/* 标题 */}
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
               viewport={{ once: false }}
-              className="mx-6 px-4 py-2 text-text-primary text-2xl font-medium font-english"
+              className="text-2xl font-medium text-text-primary font-english mx-6 px-4 py-2"
             >
               About
-            </motion.div>
+            </motion.h2>
 
             <motion.div
               initial={{ scaleX: 0 }}

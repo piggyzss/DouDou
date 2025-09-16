@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Terminal } from 'lucide-react'
 
 export default function Hero() {
   return (
@@ -24,7 +25,7 @@ export default function Hero() {
             className="inline-flex items-center gap-2 text-sm text-text-muted font-blog hover:text-primary transition-colors cursor-pointer"
           >
             <span className="w-2 h-2 bg-primary rounded-full"></span>
-            <span className="text-primary">{'>_'}</span>
+            <Terminal size={16} />
             <span>More About Me</span>
           </button>
         </motion.div>
