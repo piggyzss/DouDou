@@ -169,15 +169,15 @@ export default function CreateAppModal({ isOpen, onClose, onSubmit }: CreateAppM
             <div className="flex gap-4">
               <label className="flex items-center">
                 <input type="radio" name="type" value="app" checked={type === 'app'} onChange={(e) => setType(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">应用</span>
+                <span className="font-blog text-xs">应用</span>
               </label>
               <label className="flex items-center">
                 <input type="radio" name="type" value="miniprogram" checked={type === 'miniprogram'} onChange={(e) => setType(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">小程序</span>
+                <span className="font-blog text-xs">小程序</span>
               </label>
               <label className="flex items-center">
                 <input type="radio" name="type" value="game" checked={type === 'game'} onChange={(e) => setType(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">游戏</span>
+                <span className="font-blog text-xs">游戏</span>
               </label>
             </div>
           </div>
@@ -186,15 +186,15 @@ export default function CreateAppModal({ isOpen, onClose, onSubmit }: CreateAppM
             <div className="flex gap-4">
               <label className="flex items-center">
                 <input type="radio" name="status" value="development" checked={status === 'development'} onChange={(e) => setStatus(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">开发中</span>
+                <span className="font-blog text-xs">开发中</span>
               </label>
               <label className="flex items-center">
                 <input type="radio" name="status" value="beta" checked={status === 'beta'} onChange={(e) => setStatus(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">测试中</span>
+                <span className="font-blog text-xs">测试中</span>
               </label>
               <label className="flex items-center">
                 <input type="radio" name="status" value="online" checked={status === 'online'} onChange={(e) => setStatus(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">已上线</span>
+                <span className="font-blog text-xs">已上线</span>
               </label>
             </div>
           </div>
@@ -203,11 +203,11 @@ export default function CreateAppModal({ isOpen, onClose, onSubmit }: CreateAppM
             <div className="flex gap-4">
               <label className="flex items-center">
                 <input type="radio" name="experienceMethod" value="download" checked={experienceMethod === 'download'} onChange={(e) => setExperienceMethod(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">下载链接</span>
+                <span className="font-blog text-xs">下载链接</span>
               </label>
               <label className="flex items-center">
                 <input type="radio" name="experienceMethod" value="qrcode" checked={experienceMethod === 'qrcode'} onChange={(e) => setExperienceMethod(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
-                <span className="font-blog text-sm">二维码</span>
+                <span className="font-blog text-xs">二维码</span>
               </label>
             </div>
           </div>
@@ -259,6 +259,26 @@ export default function CreateAppModal({ isOpen, onClose, onSubmit }: CreateAppM
               )}
             </div>
           )}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2 font-body">上传示例视频</label>
+            <input ref={videoInputRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" disabled={isSubmitting} />
+            <button type="button" onClick={() => videoInputRef.current?.click()} disabled={isSubmitting} className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-center hover:border-primary dark:hover:border-primary transition-colors bg-gray-50 dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              <Upload className="mx-auto mb-2 text-gray-400" size={24} />
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-blog">点击上传示例视频</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-blog">支持 MP4, MOV, AVI 等格式</p>
+            </button>
+            {videoPreview && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-text-primary mb-2 font-blog">已上传的视频：</h4>
+                <div className="relative group">
+                  <video src={videoPreview} className="w-full h-20 object-cover rounded-md" controls />
+                  <button type="button" onClick={removeVideo} disabled={isSubmitting} className="absolute top-1 right-1 bg-white bg-opacity-80 text-gray-700 rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50">
+                    <X size={10} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => { resetForm(); onClose() }} disabled={isSubmitting} className="flex-1 px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-text-primary dark:text-white bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed">取消</button>
             <button type="submit" disabled={isSubmitting || !name.trim()} className="flex-1 px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">

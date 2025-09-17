@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Code, Smartphone, Gamepad2, Grid3X3 } from 'lucide-react'
+import { Code, Smartphone, Gamepad2, Wallet } from 'lucide-react'
 
 interface FilterBarProps {
   onFilter: (type: string) => void
@@ -10,7 +10,7 @@ interface FilterBarProps {
 
 function FilterBar({ onFilter, selectedType }: FilterBarProps) {
   const typeOptions = [
-    { value: 'all', label: '全部', icon: Grid3X3 },
+    { value: 'all', label: '全部', icon: Wallet },
     { value: 'app', label: '应用', icon: Code },
     { value: 'miniprogram', label: '小程序', icon: Smartphone },
     { value: 'game', label: '游戏', icon: Gamepad2 }
@@ -38,7 +38,7 @@ function FilterBar({ onFilter, selectedType }: FilterBarProps) {
             whileTap={{ scale: 0.9 }}
             title={option.label}
           >
-            <Icon size={20} />
+            <Icon size={option.value === 'all' ? 18 : 20} />
           </motion.button>
         )
       })}

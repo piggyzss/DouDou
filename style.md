@@ -155,6 +155,14 @@
 **行容器**：`flex flex-wrap gap-2`
 **适用位置**：Blog 列表与详情、AIGC 标签行
 
+### 5. 错误状态样式规范
+
+**容器**：`flex items-center justify-center gap-3`
+**图标**：左侧红色 `CircleOff` 图标，尺寸 `size={16}`，颜色 `text-red-500`，`flex-shrink-0`
+**文案**：深灰色 `text-text-secondary`，小字号 `text-sm`，字体 `font-blog`
+**按钮**：重试按钮使用主按钮样式规范，包含 `RotateCcw` 图标（尺寸16px），布局 `inline-flex items-center gap-2`
+**适用位置**：应用列表加载失败、API请求错误等场景
+
 ## 五、动画与交互规范
 
 ### 1. 详情页进入动画规范

@@ -25,6 +25,9 @@ export async function uploadFile(
     const fileExtension = MIME_TYPE_MAP[mimeType as keyof typeof MIME_TYPE_MAP] || 'bin'
     const filename = `${folder}/${Date.now()}-${uuidv4()}.${fileExtension}`
 
+    // 对文件名进行编码，避免特殊字符问题
+    const encodedFilename = encodeURIComponent(originalName)
+    
     // 上传参数
     const uploadParams: any = {
       Bucket: cosConfig.Bucket,
@@ -32,7 +35,7 @@ export async function uploadFile(
       Key: filename,
       Body: file,
       ContentType: mimeType,
-      ContentDisposition: `inline; filename="${originalName}"`,
+      ContentDisposition: `inline; filename*=UTF-8''${encodedFilename}`,
       CacheControl: 'max-age=31536000', // 1年缓存
     }
 

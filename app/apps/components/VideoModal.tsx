@@ -75,7 +75,7 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
               playsInline
               preload="metadata"
             >
-              <source src={videoUrl} type="video/mp4" />
+              <source src={videoUrl ? `/api/apps/proxy-video?url=${encodeURIComponent(videoUrl)}` : ''} type="video/mp4" />
               您的浏览器不支持视频播放。
             </video>
           </div>

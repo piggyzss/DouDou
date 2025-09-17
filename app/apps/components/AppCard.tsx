@@ -1,32 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Play, Download, ExternalLink, Heart, Users, TrendingUp, MessageCircle, Calendar, QrCode } from 'lucide-react'
 import VideoModal from './VideoModal'
 import HighchartsReact from 'highcharts-react-official'
 import Highcharts from 'highcharts'
-
-interface App {
-  id: number
-  name: string
-  description: string
-  type: 'app' | 'miniprogram' | 'game'
-  platform: 'web' | 'mobile' | 'wechat'
-  status: 'online' | 'beta' | 'development'
-  videoUrl: string
-  thumbnailUrl: string
-  dau: number
-  downloads: number
-  likes: number
-  trend: string
-  experienceUrl: string
-  downloadUrl: string | null
-  updatedAt: string
-  dauTrend: number[] // 最近7天的DAU数据
-  qrCodeUrl: string // 二维码图片URL
-}
+import { App } from '@/lib/models/app'
 
 interface AppCardProps {
   app: App
@@ -43,6 +24,88 @@ const formatDate = (dateString: string) => {
 
 export default function AppCard({ app }: AppCardProps) {
   const [showVideoModal, setShowVideoModal] = useState(false)
+  const [dauTrend, setDauTrend] = useState<number[]>([])
+  const [liked, setLiked] = useState(false)
+  const [buttonWidth, setButtonWidth] = useState(0)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  // 获取DAU趋势数据
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(`/api/apps/${app.id}/stats?days=7`)
+        if (response.ok) {
+          const data = await response.json()
+          const trendData = data.stats.map((stat: any) => stat.dau).reverse()
+          
+          // 如果数据不足7天，用0补齐
+          const paddedData = []
+          for (let i = 0; i < 7; i++) {
+            paddedData.push(trendData[i] || 0)
+          }
+          
+          setDauTrend(paddedData)
+        } else {
+          // 如果请求失败，用0补齐7天数据
+          setDauTrend(new Array(7).fill(0))
+        }
+      } catch (error) {
+        console.error('获取统计数据失败:', error)
+        // 如果出错，用0补齐7天数据
+        setDauTrend(new Array(7).fill(0))
+      }
+    }
+
+    fetchStats()
+  }, [app.id, app.dau])
+
+  // 检查点赞状态
+  useEffect(() => {
+    const checkLikeStatus = async () => {
+      try {
+        const response = await fetch(`/api/apps/${app.id}/like`)
+        if (response.ok) {
+          const data = await response.json()
+          setLiked(data.liked)
+        }
+      } catch (error) {
+        console.error('检查点赞状态失败:', error)
+      }
+    }
+
+    checkLikeStatus()
+  }, [app.id])
+
+  // 获取按钮宽度
+  useEffect(() => {
+    const updateButtonWidth = () => {
+      if (buttonRef.current) {
+        setButtonWidth(buttonRef.current.offsetWidth)
+      }
+    }
+
+    updateButtonWidth()
+    window.addEventListener('resize', updateButtonWidth)
+    
+    return () => {
+      window.removeEventListener('resize', updateButtonWidth)
+    }
+  }, [])
+
+  // 处理点赞
+  const handleLike = async () => {
+    try {
+      const response = await fetch(`/api/apps/${app.id}/like`, {
+        method: 'POST'
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setLiked(data.liked)
+      }
+    } catch (error) {
+      console.error('点赞失败:', error)
+    }
+  }
 
   // DAU趋势图表配置
   const getDauChartOptions = () => {
@@ -60,39 +123,45 @@ export default function AppCard({ app }: AppCardProps) {
     }
 
     // 计算Y轴范围
-    const minValue = Math.min(...app.dauTrend)
-    const maxValue = Math.max(...app.dauTrend)
+    const minValue = Math.min(...dauTrend)
+    const maxValue = Math.max(...dauTrend)
     const range = maxValue - minValue
-    const padding = range * 0.1 // 10% padding
+    const padding = range > 0 ? range * 0.1 : 1 // 10% padding，如果全为0则给1的padding
     
     // 智能计算合适的刻度单位
     const rawRange = maxValue - minValue + padding * 2
     const idealTickCount = 5 // 理想的刻度数量
     const rawTickSize = rawRange / idealTickCount
     
-    // 计算合适的刻度单位（1, 2, 5, 10, 20, 50, 100, 200, 500, 1000等）
-    const magnitude = Math.pow(10, Math.floor(Math.log10(rawTickSize)))
-    const normalizedTickSize = rawTickSize / magnitude
-    let tickSize = magnitude
+    let tickSize = 1
+    let yMin = 0
+    let yMax = 1
+    let yAxisTicks: number[] = [0, 1]
     
-    if (normalizedTickSize <= 1) {
-      tickSize = magnitude
-    } else if (normalizedTickSize <= 2) {
-      tickSize = 2 * magnitude
-    } else if (normalizedTickSize <= 5) {
-      tickSize = 5 * magnitude
-    } else {
-      tickSize = 10 * magnitude
-    }
-    
-    // 计算Y轴范围
-    const yMin = Math.floor((minValue - padding) / tickSize) * tickSize
-    const yMax = Math.ceil((maxValue + padding) / tickSize) * tickSize
-    
-    // 生成Y轴刻度
-    const yAxisTicks: number[] = []
-    for (let i = yMin; i <= yMax; i += tickSize) {
-      yAxisTicks.push(i)
+    if (rawRange > 0) {
+      // 计算合适的刻度单位（1, 2, 5, 10, 20, 50, 100, 200, 500, 1000等）
+      const magnitude = Math.pow(10, Math.floor(Math.log10(rawTickSize)))
+      const normalizedTickSize = rawTickSize / magnitude
+      
+      if (normalizedTickSize <= 1) {
+        tickSize = magnitude
+      } else if (normalizedTickSize <= 2) {
+        tickSize = 2 * magnitude
+      } else if (normalizedTickSize <= 5) {
+        tickSize = 5 * magnitude
+      } else {
+        tickSize = 10 * magnitude
+      }
+      
+      // 计算Y轴范围
+      yMin = Math.floor((minValue - padding) / tickSize) * tickSize
+      yMax = Math.ceil((maxValue + padding) / tickSize) * tickSize
+      
+      // 生成Y轴刻度
+      yAxisTicks = []
+      for (let i = yMin; i <= yMax; i += tickSize) {
+        yAxisTicks.push(i)
+      }
     }
 
     return {
@@ -146,7 +215,7 @@ export default function AppCard({ app }: AppCardProps) {
       },
       series: [{
         name: 'DAU',
-        data: app.dauTrend,
+        data: dauTrend,
         color: '#006aff',
         lineWidth: 2,
         marker: {
@@ -251,7 +320,7 @@ export default function AppCard({ app }: AppCardProps) {
           {/* 左侧封面图片 - 3:4比例 */}
           <div className="w-48 h-full flex-shrink-0 rounded overflow-hidden relative group/cover">
             <img
-              src={app.thumbnailUrl}
+              src={app.cover_image_url ? `/api/apps/proxy-image?url=${encodeURIComponent(app.cover_image_url)}` : '/images/placeholder-app.png'}
               alt={app.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
             />
@@ -306,7 +375,7 @@ export default function AppCard({ app }: AppCardProps) {
                 {/* 信息栏：数据指标 */}
                 <div className="flex items-center gap-2 text-[11px] text-text-muted h-5 mb-4">
                   <div className="flex items-center gap-1">
-                    <span>{formatDate(app.updatedAt)}</span>
+                    <span>{formatDate(app.updated_at)}</span>
                   </div>
                   <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">·</span>
                   <div className="flex items-center gap-1">
@@ -332,20 +401,25 @@ export default function AppCard({ app }: AppCardProps) {
                 {/* 体验入口 */}
                 <div className="mt-3">
                   <div className="relative inline-block group/qr">
-                    <button className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 px-3 py-2 rounded-md hover:scale-105">
+                    <button 
+                      ref={buttonRef}
+                      className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 px-3 py-2 rounded hover:scale-105"
+                    >
                       <QrCode size={14} />
                       <span>体验一下</span>
                     </button>
                     
                     {/* 二维码悬浮显示 */}
                     <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover/qr:opacity-100 transition-opacity duration-200 pointer-events-none">
-                      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+                      <div 
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2 flex items-center justify-center" 
+                        style={{ width: `${buttonWidth}px`, height: `${buttonWidth}px` }}
+                      >
                         <img
-                          src={app.qrCodeUrl}
+                          src={app.qr_code_url ? `/api/apps/proxy-image?url=${encodeURIComponent(app.qr_code_url)}` : '/images/placeholder-qr.png'}
                           alt={`${app.name} 二维码`}
-                          className="w-32 h-32"
+                          className="w-20 h-20 object-contain"
                         />
-                        <div className="text-xs text-text-muted mt-2 text-center">扫码体验</div>
                       </div>
                     </div>
                   </div>
@@ -373,7 +447,7 @@ export default function AppCard({ app }: AppCardProps) {
       {/* 视频播放模态框 */}
       {showVideoModal && (
         <VideoModal
-          videoUrl={app.videoUrl}
+          videoUrl={app.video_url || ''}
           title={app.name}
           onClose={() => setShowVideoModal(false)}
         />

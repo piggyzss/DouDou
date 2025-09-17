@@ -34,10 +34,34 @@ interface ArtworkCollection {
   images: ArtworkImage[]
 }
 
+interface App {
+  id: number
+  name: string
+  slug: string
+  description: string
+  tags: string[]
+  type: 'app' | 'miniprogram' | 'game'
+  platform: 'web' | 'mobile' | 'wechat'
+  status: 'development' | 'beta' | 'online'
+  experience_method: 'download' | 'qrcode'
+  download_url?: string
+  qr_code_url?: string
+  cover_image_url?: string
+  video_url?: string
+  dau: number
+  downloads: number
+  likes_count: number
+  trend: string
+  created_at: string
+  updated_at: string
+  published_at?: string
+}
+
 export default function Project() {
   const router = useRouter()
   const [latestBlog, setLatestBlog] = useState<BlogPost | null>(null)
   const [latestArtwork, setLatestArtwork] = useState<ArtworkCollection | null>(null)
+  const [latestApp, setLatestApp] = useState<App | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -66,6 +90,17 @@ export default function Project() {
           }
         } else {
           console.warn('获取AIGC作品数据失败:', artworkResponse.status)
+        }
+
+        // 获取最新应用
+        const appResponse = await fetch('/api/apps?limit=1&status=online')
+        if (appResponse.ok) {
+          const appData = await appResponse.json()
+          if (appData.apps?.length > 0) {
+            setLatestApp(appData.apps[0])
+          }
+        } else {
+          console.warn('获取应用数据失败:', appResponse.status)
         }
       } catch (error) {
         console.error('获取最新内容失败:', error)
@@ -168,9 +203,10 @@ export default function Project() {
             {/* 终端内容 */}
             <div className="p-4 font-mono text-sm">
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span>$</span>
-                  <span>cat latest-blog.md</span>
+                <div className="flex items-center gap-2 text-green-400">
+                  <span className="text-yellow-400">$</span>
+                  <span className="text-blue-400">cat</span>
+                  <span className="text-purple-400">latest-blog.md</span>
                 </div>
                 
                 {loading ? (
@@ -183,13 +219,13 @@ export default function Project() {
                   </div>
                 ) : latestBlog ? (
                   <div className="space-y-2">
-                    <div className="text-gray-400 font-blog">
-                      <span className="text-blue-400">#</span> <span className="text-white">{latestBlog.title}</span>
+                    <div className="text-gray-400 font-light">
+                      <span className="text-[var(--primary)]">#</span> <span className="text-white">{latestBlog.title}</span>
                     </div>
                     <div className="text-gray-500 text-xs font-light">
                       <span className="text-yellow-400">date:</span> <span className="text-white">{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
                     </div>
-                    <div className="text-gray-400 leading-relaxed text-xs font-blog">
+                    <div className="text-gray-300 leading-relaxed text-xs font-thin line-clamp-4">
                       {latestBlog.excerpt || '暂无摘要...'}
                     </div>
                     <div className="flex items-center gap-2 text-[var(--code-green)] mt-3">
@@ -199,10 +235,10 @@ export default function Project() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="text-gray-400 font-blog">
-                      <span className="text-blue-400">#</span> 暂无博客文章
+                    <div className="text-gray-400 font-light">
+                      <span className="text-[var(--primary)]">#</span> 暂无博客文章
                     </div>
-                    <div className="text-gray-500 text-xs font-blog">
+                    <div className="text-gray-500 text-xs font-light">
                       <span className="text-yellow-400">status:</span> 还没有发布任何博客文章...
                     </div>
                   </div>
@@ -243,62 +279,67 @@ export default function Project() {
             </div>
             
             {/* 编辑器内容 */}
-            <div className="p-4 font-mono text-xs">
+            <div className="p-4 font-mono text-sm">
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">1</span>
-                  <span className="text-blue-400">import</span> <span className="text-yellow-400">React</span> <span className="text-blue-400">from</span> <span className="text-green-300">'react'</span>
+                <div className="flex items-center gap-2 text-green-400">
+                  <span className="text-yellow-400">$</span>
+                  <span className="text-blue-400">ls</span>
+                  <span className="text-purple-400">-la</span>
+                  <span className="text-green-400">latest-app/</span>
                 </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">2</span>
-                  <span className="text-blue-400">import</span> <span className="text-yellow-400">{'{'}</span> <span className="text-white">OpenAI</span> <span className="text-yellow-400">{'}'}</span> <span className="text-blue-400">from</span> <span className="text-green-300">'openai'</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">3</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">4</span>
-                  <span className="text-blue-400">const</span> <span className="text-white">AIChatApp</span> <span className="text-yellow-400">=</span> <span className="text-blue-400">()</span> <span className="text-yellow-400">=&gt;</span> <span className="text-yellow-400">{'{'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">5</span>
-                  <span className="text-gray-400 ml-4 font-blog">// 基于OpenAI API的智能聊天应用</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">6</span>
-                  <span className="text-gray-400 ml-4 font-blog">// 支持多轮对话、语音输入和图片识别</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">7</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">8</span>
-                  <span className="text-gray-400 ml-4">return</span> <span className="text-yellow-400">(</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">9</span>
-                  <span className="text-gray-400 ml-8">&lt;<span className="text-red-400">div</span>&gt;</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">10</span>
-                  <span className="text-gray-400 ml-12">&lt;<span className="text-red-400">ChatInterface</span> /&gt;</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">11</span>
-                  <span className="text-gray-400 ml-8">&lt;/<span className="text-red-400">div</span>&gt;</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">12</span>
-                  <span className="text-yellow-400">)</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span className="text-gray-500">13</span>
-                  <span className="text-yellow-400">{'}'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--code-green)] mt-3">
-                  <ChevronRight size={14} />
-                  <span>view project...</span>
-                </div>
+                
+                {loading ? (
+                  <div className="space-y-2">
+                    <div className="animate-pulse">
+                      <div className="h-3 bg-gray-700 rounded w-20"></div>
+                      <div className="h-4 bg-gray-700 rounded w-full"></div>
+                      <div className="h-3 bg-gray-700 rounded w-3/4"></div>
+                    </div>
+                  </div>
+                ) : latestApp ? (
+                  <div className="space-y-2">
+                    <div className="text-gray-400 font-light">
+                      <span className="text-[var(--primary)]">📱</span> <span className="text-white">{latestApp.name}</span>
+                    </div>
+                    <div className="text-gray-500 text-xs font-light">
+                      <span className="text-yellow-400">类型:</span> <span className="text-white">{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : '游戏'}</span>
+                    </div>
+                    <div className="text-gray-500 text-xs font-light">
+                      <span className="text-yellow-400">平台:</span> <span className="text-white">{latestApp.platform === 'web' ? 'Web' : latestApp.platform === 'mobile' ? '移动端' : '微信'}</span>
+                    </div>
+                    <div className="text-gray-500 text-xs font-light">
+                      <span className="text-yellow-400">创建:</span> <span className="text-white">{formatDate(latestApp.created_at)}</span>
+                    </div>
+                    <div className="text-gray-300 leading-relaxed text-xs font-thin">
+                      {latestApp.description.length > 60 ? latestApp.description.substring(0, 60) + '...' : latestApp.description}
+                    </div>
+                    {latestApp.tags && latestApp.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {latestApp.tags.slice(0, 3).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 text-xs rounded bg-gray-700 text-gray-300 font-light"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-[var(--code-green)] mt-3">
+                      <ChevronRight size={14} />
+                      <span>view project...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-gray-400 font-light">
+                      <span className="text-[var(--primary)]">📱</span> <span className="text-white">暂无应用</span>
+                    </div>
+                    <div className="text-gray-500 text-xs font-light">
+                      <span className="text-yellow-400">状态:</span> 还没有发布任何应用...
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -337,9 +378,10 @@ export default function Project() {
             {/* 终端内容 */}
             <div className="p-4 font-mono text-sm">
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[var(--code-green)]">
-                  <span>$</span>
-                  <span>python generate_artwork.py</span>
+                <div className="flex items-center gap-2 text-green-400">
+                  <span className="text-yellow-400">$</span>
+                  <span className="text-blue-400">python</span>
+                  <span className="text-purple-400">generate_artwork.py</span>
                 </div>
                 
                 {loading ? (
@@ -352,20 +394,20 @@ export default function Project() {
                   </div>
                 ) : latestArtwork ? (
                   <div className="space-y-2">
-                    <div className="text-gray-400 font-blog">
-                      <span className="text-purple-400">[INFO]</span> 正在生成艺术作品...
+                    <div className="text-gray-300 font-thin">
+                      <span className="text-[var(--primary)]">[INFO]</span> 正在生成艺术作品...
                     </div>
-                    <div className="text-gray-500 text-xs font-blog">
+                    <div className="text-gray-500 text-xs font-light">
                       <span className="text-yellow-400">prompt:</span> <span className="text-white">{latestArtwork.title}</span>
                     </div>
-                    <div className="text-gray-500 text-xs font-blog">
+                    <div className="text-gray-500 text-xs font-light">
                       <span className="text-yellow-400">created:</span> <span className="text-white">{formatDate(latestArtwork.created_at)}</span>
                     </div>
                     {latestArtwork.images && latestArtwork.images.length > 0 ? (
                       <div className="mt-3 p-2 bg-gray-800 rounded border border-gray-600">
-                        <div className="text-gray-400 text-xs mb-1">preview:</div>
+                        <div className="text-gray-400 text-xs mb-1 font-light">preview:</div>
                         <div className="w-full h-20 bg-gray-700 rounded flex items-center justify-center">
-                          <span className="text-gray-500 text-xs">🎨 artwork preview</span>
+                          <span className="text-gray-500 text-xs font-light">🎨 artwork preview</span>
                         </div>
                       </div>
                     ) : null}
@@ -376,10 +418,10 @@ export default function Project() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="text-gray-400 font-blog">
-                      <span className="text-purple-400">[INFO]</span> 暂无AIGC作品
+                    <div className="text-gray-400 font-light">
+                      <span className="text-[var(--primary)]">[INFO]</span> 暂无AIGC作品
                     </div>
-                    <div className="text-gray-500 text-xs font-blog">
+                    <div className="text-gray-500 text-xs font-light">
                       <span className="text-yellow-400">status:</span> 还没有创建任何AIGC作品...
                     </div>
                   </div>
