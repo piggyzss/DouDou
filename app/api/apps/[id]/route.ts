@@ -77,7 +77,17 @@ export async function PUT(
     const coverImage = formData.get('cover_image') as File
     if (coverImage && coverImage.size > 0) {
       try {
-        coverImageUrl = await uploadFile(coverImage, 'apps/covers/')
+        const uploadResult = await uploadFile(
+          Buffer.from(await coverImage.arrayBuffer()),
+          coverImage.name,
+          coverImage.type,
+          'apps/covers'
+        )
+        if (uploadResult.success && uploadResult.url) {
+          coverImageUrl = uploadResult.url
+        } else {
+          throw new Error(uploadResult.error || '上传失败')
+        }
       } catch (error) {
         console.error('封面上传失败:', error)
         return NextResponse.json(
@@ -90,7 +100,17 @@ export async function PUT(
     const video = formData.get('video') as File
     if (video && video.size > 0) {
       try {
-        videoUrl = await uploadFile(video, 'apps/videos/')
+        const uploadResult = await uploadFile(
+          Buffer.from(await video.arrayBuffer()),
+          video.name,
+          video.type,
+          'apps/videos'
+        )
+        if (uploadResult.success && uploadResult.url) {
+          videoUrl = uploadResult.url
+        } else {
+          throw new Error(uploadResult.error || '上传失败')
+        }
       } catch (error) {
         console.error('视频上传失败:', error)
         return NextResponse.json(
@@ -104,7 +124,17 @@ export async function PUT(
       const qrCodeImage = formData.get('qr_code_image') as File
       if (qrCodeImage && qrCodeImage.size > 0) {
         try {
-          qrCodeUrl = await uploadFile(qrCodeImage, 'apps/qr-codes/')
+          const uploadResult = await uploadFile(
+            Buffer.from(await qrCodeImage.arrayBuffer()),
+            qrCodeImage.name,
+            qrCodeImage.type,
+            'apps/qr-codes'
+          )
+          if (uploadResult.success && uploadResult.url) {
+            qrCodeUrl = uploadResult.url
+          } else {
+            throw new Error(uploadResult.error || '上传失败')
+          }
         } catch (error) {
           console.error('二维码上传失败:', error)
           return NextResponse.json(
