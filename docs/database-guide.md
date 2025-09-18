@@ -19,6 +19,8 @@ DouDou 数据库系统
 │   ├── artwork_collections + artwork_images (图片集合)
 │   ├── music_tracks (音乐独立)
 │   └── videos (视频独立)
+├── 📱 应用展示模块
+│   └── apps (应用独立)
 ├── 📝 博客模块
 │   └── blog_posts (文章)
 ├── 👍 点赞系统
@@ -28,6 +30,7 @@ DouDou 数据库系统
 ### 设计理念
 - **图片**: 集合模式 (1:N) - 批量展示
 - **音乐/视频**: 独立模式 (1:1) - 单独播放
+- **应用**: 产品展示模式 (1:1) - 完整信息展示
 - **点赞**: 混合设计 - 性能与功能平衡
 
 ---
@@ -122,6 +125,30 @@ CREATE TABLE videos (
 );
 ```
 
+### 应用表
+```sql
+CREATE TABLE apps (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT NOT NULL,
+    tags TEXT[],
+    type VARCHAR(20) NOT NULL, -- 'app', 'miniprogram', 'game'
+    platform VARCHAR(20) NOT NULL, -- 'web', 'mobile', 'wechat'
+    status VARCHAR(20) DEFAULT 'development',
+    experience_method VARCHAR(20) NOT NULL, -- 'download', 'qrcode'
+    download_url VARCHAR(500),
+    qr_code_url VARCHAR(500),
+    cover_image_url VARCHAR(500),
+    video_url VARCHAR(500),
+    dau INTEGER DEFAULT 0,
+    downloads INTEGER DEFAULT 0,
+    likes_count INTEGER DEFAULT 0,
+    trend VARCHAR(20) DEFAULT 'stable',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ### 博客表
 
 #### 文章表
@@ -143,7 +170,7 @@ CREATE TABLE blog_posts (
 ```sql
 CREATE TABLE likes (
     id SERIAL PRIMARY KEY,
-    target_type VARCHAR(20) NOT NULL,  -- 'blog', 'artwork', 'music', 'video'
+    target_type VARCHAR(20) NOT NULL,  -- 'blog', 'artwork', 'music', 'video', 'app'
     target_id INTEGER NOT NULL,
     anon_id VARCHAR(64),               -- 匿名用户标识
     status VARCHAR(10) DEFAULT 'liked',
@@ -170,6 +197,18 @@ npm run db:manage-aigc-master   # 统一管理工具
 - 更新信息
 - 数据统计
 - 按标签/状态筛选
+
+### 应用管理
+```bash
+npm run db:manage-apps          # 应用管理
+```
+
+**功能包括**:
+- 应用管理 (查看/删除/更新)
+- 按状态/类型/平台筛选应用
+- 应用搜索功能
+- 统计数据分析
+- 数据库表结构查看
 
 ### 博客管理
 ```bash
@@ -273,6 +312,7 @@ npm run db:setup    # 完整数据库设置
 ## 📚 相关文档
 
 - **[数据库内容架构](./database-content-architecture.md)** - 详细的内容架构设计和点赞系统分析
+- **[应用管理指南](./apps-management-guide.md)** - 应用数据库管理工具使用指南
 - **[Vercel 数据库配置](./vercel-database-setup.md)** - Vercel Postgres 配置
 - **[腾讯云 COS 配置](./cos-setup.md)** - 文件存储配置
 - **[部署指南](./deployment-guide.md)** - 生产环境部署
@@ -290,6 +330,7 @@ npm run db:setup    # 完整数据库设置
 - **图片**: `npm run db:manage-aigc-image`
 - **音乐**: `npm run db:manage-aigc-music`  
 - **视频**: `npm run db:manage-aigc-video`
+- **应用**: `npm run db:manage-apps`
 - **博客**: `npm run db:manage-blog`
 - **环境**: `npm run db:info`
 

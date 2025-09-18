@@ -18,8 +18,8 @@ import {
 import { useTheme } from '../providers'
 
 const navItems = [
-  { name: 'Hello', href: '/', icon: Carrot },
-  { name: 'Write', href: '/blog', icon: PenSquare },
+  { name: 'Hi', href: '/', icon: Carrot },
+  { name: 'Blog', href: '/blog', icon: PenSquare },
   { name: 'App', href: '/apps', icon: Code },
   { name: 'AIGC', href: '/aigc', icon: Palette },
 ]

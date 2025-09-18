@@ -18,6 +18,15 @@ function getKeyFromUrl(url: string): string | null {
 async function main() {
   console.log('🚦 Preflight: 启动前环境检查...')
   try {
+    // 检查是否有数据库配置
+    if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) {
+      console.log('⚠️  未检测到数据库配置，跳过数据库检查')
+      console.log('💡 请创建 .env.local 文件并配置 DATABASE_URL 或 POSTGRES_URL')
+      console.log('📝 参考 env-example.txt 文件')
+      console.log('🎉 Preflight 完成（跳过数据库）')
+      return
+    }
+
     // 1) 数据库连接
     await db.query('SELECT NOW()')
     console.log('✅ DB 可连接')
@@ -66,7 +75,10 @@ async function main() {
     console.error('❌ Preflight 失败:', e)
     process.exit(1)
   } finally {
-    await db.end()
+    // 只有在有数据库配置时才关闭连接
+    if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+      await db.end()
+    }
   }
 }
 

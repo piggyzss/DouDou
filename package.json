@@ -5,6 +5,7 @@
   "scripts": {
     "predev": "npm run preflight",
     "dev": "next dev",
+    "dev:skip-preflight": "next dev",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
     "vercel-build": "GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null NEXT_TELEMETRY_DISABLED=1 NEXT_BUILD_TRACE=false DISABLE_COLLECT_BUILD_TRACES=true NODE_OPTIONS='--max-old-space-size=4096' next build",
     "vercel-build-simple": "rm -rf .next && rm -rf node_modules/.cache && NEXT_TELEMETRY_DISABLED=1 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null NEXT_BUILD_TRACE=false DISABLE_COLLECT_BUILD_TRACES=true NODE_OPTIONS='--max-old-space-size=4096' npx next build",
@@ -26,10 +27,20 @@
     "db:manage-aigc-video": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-video.ts",
     "db:manage-aigc-master": "ts-node -P tsconfig.scripts.json scripts/manage-aigc-master.ts",
     "db:manage-blog": "ts-node -P tsconfig.scripts.json scripts/manage-blog-db.ts",
+    "db:manage-apps": "ts-node -P tsconfig.scripts.json scripts/manage-apps.ts",
     "changelog": "ts-node -P tsconfig.scripts.json scripts/update-changelog.ts",
     "deploy:init": "ts-node -P tsconfig.scripts.json scripts/deploy-init.ts",
     "deploy:verify": "ts-node -P tsconfig.scripts.json scripts/verify-deployment.ts",
-    "db:test-vercel": "ts-node -P tsconfig.scripts.json scripts/test-vercel-db.ts"
+    "db:test-vercel": "ts-node -P tsconfig.scripts.json scripts/test-vercel-db.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:components": "jest tests/components",
+    "test:api": "jest tests/api",
+    "test:integration": "jest tests/integration",
+    "test:all": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",
@@ -70,9 +81,20 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
+    "@types/supertest": "^6.0.3",
     "@types/uuid": "^10.0.0",
     "eslint": "^8",
-    "eslint-config-next": "14.0.0"
+    "eslint-config-next": "14.0.0",
+    "jest": "^30.1.3",
+    "jest-environment-jsdom": "^30.1.2",
+    "msw": "^2.11.2",
+    "node-mocks-http": "^1.17.2",
+    "supertest": "^7.1.4",
+    "whatwg-fetch": "^3.6.20"
   }
 }

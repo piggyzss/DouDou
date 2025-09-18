@@ -42,7 +42,7 @@ export default function About() {
       title: "全栈开发者",
       company: "创业公司",
       description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
-      color: "#84a5f4",
+      color: "#3388ff",
       x: 5,
       y: 15,
       rotation: -5
@@ -189,9 +189,9 @@ export default function About() {
               </div>
             </div>
 
-            {/* Skills */}
+            {/* Tags */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Skills</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
                   <span

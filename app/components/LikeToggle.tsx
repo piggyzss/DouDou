@@ -119,7 +119,13 @@ export default function LikeToggle({
   }
 
   return (
-    <button disabled={busy} onClick={toggle} className={`group inline-flex items-center gap-1 p-0 m-0 bg-transparent text-sm leading-none ${className}`}>
+    <button 
+      disabled={busy} 
+      onClick={toggle} 
+      className={`group inline-flex items-center gap-1 p-0 m-0 bg-transparent text-sm leading-none ${className}`}
+      data-liked={liked.toString()}
+      data-loading={busy.toString()}
+    >
       <motion.span
         animate={{ scale: liked ? 1.15 : 1 }}
         transition={{ type: 'spring', stiffness: 500, damping: 20, duration: 0.15 }}

@@ -134,6 +134,64 @@ CREATE TABLE blog_files (
 CREATE INDEX idx_blog_files_post_id ON blog_files(post_id);
 ```
 
+## 📱 应用展示模块数据结构
+
+### 1. 应用表 (apps)
+
+```sql
+CREATE TABLE apps (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT NOT NULL,
+    tags TEXT[], -- PostgreSQL数组类型，存储技术栈、功能分类等标签
+    type VARCHAR(20) NOT NULL, -- 'app', 'miniprogram', 'game'
+    platform VARCHAR(20) NOT NULL, -- 'web', 'mobile', 'wechat'
+    status VARCHAR(20) DEFAULT 'development', -- 'development', 'beta', 'online'
+    experience_method VARCHAR(20) NOT NULL, -- 'download', 'qrcode'
+    download_url VARCHAR(500), -- 下载链接
+    qr_code_url VARCHAR(500), -- 二维码图片链接
+    cover_image_url VARCHAR(500), -- 封面图片
+    video_url VARCHAR(500), -- 演示视频链接
+    dau INTEGER DEFAULT 0, -- 日活跃用户数
+    downloads INTEGER DEFAULT 0, -- 下载量
+    likes_count INTEGER DEFAULT 0, -- 点赞数
+    trend VARCHAR(20) DEFAULT 'stable', -- 'rising', 'stable', 'declining'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMP -- 发布时间
+);
+
+-- 索引
+CREATE INDEX idx_apps_slug ON apps(slug);
+CREATE INDEX idx_apps_type ON apps(type);
+CREATE INDEX idx_apps_platform ON apps(platform);
+CREATE INDEX idx_apps_status ON apps(status);
+CREATE INDEX idx_apps_tags ON apps USING GIN(tags);
+CREATE INDEX idx_apps_created_at ON apps(created_at);
+CREATE INDEX idx_apps_likes_count ON apps(likes_count);
+CREATE INDEX idx_apps_downloads ON apps(downloads);
+```
+
+### 2. 应用统计表 (app_stats) - 可选扩展
+
+```sql
+CREATE TABLE app_stats (
+    id SERIAL PRIMARY KEY,
+    app_id INTEGER REFERENCES apps(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    views INTEGER DEFAULT 0,
+    downloads INTEGER DEFAULT 0,
+    likes INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(app_id, date)
+);
+
+-- 索引
+CREATE INDEX idx_app_stats_app_id ON app_stats(app_id);
+CREATE INDEX idx_app_stats_date ON app_stats(date);
+```
+
 ## 🎵 其他模块数据结构
 
 ### 1. 视频作品表 (video_tracks)
@@ -321,6 +379,10 @@ BEGIN
                     UPDATE videos 
                     SET likes_count = current_count 
                     WHERE id = NEW.target_id;
+                WHEN 'app' THEN
+                    UPDATE apps 
+                    SET likes_count = current_count 
+                    WHERE id = NEW.target_id;
             END CASE;
         END;
         RETURN NEW;
@@ -350,6 +412,10 @@ BEGIN
                     WHERE id = OLD.target_id;
                 WHEN 'video' THEN
                     UPDATE videos 
+                    SET likes_count = current_count 
+                    WHERE id = OLD.target_id;
+                WHEN 'app' THEN
+                    UPDATE apps 
                     SET likes_count = current_count 
                     WHERE id = OLD.target_id;
             END CASE;
@@ -447,6 +513,18 @@ BEGIN
         GROUP BY target_id
     LOOP
         UPDATE videos 
+        SET likes_count = r.actual_count 
+        WHERE id = r.target_id;
+    END LOOP;
+    
+    -- 修复 apps 表
+    FOR r IN 
+        SELECT target_id, COUNT(*) as actual_count
+        FROM likes 
+        WHERE target_type = 'app' AND status = 'liked'
+        GROUP BY target_id
+    LOOP
+        UPDATE apps 
         SET likes_count = r.actual_count 
         WHERE id = r.target_id;
     END LOOP;
