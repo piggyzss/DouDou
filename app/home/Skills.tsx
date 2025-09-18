@@ -1,19 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-
-const skills = [
-  { name: 'React', level: 90, color: '#6747ce' },
-  { name: 'TypeScript', level: 85, color: '#fdded9' },
-  { name: 'Next.js', level: 80, color: '#84a5f4' },
-  { name: 'Vue.js', level: 75, color: '#fed336' },
-  { name: 'Node.js', level: 70, color: '#8ccc79' },
-  { name: 'Python', level: 65, color: '#53b88f' },
-  { name: 'AI/ML', level: 60, color: '#6747ce' },
-  { name: 'UI/UX', level: 75, color: '#fdded9' },
-]
+import Image from 'next/image'
+import { useTheme } from '../providers'
 
 export default function Skills() {
+  const { theme } = useTheme()
+  
   return (
     <section className="pt-12 pb-20">
       <div className="max-w-7xl mx-auto">
@@ -61,61 +54,25 @@ export default function Skills() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            {skills.slice(0, 4).map((skill, index) => (
-              <motion.div
-                key={skill.name}
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                viewport={{ once: false }}
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-text-primary font-normal text-base">{skill.name}</span>
-                  <span className="text-text-secondary text-sm font-light">{skill.level}%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <motion.div
-                    className="h-2 rounded-full"
-                    style={{ backgroundColor: skill.color }}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${skill.level}%` }}
-                    transition={{ duration: 1, delay: index * 0.1 }}
-                    viewport={{ once: false }}
-                  />
-                </div>
-              </motion.div>
-            ))}
+        {/* 技能图片展示 */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          viewport={{ once: false }}
+          className="flex justify-center items-center"
+        >
+          <div className="relative w-full max-w-4xl">
+            <Image
+              src={theme === 'dark' ? '/assets/images/skill_dark.svg' : '/assets/images/skill.svg'}
+              alt="技能展示"
+              width={800}
+              height={400}
+              className="w-full h-auto"
+              priority
+            />
           </div>
-
-          <div className="space-y-6">
-            {skills.slice(4).map((skill, index) => (
-              <motion.div
-                key={skill.name}
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                viewport={{ once: false }}
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-text-primary font-normal text-base">{skill.name}</span>
-                  <span className="text-text-secondary text-sm font-light">{skill.level}%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <motion.div
-                    className="h-2 rounded-full"
-                    style={{ backgroundColor: skill.color }}
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${skill.level}%` }}
-                    transition={{ duration: 1, delay: index * 0.1 }}
-                    viewport={{ once: false }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

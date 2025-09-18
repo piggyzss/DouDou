@@ -246,14 +246,14 @@ export default function Project() {
                 <div className={`flex items-center gap-2 ${
                   isDarkMode ? 'text-green-400' : 'text-[#53b88f]'
                 }`}>
-                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>$</span>
-                  <span className={isDarkMode ? 'text-blue-400' : 'text-[#84a5f4]'}>cat</span>
+                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>$</span>
+                  <span className={isDarkMode ? 'text-blue-400' : 'text-[#3388ff]'}>cat</span>
                   <span className={isDarkMode ? 'text-purple-400' : 'text-[var(--primary)]'}>latest-blog.md</span>
                 </div>
                 
                 {loading ? (
-                  <div className="space-y-2">
-                    <div className="animate-pulse">
+                  <div className="space-y-3">
+                    <div className="animate-pulse space-y-2">
                       <div className={`h-3 rounded w-20 ${
                         isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
                       }`}></div>
@@ -275,7 +275,7 @@ export default function Project() {
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>date:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>date:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
                     </div>
                     <div className={`leading-relaxed text-xs font-thin line-clamp-4 ${
                       isDarkMode ? 'text-gray-300' : 'text-gray-600'
@@ -299,7 +299,7 @@ export default function Project() {
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>status:</span> 还没有发布任何博客文章...
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>status:</span> 还没有发布任何博客文章...
                     </div>
                   </div>
                 )}
@@ -356,15 +356,15 @@ export default function Project() {
                 <div className={`flex items-center gap-2 ${
                   isDarkMode ? 'text-green-400' : 'text-[#53b88f]'
                 }`}>
-                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>$</span>
-                  <span className={isDarkMode ? 'text-blue-400' : 'text-[#84a5f4]'}>ls</span>
+                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>$</span>
+                  <span className={isDarkMode ? 'text-blue-400' : 'text-[#3388ff]'}>ls</span>
                   <span className={isDarkMode ? 'text-purple-400' : 'text-[var(--primary)]'}>-la</span>
                   <span className={isDarkMode ? 'text-green-400' : 'text-[#8ccc79]'}>latest-app/</span>
                 </div>
                 
                 {loading ? (
-                  <div className="space-y-2">
-                    <div className="animate-pulse">
+                  <div className="space-y-3">
+                    <div className="animate-pulse space-y-2">
                       <div className={`h-3 rounded w-20 ${
                         isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
                       }`}></div>
@@ -386,17 +386,17 @@ export default function Project() {
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>类型:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : '游戏'}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>类型:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : '游戏'}</span>
                     </div>
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>平台:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.platform === 'web' ? 'Web' : latestApp.platform === 'mobile' ? '移动端' : '微信'}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>平台:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.platform === 'web' ? 'Web' : latestApp.platform === 'mobile' ? '移动端' : '微信'}</span>
                     </div>
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>创建:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestApp.created_at)}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>创建:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestApp.created_at)}</span>
                     </div>
                     <div className={`leading-relaxed text-xs font-thin ${
                       isDarkMode ? 'text-gray-300' : 'text-gray-600'
@@ -436,7 +436,7 @@ export default function Project() {
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>状态:</span> 还没有发布任何应用...
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>状态:</span> 还没有发布任何应用...
                     </div>
                   </div>
                 )}
@@ -493,14 +493,14 @@ export default function Project() {
                 <div className={`flex items-center gap-2 ${
                   isDarkMode ? 'text-green-400' : 'text-[#53b88f]'
                 }`}>
-                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>$</span>
-                  <span className={isDarkMode ? 'text-blue-400' : 'text-[#84a5f4]'}>python</span>
+                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>$</span>
+                  <span className={isDarkMode ? 'text-blue-400' : 'text-[#3388ff]'}>python</span>
                   <span className={isDarkMode ? 'text-purple-400' : 'text-[var(--primary)]'}>generate_artwork.py</span>
                 </div>
                 
                 {loading ? (
-                  <div className="space-y-2">
-                    <div className="animate-pulse">
+                  <div className="space-y-3">
+                    <div className="animate-pulse space-y-2">
                       <div className={`h-3 rounded w-20 ${
                         isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
                       }`}></div>
@@ -522,12 +522,12 @@ export default function Project() {
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>prompt:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestArtwork.title}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>prompt:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestArtwork.title}</span>
                     </div>
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>created:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestArtwork.created_at)}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>created:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestArtwork.created_at)}</span>
                     </div>
                     {latestArtwork.images && latestArtwork.images.length > 0 ? (
                       <div className={`mt-3 p-2 rounded border ${
@@ -564,7 +564,7 @@ export default function Project() {
                     <div className={`text-xs font-light ${
                       isDarkMode ? 'text-gray-500' : 'text-gray-500'
                     }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[var(--accent)]'}>status:</span> 还没有创建任何AIGC作品...
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#ff7353]'}>status:</span> 还没有创建任何AIGC作品...
                     </div>
                   </div>
                 )}
