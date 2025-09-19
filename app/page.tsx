@@ -2,7 +2,6 @@ import Hero from './home/Hero'
 import About from './home/About'
 import Skills from './home/Skills'
 import Project from './home/Project'
-import Update from './home/Update'
 import BackToTop from './components/BackToTop'
 
 export default function Home() {
@@ -12,7 +11,6 @@ export default function Home() {
       <About />
       <Skills />
       <Project />
-      <Update />
       <BackToTop />
     </div>
   )

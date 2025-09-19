@@ -1,14 +1,21 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Update from './Update'
 import { Terminal } from 'lucide-react'
 
 export default function Hero() {
   return (
     <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 relative overflow-hidden">
 
+      {/* 背景日历：置于内容下方，透明度降低 */}
+      <div className="absolute inset-0 z-0 opacity-[0.28] pointer-events-none select-none" aria-hidden>
+        <div className="absolute inset-x-0 top-[66%] scale-100">
+          <Update />
+        </div>
+      </div>
+
       <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: 'translateY(-16%)' }}>
-        {/* 导航提示 - 参考示例图片的顶部导航 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
