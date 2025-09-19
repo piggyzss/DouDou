@@ -265,8 +265,8 @@ export default function AIGCPage() {
     })
   }
 
-  const handleUpdateArtworkLikes = (artworkId: string, newCount: number) => {
-    setArtworks(prev => prev.map(a => a.id === artworkId ? { ...a, likes: newCount } : a))
+  const handleUpdateArtworkLikes = (_artworkId: string, _newCount: number) => {
+    // 与博客一致：交由 LikeToggle 自行管理显示，父层不再二次写状态，避免跳变
   }
 
   const handleDeleteMusic = async (id: string) => {
@@ -284,6 +284,10 @@ export default function AIGCPage() {
 
   const handleCreateVideo = async () => { await loadVideos() }
   const handleDeleteVideo = async (videoId: string) => { await fetch(`/api/aigc/videos/${videoId}`, { method: 'DELETE' }).catch(()=>{}); await loadVideos() }
+  const handleUpdateVideoLikes = (id: string, count: number) => {
+    // 与博客一致：组件内部管理显示，但为了避免父层渲染造成数字回退，这里只更新本地数据源，保持与 LikeToggle 一致
+    setVideoTracks(prev => prev.map(v => v.id === id ? { ...v, likes: count } : v))
+  }
 
   const formatNumber = (num: number) => {
     if (num >= 10000) {
@@ -544,7 +548,7 @@ export default function AIGCPage() {
 
           {activeTab === 'videos' && (
             <motion.div key="videos" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-              <VideosSection videos={videoTracks} formatDate={formatDate} formatNumber={formatNumber} />
+              <VideosSection videos={videoTracks} formatDate={formatDate} formatNumber={formatNumber} onDeleteVideo={handleDeleteVideo} onUpdateVideoLikes={handleUpdateVideoLikes} />
             </motion.div>
           )}
 

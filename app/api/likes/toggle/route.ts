@@ -108,6 +108,8 @@ async function updateLikesCount(targetType: string, targetId: number) {
       await query('UPDATE artwork_collections SET likes_count = $1 WHERE id=$2', [actualCount, targetId])
     } else if (targetType === 'music') {
       await query('UPDATE music_tracks SET likes_count = $1 WHERE id=$2', [actualCount, targetId])
+    } else if (targetType === 'video') {
+      await query('UPDATE videos SET likes_count = $1 WHERE id=$2', [actualCount, targetId])
     }
   } catch (error) {
     console.error('Error updating likes count:', error)

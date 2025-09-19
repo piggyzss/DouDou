@@ -110,7 +110,6 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
                   countClassName="text-[11px] leading-none text-text-muted"
                   unlikedColorClass="text-text-muted"
                   likedColorClass="text-red-500"
-                  onChanged={(liked, count) => onUpdateArtworkLikes(artwork.id, count)}
                 />
               </div>
             </div>

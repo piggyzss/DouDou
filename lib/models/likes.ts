@@ -1,6 +1,6 @@
 import { query, getRow } from '../database'
 
-export type TargetType = 'blog' | 'artwork' | 'artwork_image' | string
+export type TargetType = 'blog' | 'artwork' | 'artwork_image' | 'music' | 'video' | string
 
 export class LikesModel {
   static async getLikesCount(targetType: TargetType, targetId: number): Promise<number> {
@@ -13,6 +13,9 @@ export class LikesModel {
       return res.rows[0]?.likes_count ?? 0
     } else if (targetType === 'music') {
       const res = await query('SELECT likes_count FROM music_tracks WHERE id = $1', [targetId])
+      return res.rows[0]?.likes_count ?? 0
+    } else if (targetType === 'video') {
+      const res = await query('SELECT likes_count FROM videos WHERE id = $1', [targetId])
       return res.rows[0]?.likes_count ?? 0
     }
     return 0

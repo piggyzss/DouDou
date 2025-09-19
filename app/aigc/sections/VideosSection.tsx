@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
+import ConfirmModal from '../components/ConfirmModal'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Film, Heart, MessageCircle, Play, Pause, Settings, Volume1, Volume2, VolumeX, X, SkipBack, SkipForward, Hand } from 'lucide-react'
+import { Film, MessageCircle, Play, Pause, Settings, Volume1, Volume2, VolumeX, X, SkipBack, SkipForward, Hand, Trash2 } from 'lucide-react'
+import LikeToggle from '../../components/LikeToggle'
 
 export interface VideoTrack {
   id: string
@@ -20,9 +22,11 @@ interface VideosSectionProps {
   videos: VideoTrack[]
   formatDate: (date: string) => string
   formatNumber: (num: number) => string
+  onDeleteVideo?: (id: string) => void
+  onUpdateVideoLikes?: (id: string, count: number) => void
 }
 
-export default function VideosSection({ videos, formatDate, formatNumber }: VideosSectionProps) {
+export default function VideosSection({ videos, formatDate, formatNumber, onDeleteVideo, onUpdateVideoLikes }: VideosSectionProps) {
   const [showPlayer, setShowPlayer] = useState(false)
   const [current, setCurrent] = useState<VideoTrack | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -35,6 +39,7 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
   const volumeWrapRef = useRef<HTMLDivElement | null>(null)
   const [playbackRate, setPlaybackRate] = useState(1)
   const [volOpen, setVolOpen] = useState(false)
+  const [confirm, setConfirm] = useState<{ open: boolean; id: string; title: string } | null>(null)
 
   const openPlayer = (v: VideoTrack) => {
     setCurrent(v)
@@ -208,7 +213,18 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
             </div>
           </div>
           <div className="p-2">
-            <h3 className="text-base font-semibold text-text-primary font-heading line-clamp-1 mb-2">{video.title}</h3>
+            <div className="flex items-center gap-1 relative mb-2">
+              <h3 className="text-base font-semibold text-text-primary font-heading truncate max-w-[calc(100%-28px)]">{video.title}</h3>
+              {process.env.NODE_ENV === 'development' && onDeleteVideo && (
+                <button
+                  onClick={() => setConfirm({ open: true, id: video.id, title: video.title })}
+                  className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  title="删除视频"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1 mb-2">
               {video.tags.map((tag) => (
                 <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">#{tag}</span>
@@ -221,8 +237,18 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
               </div>
               <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">·</span>
               <div className="flex items-center gap-1">
-                <Heart size={14} />
-                <span>{formatNumber(video.likes)}</span>
+                <LikeToggle
+                  targetType="video"
+                  targetId={parseInt(video.id, 10)}
+                  initialCount={video.likes}
+                  size={14}
+                  showCount={true}
+                  className="text-[11px]"
+                  countClassName="text-[11px] leading-none text-text-muted"
+                  unlikedColorClass="text-text-muted"
+                  likedColorClass="text-red-500"
+                  onChanged={(_, count) => { onUpdateVideoLikes?.(video.id, count) }}
+                />
               </div>
               <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">·</span>
               <div className="flex items-center gap-1">
@@ -377,6 +403,19 @@ export default function VideosSection({ videos, formatDate, formatNumber }: Vide
       </div>
     )}
     </AnimatePresence>
+    {confirm?.open && (
+      <ConfirmModal
+        isOpen={confirm.open}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => {
+          if (onDeleteVideo && confirm) onDeleteVideo(confirm.id)
+          setConfirm(null)
+        }}
+        title="删除视频"
+        message={`确定要删除 “${confirm?.title}” 吗？此操作不可撤销。`}
+        type="danger"
+      />
+    )}
     <style jsx>{`
       @keyframes breatheScale {
         0%, 100% { transform: scale(1); }

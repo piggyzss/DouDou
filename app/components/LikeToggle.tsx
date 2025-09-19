@@ -19,7 +19,7 @@ export default function LikeToggle({
   likedColorClass = 'text-red-500',
   ignoreExternalEvents = false
 }: {
-  targetType: 'blog' | 'artwork' | 'artwork_image' | 'music'
+  targetType: 'blog' | 'artwork' | 'artwork_image' | 'music' | 'video'
   targetId: number
   initialLiked?: boolean
   initialCount?: number

@@ -18,8 +18,19 @@ export default function Update() {
     setIsMounted(true)
   }, [])
 
-  // 生成贡献数据
+  // 生成贡献数据（更随机的模拟：考虑月份活跃度、工作日权重与短期爆发）
   const generateContributions = (year: number): Contribution[] => {
+    // 简单的可复现伪随机数（Mulberry32）
+    const mulberry32 = (a: number) => {
+      return () => {
+        let t = (a += 0x6D2B79F5)
+        t = Math.imul(t ^ (t >>> 15), t | 1)
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+      }
+    }
+
+    const rng = mulberry32(year * 1013904223)
     const contributions: Contribution[] = []
     const startDate = new Date(`${year}-01-01`)
     const endDate = new Date(`${year}-12-31`)
@@ -34,25 +45,46 @@ export default function Update() {
     }
     
     // 添加该年的所有日期
+    let streakDays = 0
+    let streakLevel = 0
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
       const dateStr = date.toISOString().split('T')[0]
-      
-      // 使用更稳定的种子算法
-      const seed = (date.getDate() + date.getMonth() * 31 + date.getFullYear() * 365) % 100 / 100
-      
+      const month = date.getMonth() // 0..11
+      const weekday = date.getDay() // 0..6
+
+      // 月份活跃度（如年初与年末低，中间略高）
+      const monthCurve = [0.7, 0.75, 0.85, 0.95, 1.0, 1.05, 1.05, 1.0, 0.95, 0.9, 0.8, 0.75][month]
+      // 工作日更活跃，周末略低
+      const weekdayWeight = ([0.8, 0.95, 1.05, 1.1, 1.1, 1.0, 0.85] as number[])[weekday]
+      // 基础随机项
+      const base = rng()
+
+      // 触发短期爆发（2-4 天）
+      if (streakDays === 0 && base > 0.92) {
+        streakDays = 2 + Math.floor(rng() * 3) // 2~4 天
+        streakLevel = 2 + Math.floor(rng() * 3) // 2~4 级强度
+      }
+
+      const activity = base * monthCurve * weekdayWeight + (streakDays > 0 ? 0.2 * streakLevel : 0)
+
+      // 将 activity 映射到离散计数，更随机更离散
       let count = 0
-      if (seed < 0.1) count = 0
-      else if (seed < 0.2) count = 1
-      else if (seed < 0.3) count = 2
-      else if (seed < 0.4) count = 3
-      else if (seed < 0.5) count = 4
-      else if (seed < 0.6) count = 5
-      else if (seed < 0.7) count = 6
-      else if (seed < 0.8) count = 8
-      else if (seed < 0.9) count = 10
+      if (activity < 0.15) count = 0
+      else if (activity < 0.3) count = 1
+      else if (activity < 0.45) count = 2
+      else if (activity < 0.55) count = 3
+      else if (activity < 0.65) count = 4
+      else if (activity < 0.72) count = 5
+      else if (activity < 0.8) count = 6
+      else if (activity < 0.86) count = 7
+      else if (activity < 0.9) count = 8
+      else if (activity < 0.94) count = 9
+      else if (activity < 0.97) count = 10
       else count = 12
-      
+
       contributions.push({ date: dateStr, count })
+
+      if (streakDays > 0) streakDays -= 1
     }
     
     return contributions
