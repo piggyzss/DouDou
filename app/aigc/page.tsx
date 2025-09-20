@@ -499,6 +499,7 @@ export default function AIGCPage() {
                 onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
               >
+                <ImagePlus size={16} className="mr-2" />
                 新建作品集
               </button>
             )}
@@ -507,6 +508,7 @@ export default function AIGCPage() {
                 onClick={() => setIsMusicModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
               >
+                <Music4 size={16} className="mr-2" />
                 新建音乐
               </button>
             )}
@@ -515,6 +517,7 @@ export default function AIGCPage() {
                 onClick={() => setIsVideoModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
               >
+                <Film size={16} className="mr-2" />
                 新建视频
               </button>
             )}

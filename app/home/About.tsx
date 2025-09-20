@@ -95,7 +95,7 @@ export default function About() {
   }
 
   return (
-    <section id="about" className="py-16">
+    <section id="about" className="py-24">
       <div className="max-w-7xl mx-auto">
         {/* 新的动画标题区域 */}
         <motion.div
@@ -140,7 +140,7 @@ export default function About() {
         </motion.div>
 
         {/* 主要内容区域 - 左右布局 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
 
           {/* 左侧：Links、Skills、Experience */}
           <motion.div
@@ -250,7 +250,7 @@ export default function About() {
             </div>
 
             {/* 可拖拽卡片区域 */}
-            <div className="relative w-full h-72">
+            <div className="relative w-full h-96">
               {cards.map((card) => (
                 <motion.div
                   key={card.id}

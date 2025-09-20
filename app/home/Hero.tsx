@@ -15,7 +15,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: 'translateY(-16%)' }}>
+      <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: 'translateY(-24%)' }}>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
