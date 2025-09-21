@@ -9,7 +9,7 @@ export default function Hero() {
     <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 relative overflow-hidden">
 
       {/* 背景日历：置于内容下方，透明度降低 */}
-      <div className="absolute inset-0 z-0 opacity-[0.28] pointer-events-none select-none" aria-hidden>
+      <div className="absolute inset-0 z-0 pointer-events-none select-none" aria-hidden>
         <div className="absolute inset-x-0 top-[66%] scale-100">
           <Update />
         </div>
@@ -22,7 +22,7 @@ export default function Hero() {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <button 
+          <button
             onClick={() => {
               const aboutSection = document.getElementById('about');
               if (aboutSection) {
@@ -49,14 +49,14 @@ export default function Hero() {
             <motion.h1
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-bold font-heading leading-tight whitespace-nowrap"
               style={{
-                
- 
+
+
               }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <span 
+              <span
                 className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-english"
                 style={{
                   fontWeight: 800,
