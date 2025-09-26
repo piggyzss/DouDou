@@ -13,7 +13,8 @@ import {
   Carrot,
   PenSquare,
   Code,
-  Palette
+  Palette,
+  Bot
 } from 'lucide-react'
 import { useTheme } from '../providers'
 
@@ -22,6 +23,7 @@ const navItems = [
   { name: 'Blog', href: '/blog', icon: PenSquare },
   { name: 'App', href: '/apps', icon: Code },
   { name: 'AIGC', href: '/aigc', icon: Palette },
+  { name: 'Agent', href: '/agent', icon: Bot },
 ]
 
 export default function Navigation() {

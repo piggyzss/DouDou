@@ -7,7 +7,7 @@ export interface App {
   slug: string
   description: string
   tags: string[]
-  type: 'app' | 'miniprogram' | 'game'
+  type: 'app' | 'miniprogram' | 'game' | 'plugin'
   platform: 'web' | 'mobile' | 'wechat'
   status: 'development' | 'beta' | 'online'
   
@@ -37,7 +37,7 @@ export interface CreateAppData {
   name: string
   description: string
   tags: string[]
-  type: 'app' | 'miniprogram' | 'game'
+  type: 'app' | 'miniprogram' | 'game' | 'plugin'
   platform: 'web' | 'mobile' | 'wechat'
   status: 'development' | 'beta' | 'online'
   experience_method: 'download' | 'qrcode'

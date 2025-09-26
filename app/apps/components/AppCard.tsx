@@ -275,6 +275,7 @@ export default function AppCard({ app }: AppCardProps) {
       case 'app': return '应用'
       case 'miniprogram': return '小程序'
       case 'game': return '游戏'
+      case 'plugin': return '插件'
       default: return '应用'
     }
   }
@@ -318,7 +319,7 @@ export default function AppCard({ app }: AppCardProps) {
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 py-4">
+      <div className="py-4">
         <div className="flex h-72">
           {/* 左侧封面图片 - 3:4比例 */}
           <div className="w-48 h-full flex-shrink-0 rounded overflow-hidden relative group/cover">

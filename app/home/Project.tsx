@@ -40,7 +40,7 @@ interface App {
   slug: string
   description: string
   tags: string[]
-  type: 'app' | 'miniprogram' | 'game'
+  type: 'app' | 'miniprogram' | 'game' | 'plugin'
   platform: 'web' | 'mobile' | 'wechat'
   status: 'development' | 'beta' | 'online'
   experience_method: 'download' | 'qrcode'
@@ -362,7 +362,7 @@ export default function Project() {
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>类型:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : '游戏'}</span>
+                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>类型:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : latestApp.type === 'game' ? '游戏' : '插件'}</span>
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>

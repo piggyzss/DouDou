@@ -10,7 +10,7 @@ interface AppData {
   description: string
   coverImage: File | null
   experienceVideo: File | null
-  type: 'app' | 'miniprogram' | 'game'
+  type: 'app' | 'miniprogram' | 'game' | 'plugin'
   experienceMethod: 'download' | 'qrcode'
   downloadUrl: string
   qrCodeImage: File | null
@@ -124,7 +124,7 @@ export default function CreateAppModal({ isOpen, onClose, onSubmit }: CreateAppM
         description,
         coverImage,
         experienceVideo,
-        type: type as 'app' | 'miniprogram' | 'game',
+        type: type as 'app' | 'miniprogram' | 'game' | 'plugin',
         experienceMethod: experienceMethod as 'download' | 'qrcode',
         downloadUrl,
         qrCodeImage,
@@ -178,6 +178,10 @@ export default function CreateAppModal({ isOpen, onClose, onSubmit }: CreateAppM
               <label className="flex items-center">
                 <input type="radio" name="type" value="game" checked={type === 'game'} onChange={(e) => setType(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
                 <span className="font-blog text-xs">游戏</span>
+              </label>
+              <label className="flex items-center">
+                <input type="radio" name="type" value="plugin" checked={type === 'plugin'} onChange={(e) => setType(e.target.value)} className="mr-2 accent-primary" disabled={isSubmitting} />
+                <span className="font-blog text-xs">插件</span>
               </label>
             </div>
           </div>

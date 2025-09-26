@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Code, Smartphone, Gamepad2, Wallet } from 'lucide-react'
+import { Code, Smartphone, Gamepad2, Wallet, Puzzle } from 'lucide-react'
 
 interface FilterBarProps {
   onFilter: (type: string) => void
@@ -13,7 +13,8 @@ function FilterBar({ onFilter, selectedType }: FilterBarProps) {
     { value: 'all', label: '全部', icon: Wallet },
     { value: 'app', label: '应用', icon: Code },
     { value: 'miniprogram', label: '小程序', icon: Smartphone },
-    { value: 'game', label: '游戏', icon: Gamepad2 }
+    { value: 'game', label: '游戏', icon: Gamepad2 },
+    { value: 'plugin', label: '插件', icon: Puzzle }
   ]
 
   return (
