@@ -7,40 +7,86 @@ global.fetch = jest.fn()
 
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>
 
+// Mock framer-motion
+jest.mock('framer-motion', () => ({
+  motion: {
+    span: ({ children, ...props }: any) => {
+      const { whileHover, whileTap, layoutId, initial, animate, variants, transition, ...restProps } = props
+      return <span {...restProps}>{children}</span>
+    },
+  },
+}))
+
 describe('LikeToggle', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   const defaultProps = {
-    targetType: 'app' as const,
+    targetType: 'blog' as const,
     targetId: 1
   }
 
-  it('should render like button', () => {
+  it('should render like button', async () => {
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 0 }] })
+    } as Response)
+
     render(<LikeToggle {...defaultProps} />)
 
-    expect(screen.getByRole('button')).toBeInTheDocument()
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
   })
 
-  it('should show initial like count', () => {
+  it('should show initial like count', async () => {
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
+    } as Response)
+
     render(<LikeToggle {...defaultProps} initialCount={10} />)
 
-    expect(screen.getByText('10')).toBeInTheDocument()
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByText('10')).toBeInTheDocument()
+    })
   })
 
-  it('should show liked state when initially liked', () => {
+  it('should show liked state when initially liked', async () => {
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: true, likesCount: 0 }] })
+    } as Response)
+
     render(<LikeToggle {...defaultProps} initialLiked={true} />)
 
-    const heartIcon = screen.getByRole('button').querySelector('svg')
-    expect(heartIcon).toHaveClass('text-red-500')
+    // Wait for initial status to load
+    await waitFor(() => {
+      const heartIcon = screen.getByRole('button').querySelector('svg')
+      expect(heartIcon).toHaveClass('text-red-500')
+    })
   })
 
-  it('should show unliked state when initially not liked', () => {
+  it('should show unliked state when initially not liked', async () => {
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 0 }] })
+    } as Response)
+
     render(<LikeToggle {...defaultProps} initialLiked={false} />)
 
-    const heartIcon = screen.getByRole('button').querySelector('svg')
-    expect(heartIcon).toHaveClass('text-text-muted')
+    // Wait for initial status to load
+    await waitFor(() => {
+      const heartIcon = screen.getByRole('button').querySelector('svg')
+      expect(heartIcon).toHaveClass('text-text-muted')
+    })
   })
 
   it('should toggle like state on click', async () => {
@@ -71,12 +117,23 @@ describe('LikeToggle', () => {
   it('should handle like toggle API call', async () => {
     const user = userEvent.setup()
     
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
+    } as Response)
+    // Mock toggle API call
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true, liked: true, likes_count: 11 })
     } as Response)
 
     render(<LikeToggle {...defaultProps} initialCount={10} />)
+
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
 
     const button = screen.getByRole('button')
     await user.click(button)
@@ -87,7 +144,7 @@ describe('LikeToggle', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        targetType: 'app',
+        targetType: 'blog',
         targetId: 1,
         action: 'like'
       })
@@ -97,12 +154,23 @@ describe('LikeToggle', () => {
   it('should handle API error gracefully', async () => {
     const user = userEvent.setup()
     
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
+    } as Response)
+    // Mock failed toggle API call
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 500
     } as Response)
 
     render(<LikeToggle {...defaultProps} initialCount={10} initialLiked={false} />)
+
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
 
     const button = screen.getByRole('button')
     await user.click(button)
@@ -118,26 +186,27 @@ describe('LikeToggle', () => {
   it('should show loading state during API call', async () => {
     const user = userEvent.setup()
     
-    // Mock a slow API response
-    mockFetch
-      .mockImplementationOnce(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve({
-            ok: true,
-            json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
-          } as Response), 100)
-        )
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
+    } as Response)
+    // Mock slow toggle API call
+    mockFetch.mockImplementationOnce(() => 
+      new Promise(resolve => 
+        setTimeout(() => resolve({
+          ok: true,
+          json: async () => ({ liked: true, likesCount: 11 })
+        } as Response), 100)
       )
-      .mockImplementationOnce(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve({
-            ok: true,
-            json: async () => ({ liked: true, likesCount: 11 })
-          } as Response), 100)
-        )
-      )
+    )
 
     render(<LikeToggle {...defaultProps} initialCount={10} />)
+
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
 
     const button = screen.getByRole('button')
     await user.click(button)
@@ -149,12 +218,23 @@ describe('LikeToggle', () => {
   it('should handle different target types', async () => {
     const user = userEvent.setup()
     
+    // Mock initial status fetch
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, liked: true, likes_count: 11 })
+      json: async () => ({ statuses: [{ liked: false, likesCount: 5 }] })
+    } as Response)
+    // Mock toggle API call
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, liked: true, likes_count: 6 })
     } as Response)
 
-    render(<LikeToggle targetType="blog" targetId={2} initialCount={5} />)
+    render(<LikeToggle targetType="artwork" targetId={2} initialCount={5} />)
+
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
 
     const button = screen.getByRole('button')
     await user.click(button)
@@ -165,7 +245,7 @@ describe('LikeToggle', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        targetType: 'blog',
+        targetType: 'artwork',
         targetId: 2,
         action: 'like'
       })
@@ -176,15 +256,16 @@ describe('LikeToggle', () => {
     const user = userEvent.setup()
     const onLikeChange = jest.fn()
     
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ liked: true, likesCount: 11 })
-      })
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
+    } as Response)
+    // Mock toggle API call
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ liked: true, likesCount: 11 })
+    } as Response)
 
     render(
       <LikeToggle 
@@ -193,6 +274,11 @@ describe('LikeToggle', () => {
         onChanged={onLikeChange} 
       />
     )
+
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
 
     const button = screen.getByRole('button')
     await user.click(button)
@@ -205,26 +291,27 @@ describe('LikeToggle', () => {
   it('should be disabled when busy', async () => {
     const user = userEvent.setup()
     
-    // Mock a slow API response to keep button in busy state
-    mockFetch
-      .mockImplementationOnce(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve({
-            ok: true,
-            json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
-          } as Response), 100)
-        )
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 10 }] })
+    } as Response)
+    // Mock slow toggle API call
+    mockFetch.mockImplementationOnce(() => 
+      new Promise(resolve => 
+        setTimeout(() => resolve({
+          ok: true,
+          json: async () => ({ liked: true, likesCount: 11 })
+        } as Response), 100)
       )
-      .mockImplementationOnce(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve({
-            ok: true,
-            json: async () => ({ liked: true, likesCount: 11 })
-          } as Response), 100)
-        )
-      )
+    )
 
     render(<LikeToggle {...defaultProps} initialCount={10} />)
+
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument()
+    })
 
     const button = screen.getByRole('button')
     await user.click(button)
@@ -233,15 +320,33 @@ describe('LikeToggle', () => {
     expect(button).toBeDisabled()
   })
 
-  it('should show custom like count format', () => {
+  it('should show custom like count format', async () => {
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 1000 }] })
+    } as Response)
+
     render(<LikeToggle {...defaultProps} initialCount={1000} />)
 
-    expect(screen.getByText('1000')).toBeInTheDocument()
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByText('1000')).toBeInTheDocument()
+    })
   })
 
-  it('should handle large like counts', () => {
+  it('should handle large like counts', async () => {
+    // Mock initial status fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ statuses: [{ liked: false, likesCount: 1234567 }] })
+    } as Response)
+
     render(<LikeToggle {...defaultProps} initialCount={1234567} />)
 
-    expect(screen.getByText('1234567')).toBeInTheDocument()
+    // Wait for initial status to load
+    await waitFor(() => {
+      expect(screen.getByText('1234567')).toBeInTheDocument()
+    })
   })
 })

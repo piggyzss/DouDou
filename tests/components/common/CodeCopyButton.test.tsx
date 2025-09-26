@@ -22,7 +22,7 @@ describe('CodeCopyButton Component', () => {
   it('renders copy button with correct text', () => {
     render(<CodeCopyButton code={testCode} />)
     
-    expect(screen.getByRole('button', { name: /复制/i })).toBeInTheDocument()
+    expect(screen.getByRole('button')).toBeInTheDocument()
     expect(screen.getByTitle('复制代码')).toBeInTheDocument()
   })
 
@@ -30,7 +30,7 @@ describe('CodeCopyButton Component', () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<CodeCopyButton code={testCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     await user.click(button)
     
     expect(mockCopy).toHaveBeenCalledWith(testCode)
@@ -40,7 +40,7 @@ describe('CodeCopyButton Component', () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<CodeCopyButton code={testCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     await user.click(button)
     
     expect(screen.getByText('✓ 已复制')).toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('CodeCopyButton Component', () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<CodeCopyButton code={testCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     await user.click(button)
     
     // Should show copied state
@@ -70,7 +70,7 @@ describe('CodeCopyButton Component', () => {
   it('has correct CSS classes', () => {
     render(<CodeCopyButton code={testCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     expect(button).toHaveClass('copy-button')
   })
 
@@ -78,7 +78,7 @@ describe('CodeCopyButton Component', () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<CodeCopyButton code={testCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     await user.click(button)
     
     expect(button).toHaveClass('copy-button', 'copied')
@@ -87,7 +87,7 @@ describe('CodeCopyButton Component', () => {
   it('handles empty code string', () => {
     render(<CodeCopyButton code="" />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     fireEvent.click(button)
     
     expect(mockCopy).toHaveBeenCalledWith('')
@@ -97,7 +97,7 @@ describe('CodeCopyButton Component', () => {
     const longCode = 'a'.repeat(1000)
     render(<CodeCopyButton code={longCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     fireEvent.click(button)
     
     expect(mockCopy).toHaveBeenCalledWith(longCode)
@@ -107,7 +107,7 @@ describe('CodeCopyButton Component', () => {
     const specialCode = 'const str = "Hello, 世界! 🌍";'
     render(<CodeCopyButton code={specialCode} />)
     
-    const button = screen.getByRole('button', { name: /复制/i })
+    const button = screen.getByRole('button')
     fireEvent.click(button)
     
     expect(mockCopy).toHaveBeenCalledWith(specialCode)

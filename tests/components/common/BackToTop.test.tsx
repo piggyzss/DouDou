@@ -32,7 +32,7 @@ describe('BackToTop Component', () => {
   it('does not render button when page is not scrolled', () => {
     render(<BackToTop />)
     
-    expect(screen.queryByRole('button', { name: /回到顶部/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('renders button when page is scrolled more than 300px', () => {
@@ -47,7 +47,7 @@ describe('BackToTop Component', () => {
     // Trigger scroll event
     fireEvent.scroll(window)
     
-    expect(screen.getByRole('button', { name: /回到顶部/i })).toBeInTheDocument()
+    expect(screen.getByRole('button')).toBeInTheDocument()
   })
 
   it('hides button when page is scrolled less than 300px', () => {
@@ -62,7 +62,7 @@ describe('BackToTop Component', () => {
     // Trigger scroll event
     fireEvent.scroll(window)
     
-    expect(screen.queryByRole('button', { name: /回到顶部/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
   it('scrolls to top when button is clicked', () => {
@@ -77,7 +77,7 @@ describe('BackToTop Component', () => {
     // Trigger scroll event to show button
     fireEvent.scroll(window)
     
-    const button = screen.getByRole('button', { name: /回到顶部/i })
+    const button = screen.getByRole('button')
     fireEvent.click(button)
     
     expect(mockScrollTo).toHaveBeenCalledWith({
@@ -98,7 +98,7 @@ describe('BackToTop Component', () => {
     // Trigger scroll event to show button
     fireEvent.scroll(window)
     
-    const button = screen.getByRole('button', { name: /回到顶部/i })
+    const button = screen.getByRole('button')
     expect(button).toHaveClass(
       'fixed',
       'bottom-8',
@@ -132,7 +132,7 @@ describe('BackToTop Component', () => {
     // Trigger scroll event to show button
     fireEvent.scroll(window)
     
-    const button = screen.getByRole('button', { name: /回到顶部/i })
+    const button = screen.getByRole('button')
     expect(button).toHaveAttribute('aria-label', '回到顶部')
   })
 
@@ -151,7 +151,7 @@ describe('BackToTop Component', () => {
     render(<BackToTop />)
     
     // Initially hidden
-    expect(screen.queryByRole('button', { name: /回到顶部/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
     
     // Scroll down - should show
     Object.defineProperty(window, 'pageYOffset', {
@@ -159,7 +159,7 @@ describe('BackToTop Component', () => {
       value: 400,
     })
     fireEvent.scroll(window)
-    expect(screen.getByRole('button', { name: /回到顶部/i })).toBeInTheDocument()
+    expect(screen.getByRole('button')).toBeInTheDocument()
     
     // Scroll back up - should hide
     Object.defineProperty(window, 'pageYOffset', {
@@ -167,6 +167,6 @@ describe('BackToTop Component', () => {
       value: 200,
     })
     fireEvent.scroll(window)
-    expect(screen.queryByRole('button', { name: /回到顶部/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 })

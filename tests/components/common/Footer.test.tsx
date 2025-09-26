@@ -5,9 +5,18 @@ import Footer from '../../../app/components/Footer'
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    footer: ({ children, ...props }: any) => <footer {...props}>{children}</footer>,
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    a: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+    footer: ({ children, ...props }: any) => {
+      const { whileHover, whileTap, layoutId, initial, animate, variants, transition, ...restProps } = props
+      return <footer {...restProps}>{children}</footer>
+    },
+    div: ({ children, ...props }: any) => {
+      const { whileHover, whileTap, layoutId, initial, animate, variants, transition, ...restProps } = props
+      return <div {...restProps}>{children}</div>
+    },
+    a: ({ children, ...props }: any) => {
+      const { whileHover, whileTap, layoutId, initial, animate, variants, transition, ...restProps } = props
+      return <a {...restProps}>{children}</a>
+    },
   },
 }))
 
