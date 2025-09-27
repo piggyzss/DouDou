@@ -24,9 +24,10 @@ interface VideosSectionProps {
   formatNumber: (num: number) => string
   onDeleteVideo?: (id: string) => void
   onUpdateVideoLikes?: (id: string, count: number) => void
+  isDev?: boolean
 }
 
-export default function VideosSection({ videos, formatDate, formatNumber, onDeleteVideo, onUpdateVideoLikes }: VideosSectionProps) {
+export default function VideosSection({ videos, formatDate, formatNumber, onDeleteVideo, onUpdateVideoLikes, isDev = false }: VideosSectionProps) {
   const [showPlayer, setShowPlayer] = useState(false)
   const [current, setCurrent] = useState<VideoTrack | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -181,7 +182,9 @@ export default function VideosSection({ videos, formatDate, formatNumber, onDele
       <div className="text-center py-12">
         <Film className="mx-auto text-gray-400 mb-4" size={48} />
         <p className="text-text-secondary">暂无视频</p>
-        <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一个视频</p>
+        {isDev && (
+          <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一个视频</p>
+        )}
       </div>
     )
   }

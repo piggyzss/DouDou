@@ -33,9 +33,10 @@ interface ImagesSectionProps {
   onUpdateArtworkLikes: (artworkId: string, newCount: number) => void
   formatDate: (date: string) => string
   formatNumber: (num: number) => string
+  isDev?: boolean
 }
 
-export default function ImagesSection({ artworks, loading, onAddImages, onDeleteArtwork, onClickImage, onDeleteImage, onUpdateArtworkLikes, formatDate, formatNumber }: ImagesSectionProps) {
+export default function ImagesSection({ artworks, loading, onAddImages, onDeleteArtwork, onClickImage, onDeleteImage, onUpdateArtworkLikes, formatDate, formatNumber, isDev = false }: ImagesSectionProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -50,7 +51,9 @@ export default function ImagesSection({ artworks, loading, onAddImages, onDelete
       <div className="text-center py-12">
         <Palette className="mx-auto text-gray-400 mb-4" size={48} />
         <p className="text-text-secondary">暂无作品集</p>
-        <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一个作品集</p>
+        {isDev && (
+          <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一个作品集</p>
+        )}
       </div>
     )
   }

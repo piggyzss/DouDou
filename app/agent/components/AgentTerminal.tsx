@@ -9,11 +9,17 @@ import { useAgent } from '../hooks/useAgent'
 export default function AgentTerminal() {
   const [input, setInput] = useState('')
   const [isMinimized, setIsMinimized] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const terminalTheme = useTerminalTheme()
   const { messages, agentState, processCommand, getHistoryCommand } = useAgent()
+
+  // 确保只在客户端渲染时显示时间
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // 自动滚动到底部，但不影响页面整体位置
   useEffect(() => {
@@ -64,27 +70,51 @@ export default function AgentTerminal() {
     return content.split('\n').map((line, index) => {
       // 检测不同类型的输出并应用样式
       if (line.includes('[INFO]')) {
+        const parts = line.split('[INFO]')
         return (
-          <div key={index} className="text-terminal-blue">
-            {line}
+          <div key={index} className="flex">
+            <span className="text-terminal-blue">[INFO]</span>
+            <span className="text-terminal-accent">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[SUCCESS]')) {
+        const parts = line.split('[SUCCESS]')
         return (
-          <div key={index} className="text-terminal-green">
-            {line}
+          <div key={index} className="flex">
+            <span className="text-terminal-green">[SUCCESS]</span>
+            <span className="text-terminal-accent">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[ERROR]')) {
+        const parts = line.split('[ERROR]')
         return (
-          <div key={index} className="text-terminal-red">
-            {line}
+          <div key={index} className="flex">
+            <span className="text-terminal-red">[ERROR]</span>
+            <span className="text-terminal-accent">{parts[1] || ''}</span>
           </div>
         )
-      } else if (line.includes('[ANALYSIS]') || line.includes('[INSIGHTS]') || line.includes('[RECOMMENDATION]')) {
+      } else if (line.includes('[ANALYSIS]')) {
+        const parts = line.split('[ANALYSIS]')
         return (
-          <div key={index} className="text-terminal-accent">
-            {line}
+          <div key={index} className="flex">
+            <span className="text-terminal-blue">[ANALYSIS]</span>
+            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          </div>
+        )
+      } else if (line.includes('[INSIGHTS]')) {
+        const parts = line.split('[INSIGHTS]')
+        return (
+          <div key={index} className="flex">
+            <span className="text-terminal-blue">[INSIGHTS]</span>
+            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          </div>
+        )
+      } else if (line.includes('[RECOMMENDATION]')) {
+        const parts = line.split('[RECOMMENDATION]')
+        return (
+          <div key={index} className="flex">
+            <span className="text-terminal-blue">[RECOMMENDATION]</span>
+            <span className="text-terminal-accent">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.startsWith('user@agent:~$')) {
@@ -127,7 +157,7 @@ export default function AgentTerminal() {
           }}
         >
           <Terminal size={16} />
-          <span className="text-sm font-medium">AI Agent</span>
+          <span className="text-sm font-medium font-blog">AI Agent</span>
           {agentState.status === 'processing' && (
             <div className="w-2 h-2 bg-terminal-accent rounded-full animate-pulse"></div>
           )}
@@ -162,7 +192,7 @@ export default function AgentTerminal() {
           </div>
           <div className="flex items-center space-x-2">
             <Terminal size={16} className="text-terminal-accent" />
-            <span className="text-sm font-medium" style={{ color: 'var(--terminal-text)' }}>
+            <span className="text-sm font-medium font-blog" style={{ color: 'var(--terminal-text)' }}>
               AI News Agent v1.0
             </span>
           </div>
@@ -170,7 +200,7 @@ export default function AgentTerminal() {
         
         <div className="flex items-center space-x-4">
           {/* 状态显示 */}
-          <div className="flex items-center space-x-2 text-xs" style={{ color: 'var(--terminal-muted)' }}>
+          <div className="flex items-center space-x-2 text-xs font-blog" style={{ color: 'var(--terminal-muted)' }}>
             <div className="flex items-center space-x-1">
               <div className={`w-2 h-2 rounded-full ${
                 agentState.status === 'idle' ? 'bg-green-500' : 
@@ -185,7 +215,7 @@ export default function AgentTerminal() {
               <span>Online</span>
             </div>
             <span>|</span>
-            <span>Last Update: {agentState.lastUpdate?.toLocaleTimeString()}</span>
+            <span>Last Update: {isClient ? agentState.lastUpdate?.toLocaleTimeString() : '--:--:--'}</span>
           </div>
           
           {/* 控制按钮 */}
@@ -211,7 +241,7 @@ export default function AgentTerminal() {
         {/* 主要终端区域 */}
         <div className="flex-1 flex flex-col">
           {/* 消息显示区域 */}
-          <div className="flex-1 p-4 overflow-y-auto font-mono text-sm font-light leading-relaxed terminal-messages-container">
+          <div className="flex-1 p-4 overflow-y-auto font-mono text-sm font-light leading-relaxed terminal-messages-container custom-scrollbar">
             {messages.map((message) => (
               <div key={message.id} className="mb-2">
                 {formatMessage(message.content)}
@@ -224,17 +254,22 @@ export default function AgentTerminal() {
           <div className="p-4 border-t" style={{ borderColor: 'var(--terminal-border)' }}>
             <form onSubmit={handleSubmit} className="flex items-center space-x-2">
               <span className="text-terminal-accent font-mono text-sm font-light">user@agent:~$</span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-1 bg-transparent border-none outline-none font-mono text-sm font-light"
-                style={{ color: 'var(--terminal-text)' }}
-                placeholder="Type a command..."
-                disabled={agentState.status === 'processing'}
-              />
+              <div className="flex-1 flex items-center">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="flex-1 bg-transparent border-none outline-none font-mono text-sm font-light"
+                  style={{ color: 'var(--terminal-text)' }}
+                  placeholder="Type a command..."
+                  disabled={agentState.status === 'processing'}
+                />
+                {!input && agentState.status !== 'processing' && (
+                  <div className="w-2 h-4 bg-terminal-accent animate-pulse ml-1"></div>
+                )}
+              </div>
               {agentState.status === 'processing' && (
                 <div className="flex items-center space-x-1">
                   <div className="w-1 h-4 bg-terminal-accent animate-pulse"></div>
@@ -250,7 +285,7 @@ export default function AgentTerminal() {
           className="w-64 border-l p-4 bg-gray-50 dark:bg-gray-800"
           style={{ borderColor: 'var(--terminal-border)' }}
         >
-          <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--terminal-text)' }}>
+          <h3 className="text-sm font-medium mb-3 font-blog" style={{ color: 'var(--terminal-text)' }}>
             Quick Commands
           </h3>
           <div className="space-y-2">
@@ -271,7 +306,7 @@ export default function AgentTerminal() {
                 style={{ color: 'var(--terminal-muted)' }}
               >
                 <div className="font-mono text-terminal-accent">{item.cmd}</div>
-                <div>{item.desc}</div>
+                <div className="font-blog">{item.desc}</div>
               </button>
             ))}
           </div>

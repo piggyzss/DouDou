@@ -701,7 +701,7 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 .terminal-messages-container {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: var(--terminal-muted) var(--terminal-bg);
+  scrollbar-color: var(--primary) var(--terminal-bg);
 }
 
 .terminal-messages-container::-webkit-scrollbar {
@@ -713,10 +713,12 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 }
 
 .terminal-messages-container::-webkit-scrollbar-thumb {
-  background-color: var(--terminal-muted);
+  background-color: var(--primary);
   border-radius: 3px;
+  opacity: 0.7;
 }
 
 .terminal-messages-container::-webkit-scrollbar-thumb:hover {
-  background-color: var(--terminal-accent);
+  background-color: var(--primary);
+  opacity: 1;
 } 

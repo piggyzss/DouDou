@@ -10,7 +10,7 @@ export default function AgentPage() {
         {/* 页面标题 */}
         <div className="mb-12">
           <h1 className="text-3xl font-bold text-text-primary font-heading">AI News Agent</h1>
-          <p className="text-text-secondary mt-1 font-blog">获取最新的 AI 资讯，通过类似开发者控制台的界面与 AI Agent 进行交互</p>
+          <p className="text-text-secondary mt-1 font-blog">获取最新的 AI 资讯，通过控制台 AI Agent 进行交互</p>
         </div>
 
         {/* Agent 终端组件 */}

@@ -473,19 +473,25 @@ export default function AIGCPage() {
             {tabs.map((tab) => {
               const Icon = tab.icon
               return (
-                <motion.button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`p-2 rounded-full transition-all duration-300 ${
-                    activeTab === tab.id
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-text-secondary hover:text-text-primary'
-                  }`}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Icon size={20} />
-                </motion.button>
+                <div key={tab.id} className="relative group">
+                  <motion.button
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`p-2 rounded-full transition-all duration-300 ${
+                      activeTab === tab.id
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-text-secondary hover:text-text-primary'
+                    }`}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Icon size={20} />
+                  </motion.button>
+                  {/* 自定义tooltip */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    {tab.label}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
+                  </div>
+                </div>
               )
             })}
           </div>
@@ -545,13 +551,14 @@ export default function AIGCPage() {
                 onUpdateArtworkLikes={handleUpdateArtworkLikes}
                 formatDate={formatDate}
                 formatNumber={formatNumber}
+                isDev={process.env.NODE_ENV === 'development'}
               />
             </motion.div>
           )}
 
           {activeTab === 'videos' && (
             <motion.div key="videos" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
-              <VideosSection videos={videoTracks} formatDate={formatDate} formatNumber={formatNumber} onDeleteVideo={handleDeleteVideo} onUpdateVideoLikes={handleUpdateVideoLikes} />
+              <VideosSection videos={videoTracks} formatDate={formatDate} formatNumber={formatNumber} onDeleteVideo={handleDeleteVideo} onUpdateVideoLikes={handleUpdateVideoLikes} isDev={process.env.NODE_ENV === 'development'} />
             </motion.div>
           )}
 

@@ -199,7 +199,9 @@ export default function AppsPage() {
           >
             <SquareCode className="mx-auto text-gray-400 mb-4" size={48} />
             <p className="text-text-secondary">暂无应用</p>
-            <p className="text-sm text-text-muted mt-2 font-blog">点击上方按钮创建您的第一个应用</p>
+            {isDev && (
+              <p className="text-sm text-text-muted mt-2 font-blog">点击上方按钮创建您的第一个应用</p>
+            )}
           </motion.div>
         )}
 

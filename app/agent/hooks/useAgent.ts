@@ -1,6 +1,34 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { agentPluginManager } from '@/lib/agent/plugin-manager'
+import { AgentRequest, AgentResponse } from '@/lib/agent/types'
+
+// 格式化结构化响应的辅助函数
+const formatStructuredResponse = (data: any, command: string): string => {
+  if (command === '/help') {
+    const plugins = agentPluginManager.getAllPlugins()
+    let helpText = 'Available commands:\n'
+    
+    plugins.forEach(plugin => {
+      if (plugin.enabled) {
+        helpText += `\n=== ${plugin.name} ===\n`
+        plugin.commands.forEach(cmd => {
+          helpText += `${cmd.command.padEnd(20)} # ${cmd.description}\n`
+        })
+      }
+    })
+    
+    return helpText
+  }
+  
+  // 默认格式化
+  if (typeof data === 'string') {
+    return data
+  }
+  
+  return JSON.stringify(data, null, 2)
+}
 
 export interface AgentMessage {
   id: string
@@ -15,63 +43,12 @@ export interface AgentState {
   lastUpdate: Date | null
 }
 
-// Mock 数据
-const mockNewsData = [
-  {
-    title: "OpenAI releases GPT-4.5 with enhanced reasoning",
-    source: "TechCrunch",
-    time: "2 hours ago",
-    summary: "New model shows 40% improvement in complex reasoning tasks and mathematical problem solving."
-  },
-  {
-    title: "Google DeepMind announces breakthrough in robotics",
-    source: "Nature",
-    time: "4 hours ago", 
-    summary: "RT-2 model enables robots to perform complex manipulation tasks with human-level dexterity."
-  },
-  {
-    title: "Meta unveils Llama 3 with multimodal capabilities",
-    source: "Meta AI Blog",
-    time: "6 hours ago",
-    summary: "New open-source model supports text, image, and video understanding with competitive performance."
-  },
-  {
-    title: "Anthropic introduces Constitutional AI 2.0",
-    source: "Anthropic Blog", 
-    time: "8 hours ago",
-    summary: "Enhanced safety measures and improved alignment through constitutional training methods."
-  },
-  {
-    title: "Microsoft Copilot integrates with Azure AI Studio",
-    source: "Microsoft Blog",
-    time: "10 hours ago",
-    summary: "Developers can now build custom AI agents using enterprise-grade tools and infrastructure."
-  }
-]
-
-const mockCategories = [
-  { name: "Large Language Models", count: 23 },
-  { name: "Computer Vision", count: 18 },
-  { name: "Robotics", count: 15 },
-  { name: "Machine Learning", count: 31 },
-  { name: "AI Safety", count: 12 },
-  { name: "Natural Language Processing", count: 27 }
-]
-
-const mockTrends = [
-  { keyword: "GPT-4.5", mentions: 1250, change: "+45%" },
-  { keyword: "Multimodal AI", mentions: 890, change: "+32%" },
-  { keyword: "AI Safety", mentions: 675, change: "+28%" },
-  { keyword: "Open Source LLM", mentions: 543, change: "+18%" },
-  { keyword: "AI Agents", mentions: 432, change: "+15%" }
-]
-
 export function useAgent() {
   const [messages, setMessages] = useState<AgentMessage[]>([
     {
       id: '1',
       type: 'system',
-      content: '> Welcome to AI News Agent\n> Type \'/help\' for available commands\n> Type \'/trending\' for display trends\n> Type \'/deepdive\' for depth analysis',
+      content: '> Welcome to AI News Agent\n> Intelligence about Intelligence\n> Type \'/help\' for available commands ',
       timestamp: new Date(),
       status: 'success'
     }
@@ -85,27 +62,8 @@ export function useAgent() {
   const [commandHistory, setCommandHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
 
-  // 模拟打字机效果
-  const typeMessage = useCallback((content: string, messageId: string) => {
-    const words = content.split(' ')
-    let currentContent = ''
-    
-    words.forEach((word, index) => {
-      setTimeout(() => {
-        currentContent += (index === 0 ? '' : ' ') + word
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === messageId 
-              ? { ...msg, content: currentContent }
-              : msg
-          )
-        )
-      }, index * 100) // 每个单词间隔100ms
-    })
-  }, [])
-
   const processCommand = useCallback(async (command: string) => {
-    const trimmedCommand = command.trim().toLowerCase()
+    const trimmedCommand = command.trim()
     
     // 添加用户消息
     const userMessage: AgentMessage = {
@@ -124,149 +82,67 @@ export function useAgent() {
     
     // 设置处理状态
     setAgentState(prev => ({ ...prev, status: 'processing' }))
-    
-    // 模拟处理延迟
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    let response = ''
-    const agentMessageId = (Date.now() + 1).toString()
-    
-    // 根据命令生成响应
-    switch (trimmedCommand) {
-      case '/help':
-        response = `Available commands:
-/help                   # Show this help message
-/latest                 # Get latest AI news
-/search <keyword>       # Search for specific topics
-/categories             # Show news categories
-/trending               # Show trending topics
-/deepdive               # Perform deep analysis
-/history                # Show command history
-/clear                  # Clear terminal
-/status                 # Show agent status
-/config                 # Configuration settings`
-        break
-        
-      case '/latest':
-        response = `[INFO] Fetching latest AI news...
-[SUCCESS] Found ${mockNewsData.length} new articles
 
-┌─ Latest AI News ────────────────────────────────────────┐
-${mockNewsData.map((item, index) => 
-  `│ ${index + 1}. ${item.title}
-│    Source: ${item.source} | ${item.time}
-│    ${item.summary}
-│`).join('\n')}
-└─────────────────────────────────────────────────────────┘`
-        break
-        
-      case '/categories':
-        response = `[INFO] Loading news categories...
+    // 处理特殊命令
+    if (trimmedCommand.toLowerCase() === '/clear') {
+      // 清空消息历史
+      setMessages([{
+        id: Date.now().toString(),
+        type: 'system',
+        content: '> Terminal cleared\n> Welcome back to AI News Agent',
+        timestamp: new Date(),
+        status: 'success'
+      }])
+      setAgentState(prev => ({ ...prev, status: 'idle', lastUpdate: new Date() }))
+      return
+    }
 
-┌─ News Categories ───────────────────────────────────────┐
-${mockCategories.map(cat => 
-  `│ ${cat.name.padEnd(30)} ${cat.count.toString().padStart(3)} articles │`
-).join('\n')}
-└─────────────────────────────────────────────────────────┘`
-        break
-        
-      case '/trending':
-        response = `[INFO] Analyzing trending topics...
+    try {
+      // 使用插件管理器处理命令
+      const request: AgentRequest = {
+        command: trimmedCommand.toLowerCase(),
+        params: {},
+        sessionId: 'default'
+      }
 
-┌─ Trending AI Topics ────────────────────────────────────┐
-${mockTrends.map((trend, index) => 
-  `│ ${(index + 1).toString().padStart(2)}. ${trend.keyword.padEnd(20)} ${trend.mentions.toString().padStart(4)} mentions ${trend.change} │`
-).join('\n')}
-└─────────────────────────────────────────────────────────┘`
-        break
-        
-      case '/deepdive':
-        response = `[INFO] Initializing deep analysis mode...
-[ANALYSIS] Processing recent AI developments...
-[INSIGHTS] Key trends identified:
-
-• Large Language Models continue to dominate with GPT-4.5 release
-• Multimodal AI gaining significant traction across major tech companies  
-• Open-source models closing performance gap with proprietary solutions
-• AI Safety becoming increasingly important in enterprise adoption
-• Robotics integration with LLMs showing promising real-world applications
-
-[RECOMMENDATION] Focus areas for next 30 days:
-1. Monitor GPT-4.5 performance benchmarks
-2. Track open-source LLM developments
-3. Watch for regulatory updates on AI safety`
-        break
-        
-      case '/status':
-        response = `Agent Status: ● Online
-Last Update: ${new Date().toLocaleString()}
-Memory Usage: 45.2 MB
-Active Connections: 1
-News Sources: 15 active
-Cache Status: Healthy`
-        break
-        
-      case '/history':
-        response = commandHistory.length > 0 
-          ? `Command History:\n${commandHistory.map((cmd, i) => `${i + 1}. ${cmd}`).join('\n')}`
-          : 'No command history available'
-        break
-        
-      case '/clear':
-        setMessages([{
-          id: Date.now().toString(),
-          type: 'system', 
-          content: '> Terminal cleared\n> Welcome back to AI News Agent',
-          timestamp: new Date(),
-          status: 'success'
-        }])
-        setAgentState(prev => ({ ...prev, status: 'idle', lastUpdate: new Date() }))
-        return
-        
-      default:
-        if (trimmedCommand.startsWith('/search ')) {
-          const keyword = command.slice(8).trim()
-          response = `[INFO] Searching for "${keyword}"...
-[RESULTS] Found 3 relevant articles:
-
-1. "Understanding ${keyword} in Modern AI Systems"
-   Source: AI Research Journal | 1 day ago
-   
-2. "Latest Developments in ${keyword} Technology"  
-   Source: Tech News Daily | 2 days ago
-   
-3. "Industry Impact of ${keyword} Innovation"
-   Source: Business AI Weekly | 3 days ago`
+      const response: AgentResponse = await agentPluginManager.executeCommand(request)
+      
+      let responseContent = ''
+      if (response.success) {
+        // 根据响应类型格式化内容
+        if (response.type === 'structured' && response.data) {
+          responseContent = formatStructuredResponse(response.data, response.command)
         } else {
-          response = `[ERROR] Unknown command: ${command}
-Type '/help' to see available commands`
+          responseContent = response.data || '> Command executed successfully'
         }
+      } else {
+        responseContent = `> [ERROR] ${response.error}`
+      }
+
+      const agentMessage: AgentMessage = {
+        id: (Date.now() + 1).toString(),
+        type: response.success ? 'agent' : 'system',
+        content: responseContent,
+        timestamp: new Date(),
+        status: response.success ? 'success' : 'error'
+      }
+
+      setMessages(prev => [...prev, agentMessage])
+      setAgentState(prev => ({ ...prev, status: 'idle', lastUpdate: new Date() }))
+
+    } catch (error) {
+      const errorMessage: AgentMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'system',
+        content: `> [ERROR] ${error instanceof Error ? error.message : 'Unknown error occurred'}`,
+        timestamp: new Date(),
+        status: 'error'
+      }
+
+      setMessages(prev => [...prev, errorMessage])
+      setAgentState(prev => ({ ...prev, status: 'error', lastUpdate: new Date() }))
     }
-    
-    // 添加 agent 响应
-    const agentMessage: AgentMessage = {
-      id: agentMessageId,
-      type: 'agent',
-      content: '',
-      timestamp: new Date(),
-      status: 'success'
-    }
-    
-    setMessages(prev => [...prev, agentMessage])
-    
-    // 打字机效果显示响应
-    typeMessage(response, agentMessageId)
-    
-    // 更新状态
-    setTimeout(() => {
-      setAgentState(prev => ({ 
-        ...prev, 
-        status: 'idle', 
-        lastUpdate: new Date() 
-      }))
-    }, response.split(' ').length * 100)
-    
-  }, [typeMessage, commandHistory])
+  }, [])
 
   const getHistoryCommand = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return ''
