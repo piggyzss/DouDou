@@ -114,3 +114,9 @@
 2. 检查 [数据库使用指南](./database-guide.md) 中的故障排除部分
 3. 使用 `npm run db:info` 检查当前环境状态
 4. 查看项目的 issue 和 changelog
+5. 在终端窗口测试
+curl http://localhost:8000/health
+# 预期响应:
+# {"status":"healthy","service":"agent-backend"}
+6. 查看API文档
+open http://localhost:8000/docs

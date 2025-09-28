@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
 # 复制requirements文件
 COPY requirements.txt .
 
-# 安装Python依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# 安装Python依赖（包含生产环境依赖）
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
 
 # 复制应用代码
 COPY . .
@@ -23,5 +23,5 @@ RUN mkdir -p logs
 # 暴露端口
 EXPOSE 8000
 
-# 启动命令
-CMD ["python", "-m", "app.main"]
+# 生产环境启动命令（使用Gunicorn）
+CMD ["gunicorn", "app.main:app", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]

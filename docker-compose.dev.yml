@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Python Agent 后端服务
+  agent-backend:
+    build:
+      context: ./agent-backend
+      dockerfile: Dockerfile.dev
+    container_name: doudou-agent-backend-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      # 挂载代码目录实现热重载
+      - ./agent-backend:/app:cached
+      # 挂载日志目录
+      - ./agent-backend/logs:/app/logs
+    environment:
+      # 开发环境配置
+      - DEBUG=true
+      - APP_NAME=AI News Agent (Dev)
+      - HOST=0.0.0.0
+      - PORT=8000
+      - LOG_LEVEL=debug
+      # CORS配置（允许本地前端访问）
+      - ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://host.docker.internal:3000
+      # 可选：Redis连接（如果启用Redis服务）
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - doudou-dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis 缓存服务（可选）
+  redis:
+    image: redis:7-alpine
+    container_name: doudou-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - doudou-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  doudou-dev:
+    driver: bridge

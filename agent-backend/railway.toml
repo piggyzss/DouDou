@@ -1,0 +1,11 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "python -m app.main"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+
+[env]
+PORT = "8000"
