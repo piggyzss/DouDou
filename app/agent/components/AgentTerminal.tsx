@@ -252,9 +252,9 @@ export default function AgentTerminal() {
 
           {/* 输入区域 */}
           <div className="p-4 border-t" style={{ borderColor: 'var(--terminal-border)' }}>
-            <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+            <form onSubmit={handleSubmit} className="flex items-center">
               <span className="text-terminal-accent font-mono text-sm font-light">user@agent:~$</span>
-              <div className="flex-1 flex items-center">
+              <div className="flex-1 flex items-center ml-2">
                 <input
                   ref={inputRef}
                   type="text"
@@ -267,12 +267,24 @@ export default function AgentTerminal() {
                   disabled={agentState.status === 'processing'}
                 />
                 {!input && agentState.status !== 'processing' && (
-                  <div className="w-2 h-4 bg-terminal-accent animate-pulse ml-1"></div>
+                  <div 
+                    className="w-0.5 h-4 bg-terminal-accent animate-pulse ml-1"
+                    style={{
+                      animation: 'blink 1s infinite',
+                      width: '2px'
+                    }}
+                  ></div>
                 )}
               </div>
               {agentState.status === 'processing' && (
-                <div className="flex items-center space-x-1">
-                  <div className="w-1 h-4 bg-terminal-accent animate-pulse"></div>
+                <div className="flex items-center space-x-1 ml-2">
+                  <div 
+                    className="w-0.5 h-4 bg-terminal-accent animate-pulse"
+                    style={{
+                      animation: 'blink 1s infinite',
+                      width: '2px'
+                    }}
+                  ></div>
                   <span className="text-xs text-terminal-muted">Processing...</span>
                 </div>
               )}

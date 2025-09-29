@@ -721,4 +721,10 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 .terminal-messages-container::-webkit-scrollbar-thumb:hover {
   background-color: var(--primary);
   opacity: 1;
+}
+
+/* 终端光标闪烁动画 */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 } 

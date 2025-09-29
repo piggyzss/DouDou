@@ -128,6 +128,7 @@ class NewsPlugin(BasePlugin):
             response_text += f"│ {i}. {item.title}\n"
             response_text += f"│    Source: {item.source} | {item.publish_time}\n"
             response_text += f"│    {item.summary}\n"
+            response_text += f"│    🔗 Link: {item.url}\n"
             response_text += "│\n"
         
         response_text += "└─────────────────────────────────────────────────────────┘"

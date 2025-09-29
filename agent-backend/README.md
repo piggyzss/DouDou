@@ -70,7 +70,7 @@ agent-backend/
 
 ```bash
 # 一键启动开发环境（项目根目录）
-./start-dev-docker.sh
+./scripts/docker/start-dev-docker.sh
 
 # 服务地址：
 # - 后端: http://localhost:8000
@@ -195,7 +195,7 @@ class MyPlugin(BasePlugin):
 **Docker配置文件：**
 - `Dockerfile.dev` - 开发专用镜像（支持热重载）
 - `docker-compose.dev.yml` - 完整开发环境编排
-- `start-dev-docker.sh` - 一键启动脚本
+- `scripts/docker/start-dev-docker.sh` - 一键启动脚本
 
 ## 🛠️ 开发指南
 
@@ -203,19 +203,19 @@ class MyPlugin(BasePlugin):
 
 ```bash
 # 启动开发环境
-./start-dev-docker.sh
+./scripts/docker/start-dev-docker.sh
 
 # 停止开发环境  
-./stop-dev-docker.sh
+./scripts/docker/stop-dev-docker.sh
 
 # 查看后端日志
-docker-compose -f docker-compose.dev.yml logs -f agent-backend
+docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend
 
 # 查看服务状态
-docker-compose -f docker-compose.dev.yml ps
+docker-compose -f scripts/docker/docker-compose.dev.yml ps
 
 # 重启后端服务
-docker-compose -f docker-compose.dev.yml restart agent-backend
+docker-compose -f scripts/docker/docker-compose.dev.yml restart agent-backend
 ```
 
 ### 测试验证
@@ -237,10 +237,10 @@ curl -X POST http://localhost:8000/api/agent/execute \
 ### 故障排除
 
 **常见问题：**
-- **容器启动失败**: `docker-compose -f docker-compose.dev.yml logs agent-backend`
+- **容器启动失败**: `docker-compose -f scripts/docker/docker-compose.dev.yml logs agent-backend`
 - **端口占用**: `lsof -i :8000` 查看端口使用
 - **CORS错误**: 检查环境变量 `ALLOWED_ORIGINS`
-- **热重载不工作**: 检查代码挂载 `docker-compose -f docker-compose.dev.yml exec agent-backend ls -la /app`
+- **热重载不工作**: 检查代码挂载 `docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend ls -la /app`
 
 **生产环境部署请参考**: [部署指南](../docs/deployment-guide.md)
 

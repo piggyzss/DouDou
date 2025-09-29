@@ -1,58 +1,87 @@
 from typing import List
 from ..models.news import NewsItem, NewsCategory, TrendingTopic
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
 
 class NewsCollectorService:
     """新闻收集服务"""
     
     def __init__(self):
-        # Mock数据 - 后续可以替换为真实的新闻爬虫
+        # 生成具体的时间戳
+        now = datetime.now()
         self.mock_news = [
             NewsItem(
                 title="OpenAI releases GPT-4.5 with enhanced reasoning",
                 summary="New model shows 40% improvement in complex reasoning tasks and mathematical problem solving.",
-                url="https://techcrunch.com/example1",
-                source="TechCrunch",
-                publish_time="2 hours ago",
+                url="https://openai.com/blog/gpt-4-5-enhanced-reasoning",
+                source="OpenAI Official Blog",
+                publish_time=(now - timedelta(hours=2, minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Machine Learning",
                 tags=["GPT", "OpenAI", "LLM"]
             ),
             NewsItem(
                 title="Google DeepMind announces breakthrough in robotics",
                 summary="RT-2 model enables robots to perform complex manipulation tasks with human-level dexterity.",
-                url="https://nature.com/example2",
-                source="Nature",
-                publish_time="4 hours ago",
+                url="https://deepmind.google/discover/blog/rt-2-robotics-breakthrough",
+                source="Google DeepMind",
+                publish_time=(now - timedelta(hours=4, minutes=32)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Robotics",
                 tags=["Google", "DeepMind", "Robotics"]
             ),
             NewsItem(
                 title="Meta unveils Llama 3 with multimodal capabilities",
                 summary="New open-source model supports text, image, and video understanding with competitive performance.",
-                url="https://ai.meta.com/example3",
-                source="Meta AI Blog",
-                publish_time="6 hours ago",
+                url="https://ai.meta.com/blog/meta-llama-3-multimodal",
+                source="Meta AI",
+                publish_time=(now - timedelta(hours=6, minutes=45)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Computer Vision",
                 tags=["Meta", "Llama", "Multimodal"]
             ),
             NewsItem(
                 title="Anthropic introduces Constitutional AI 2.0",
                 summary="Enhanced safety measures and improved alignment through constitutional training methods.",
-                url="https://anthropic.com/example4",
-                source="Anthropic Blog",
-                publish_time="8 hours ago",
+                url="https://www.anthropic.com/news/constitutional-ai-2-0",
+                source="Anthropic",
+                publish_time=(now - timedelta(hours=8, minutes=12)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="AI Safety",
                 tags=["Anthropic", "Safety", "Constitutional AI"]
             ),
             NewsItem(
                 title="Microsoft Copilot integrates with Azure AI Studio",
                 summary="Developers can now build custom AI agents using enterprise-grade tools and infrastructure.",
-                url="https://microsoft.com/example5",
-                source="Microsoft Blog",
-                publish_time="10 hours ago",
+                url="https://azure.microsoft.com/blog/copilot-azure-ai-studio-integration",
+                source="Microsoft Azure",
+                publish_time=(now - timedelta(hours=10, minutes=28)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Enterprise AI",
                 tags=["Microsoft", "Copilot", "Azure"]
+            ),
+            NewsItem(
+                title="NVIDIA announces H200 AI accelerator with 4x performance boost",
+                summary="New data center GPU delivers unprecedented AI training and inference capabilities for large language models.",
+                url="https://nvidia.com/newsroom/2024/h200-ai-accelerator",
+                source="NVIDIA Newsroom",
+                publish_time=(now - timedelta(hours=12, minutes=5)).strftime("%Y-%m-%d %H:%M:%S"),
+                category="Hardware",
+                tags=["NVIDIA", "GPU", "AI Hardware"]
+            ),
+            NewsItem(
+                title="Tesla FSD v12 achieves 99.7% safety record in beta testing",
+                summary="Latest full self-driving software shows significant improvement in urban driving scenarios.",
+                url="https://tesla.com/fsd-beta-v12-safety-report",
+                source="Tesla",
+                publish_time=(now - timedelta(hours=14, minutes=18)).strftime("%Y-%m-%d %H:%M:%S"),
+                category="Autonomous Vehicles",
+                tags=["Tesla", "FSD", "Autonomous Driving"]
+            ),
+            NewsItem(
+                title="Stability AI releases Stable Diffusion 3.5 with improved text rendering",
+                summary="Latest image generation model features enhanced prompt understanding and higher resolution outputs.",
+                url="https://stability.ai/news/stable-diffusion-3-5",
+                source="Stability AI",
+                publish_time=(now - timedelta(hours=16, minutes=42)).strftime("%Y-%m-%d %H:%M:%S"),
+                category="Computer Vision",
+                tags=["Stability AI", "Diffusion", "Image Generation"]
             )
         ]
         

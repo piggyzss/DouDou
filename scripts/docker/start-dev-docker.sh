@@ -4,6 +4,14 @@
 
 set -e
 
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 项目根目录 (脚本在 scripts/docker/ 下，所以根目录是 ../../)
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# 切换到项目根目录
+cd "$PROJECT_ROOT"
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -101,7 +109,7 @@ start_backend() {
     print_msg "🐳 启动Python Agent后端容器..."
     
     # 构建并启动后端容器
-    docker-compose -f docker-compose.dev.yml up -d agent-backend
+    docker-compose -f scripts/docker/docker-compose.dev.yml up -d agent-backend
     
     # 等待服务启动
     print_info "⏳ 等待后端服务启动..."
@@ -116,7 +124,7 @@ start_backend() {
         
         if [ $attempt -eq $max_attempts ]; then
             print_error "后端服务启动超时"
-            print_info "查看日志: docker-compose -f docker-compose.dev.yml logs agent-backend"
+            print_info "查看日志: docker-compose -f scripts/docker/docker-compose.dev.yml logs agent-backend"
             exit 1
         fi
         
@@ -128,11 +136,11 @@ start_backend() {
 # 启动Redis（可选）
 start_redis() {
     print_msg "📦 启动Redis缓存服务..."
-    docker-compose -f docker-compose.dev.yml up -d redis
+    docker-compose -f scripts/docker/docker-compose.dev.yml up -d redis
     
     # 等待Redis启动
     sleep 3
-    if docker-compose -f docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; then
+    if docker-compose -f scripts/docker/docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; then
         print_msg "✅ Redis服务启动成功"
     else
         print_warn "Redis服务启动可能有问题，但不影响基本功能"
@@ -169,24 +177,41 @@ install_frontend_deps() {
 # 启动前端
 start_frontend() {
     print_msg "🌐 启动Next.js前端服务..."
-    print_info "前端将在新终端窗口中启动"
     
-    # 检测操作系统并在新终端中启动前端
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        osascript -e "tell application \"Terminal\" to do script \"cd $(pwd) && npm run dev\""
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Linux - 尝试不同的终端
-        if command -v gnome-terminal &> /dev/null; then
-            gnome-terminal -- bash -c "cd $(pwd) && npm run dev; exec bash"
-        elif command -v xterm &> /dev/null; then
-            xterm -e "cd $(pwd) && npm run dev; bash" &
-        else
-            print_warn "无法自动启动新终端，请手动运行: npm run dev"
-        fi
-    else
-        print_warn "无法自动启动新终端，请手动运行: npm run dev"
+    # 检查前端是否已经在运行
+    if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null 2>&1; then
+        print_warn "端口3000已被占用，前端可能已在运行"
+        print_info "请访问 http://localhost:3000 检查前端是否正常"
+        return 0
     fi
+    
+    # 在后台启动前端服务
+    print_info "在后台启动前端服务..."
+    nohup npm run dev > frontend.log 2>&1 &
+    local frontend_pid=$!
+    
+    # 等待前端服务启动
+    print_info "⏳ 等待前端服务启动..."
+    local max_attempts=30
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        if curl -s http://localhost:3000 > /dev/null 2>&1; then
+            print_msg "✅ 前端服务启动成功 (PID: $frontend_pid)"
+            echo $frontend_pid > .frontend.pid
+            break
+        fi
+        
+        if [ $attempt -eq $max_attempts ]; then
+            print_error "前端服务启动超时"
+            print_info "查看日志: tail -f frontend.log"
+            print_info "手动启动: npm run dev"
+            return 1
+        fi
+        
+        sleep 2
+        ((attempt++))
+    done
 }
 
 # 显示服务信息
@@ -202,9 +227,9 @@ show_info() {
     echo -e "  📦 Redis:      ${BLUE}localhost:6379${NC}"
     echo
     echo -e "${GREEN}🛠️ 开发工具:${NC}"
-    echo -e "  查看后端日志: ${YELLOW}docker-compose -f docker-compose.dev.yml logs -f agent-backend${NC}"
-    echo -e "  查看所有服务: ${YELLOW}docker-compose -f docker-compose.dev.yml ps${NC}"
-    echo -e "  停止所有服务: ${YELLOW}./stop-dev-docker.sh${NC} 或 ${YELLOW}docker-compose -f docker-compose.dev.yml down${NC}"
+    echo -e "  查看后端日志: ${YELLOW}docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend${NC}"
+    echo -e "  查看所有服务: ${YELLOW}docker-compose -f scripts/docker/docker-compose.dev.yml ps${NC}"
+    echo -e "  停止所有服务: ${YELLOW}./scripts/docker/stop-dev-docker.sh${NC} 或 ${YELLOW}docker-compose -f scripts/docker/docker-compose.dev.yml down${NC}"
     echo
     echo -e "${GREEN}🧪 测试命令:${NC}"
     echo -e "  后端健康检查: ${YELLOW}curl http://localhost:8000/health${NC}"
@@ -214,7 +239,9 @@ show_info() {
 
 # 主函数
 main() {
-    clear
+    if [ -t 1 ]; then
+        clear
+    fi
     echo -e "${GREEN}"
     echo "╔══════════════════════════════════════════════════════════════╗"
     echo "║                    DouDou Agent 开发环境                     ║"

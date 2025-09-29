@@ -12,12 +12,15 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # CORS配置
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://yourdomain.com"  # 替换为实际域名
-    ]
+    # CORS配置 - 直接设置，避免环境变量解析问题
+    @property
+    def ALLOWED_ORIGINS(self) -> List[str]:
+        return [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000", 
+            "http://host.docker.internal:3000",
+            "https://yourdomain.com"  # 替换为实际域名
+        ]
     
     # Redis配置
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")

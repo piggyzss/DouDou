@@ -3,8 +3,8 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { db, initDatabase } from '../lib/database'
-import { listFiles, fileExists } from '../lib/tencent-cos'
+import { db, initDatabase } from '../../lib/database'
+import { listFiles, fileExists } from '../../lib/tencent-cos'
 
 function getKeyFromUrl(url: string): string | null {
   try {
