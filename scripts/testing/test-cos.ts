@@ -1,4 +1,4 @@
-import { uploadFile, deleteFile, listFiles } from '../lib/tencent-cos'
+import { uploadFile, deleteFile, listFiles } from '../../lib/tencent-cos'
 
 async function testCosConnection() {
   console.log('🧪 Testing Tencent Cloud COS connection...\n')

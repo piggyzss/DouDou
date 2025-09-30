@@ -3,7 +3,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { query } from '../lib/database'
+import { query } from '../../lib/database'
 
 async function showMainMenu() {
   console.log('\n🎨 AIGC内容管理工具')

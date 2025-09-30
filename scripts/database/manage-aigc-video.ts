@@ -3,8 +3,8 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { query, getRows, getRow } from '../lib/database'
-import { VideoModel } from '../lib/models/video'
+import { query, getRows, getRow } from '../../lib/database'
+import { VideoModel } from '../../lib/models/video'
 import * as readline from 'readline'
 
 interface VideoRecord {

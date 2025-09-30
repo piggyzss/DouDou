@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import 'dotenv/config'
-import { initDatabase } from '../lib/database'
+import { initDatabase } from '../../lib/database'
 
 async function main() {
   try {

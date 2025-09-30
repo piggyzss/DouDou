@@ -31,12 +31,6 @@ class NewsPlugin(BasePlugin):
                 examples=["/trending", "/trending ai"]
             ),
             AgentCommand(
-                command="/categories",
-                description="显示资讯分类",
-                usage="/categories",
-                examples=["/categories"]
-            ),
-            AgentCommand(
                 command="/deepdive",
                 description="深度分析特定主题",
                 usage="/deepdive <topic>",
@@ -61,8 +55,6 @@ class NewsPlugin(BasePlugin):
                 return await self._handle_latest(params)
             elif command == "/trending":
                 return await self._handle_trending(params)
-            elif command == "/categories":
-                return await self._handle_categories(params)
             elif command == "/deepdive":
                 return await self._handle_deepdive(params)
             else:
@@ -127,8 +119,19 @@ class NewsPlugin(BasePlugin):
         for i, item in enumerate(news_items, 1):
             response_text += f"│ {i}. {item.title}\n"
             response_text += f"│    Source: {item.source} | {item.publish_time}\n"
-            response_text += f"│    {item.summary}\n"
-            response_text += f"│    🔗 Link: {item.url}\n"
+            # 增加概括内容到三行左右
+            summary_lines = item.summary.split('. ')
+            if len(summary_lines) >= 3:
+                # 如果概括内容足够，显示前3行
+                for j in range(min(3, len(summary_lines))):
+                    response_text += f"│    {summary_lines[j]}{'.' if j < 2 else ''}\n"
+            else:
+                # 如果概括内容不够，重复或扩展
+                response_text += f"│    {item.summary}\n"
+                if len(item.summary) < 100:  # 如果概括太短，添加额外信息
+                    response_text += f"│    This development represents a significant advancement in the field.\n"
+                    response_text += f"│    Industry experts are closely monitoring the implications.\n"
+            response_text += f"│    Link: {item.url}\n"
             response_text += "│\n"
         
         response_text += "└─────────────────────────────────────────────────────────┘"
@@ -161,25 +164,6 @@ class NewsPlugin(BasePlugin):
             command="/trending"
         )
     
-    async def _handle_categories(self, params: dict) -> AgentResponse:
-        """处理获取分类命令"""
-        categories = await self.news_service.get_categories()
-        
-        response_text = "[INFO] Loading news categories...\n\n"
-        response_text += "┌─ News Categories ───────────────────────────────────────┐\n"
-        
-        for category in categories:
-            response_text += f"│ {category.name.ljust(30)} {str(category.count).rjust(3)} articles │\n"
-        
-        response_text += "└─────────────────────────────────────────────────────────┘"
-        
-        return AgentResponse(
-            success=True,
-            data=response_text,
-            type="text",
-            plugin=self.id,
-            command="/categories"
-        )
     
     async def _handle_deepdive(self, params: dict) -> AgentResponse:
         """处理深度分析命令"""

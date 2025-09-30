@@ -3,8 +3,8 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { query, getRows, getRow } from '../lib/database'
-import { ArtworkModel } from '../lib/models/artwork'
+import { query, getRows, getRow } from '../../lib/database'
+import { ArtworkModel } from '../../lib/models/artwork'
 
 interface DatabaseRecord {
   id: number

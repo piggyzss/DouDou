@@ -33,6 +33,13 @@
   --terminal-border: #d0d7de;
   --terminal-accent: #6747ce;
   --terminal-muted: #656d76;
+  /* 新增颜色变量 */
+  --terminal-pink: #eeb8b8;
+  --terminal-orange: #fed336;
+  --terminal-cyan: #56d4dd;
+  --terminal-purple: #8a6fd8;
+  --terminal-gray: #6c757d;
+  --terminal-light-gray: #adb5bd;
 }
 
 .dark {
@@ -55,6 +62,13 @@
   --terminal-border: #30363d;
   --terminal-accent: #8a6fd8;
   --terminal-muted: #8b949e;
+  /* 深色主题新增颜色变量 */
+  --terminal-pink: #f8a5c2;
+  --terminal-orange: #ffa726;
+  --terminal-cyan: #4dd0e1;
+  --terminal-purple: #ba68c8;
+  --terminal-gray: #9e9e9e;
+  --terminal-light-gray: #bdbdbd;
 }
 
 /* 深色模式下的文字颜色 */
@@ -556,6 +570,33 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   cursor: url('/assets/icon/hand.svg') 6 2, pointer;
 }
 
+/* 终端输入框专用样式 */
+.terminal-container input[type="text"],
+.terminal-input {
+  cursor: text !important;
+  caret-color: var(--terminal-accent);
+  caret-shape: block;
+}
+
+.terminal-container input[type="text"]:focus,
+.terminal-input:focus {
+  outline: none;
+  caret-color: var(--terminal-accent);
+}
+
+/* 确保光标始终可见 */
+.terminal-container input[type="text"]:not(:focus),
+.terminal-input:not(:focus) {
+  caret-color: var(--terminal-accent);
+}
+
+/* 终端输入框placeholder颜色 */
+.terminal-container input[type="text"]::placeholder,
+.terminal-input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
 /* 自定义滚动条 */
 ::-webkit-scrollbar {
   width: 8px;
@@ -675,6 +716,28 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   color: var(--terminal-muted);
 }
 
+/* 新增颜色类 */
+.text-terminal-pink {
+  color: var(--terminal-pink);
+}
+
+.text-terminal-orange {
+  color: var(--terminal-orange);
+}
+
+.text-terminal-cyan {
+  color: var(--terminal-cyan);
+}
+
+
+.text-terminal-gray {
+  color: var(--terminal-gray);
+}
+
+.text-terminal-light-gray {
+  color: var(--terminal-light-gray);
+}
+
 /* Terminal 背景色类 */
 .bg-terminal-bg {
   background-color: var(--terminal-bg);
@@ -727,4 +790,33 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
+}
+
+/* 终端链接样式优化 */
+.terminal-link {
+  transition: all 0.2s ease;
+}
+
+.terminal-link:hover {
+  text-decoration: underline !important;
+}
+
+/* 终端内容区域优化 */
+.terminal-messages-container {
+  line-height: 1.6;
+}
+
+.terminal-messages-container .mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.terminal-messages-container .mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+/* 终端文本内容优化 */
+.terminal-content-text {
+  line-height: 1.7;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 } 

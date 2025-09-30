@@ -1,4 +1,4 @@
-import { query } from '../lib/database'
+import { query } from '../../lib/database'
 
 async function initAppsDatabase() {
   try {

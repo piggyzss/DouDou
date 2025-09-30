@@ -1,4 +1,4 @@
-import { AppModel } from '../lib/models/app'
+import { AppModel } from '../../lib/models/app'
 
 async function testAppsAPI() {
   try {

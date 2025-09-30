@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { X, Minimize2, Maximize2, Terminal, Wifi } from 'lucide-react'
+import { X, Terminal, Wifi, Link, Rabbit, Command } from 'lucide-react'
 import { useTerminalTheme } from '../hooks/useTerminalTheme'
 import { useAgent } from '../hooks/useAgent'
 
@@ -10,6 +10,7 @@ export default function AgentTerminal() {
   const [input, setInput] = useState('')
   const [isMinimized, setIsMinimized] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
@@ -38,8 +39,24 @@ export default function AgentTerminal() {
   // 自动聚焦输入框
   useEffect(() => {
     if (!isMinimized) {
-      inputRef.current?.focus()
+      // 延迟聚焦确保组件完全渲染
+      const timer = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+      return () => clearTimeout(timer)
     }
+  }, [isMinimized])
+
+  // 确保输入框始终有焦点
+  useEffect(() => {
+    const handleClick = () => {
+      if (!isMinimized && inputRef.current) {
+        inputRef.current.focus()
+      }
+    }
+    
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
   }, [isMinimized])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,71 +89,201 @@ export default function AgentTerminal() {
       if (line.includes('[INFO]')) {
         const parts = line.split('[INFO]')
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-blue">[INFO]</span>
-            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-blue font-bold text-sm">[INFO]</span>
+            <span className="text-terminal-text ml-3 font-medium leading-relaxed">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[SUCCESS]')) {
         const parts = line.split('[SUCCESS]')
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-green">[SUCCESS]</span>
-            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-green font-bold text-sm">[SUCCESS]</span>
+            <span className="text-terminal-text ml-3 font-medium leading-relaxed">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[ERROR]')) {
         const parts = line.split('[ERROR]')
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-red">[ERROR]</span>
-            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-red font-bold text-sm">[ERROR]</span>
+            <span className="text-terminal-text ml-3 font-medium leading-relaxed">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[ANALYSIS]')) {
         const parts = line.split('[ANALYSIS]')
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-blue">[ANALYSIS]</span>
-            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-cyan font-bold text-sm">[ANALYSIS]</span>
+            <span className="text-terminal-text ml-3 font-medium leading-relaxed">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[INSIGHTS]')) {
         const parts = line.split('[INSIGHTS]')
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-blue">[INSIGHTS]</span>
-            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-accent font-bold text-sm">[INSIGHTS]</span>
+            <span className="text-terminal-text ml-3 font-medium leading-relaxed">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.includes('[RECOMMENDATION]')) {
         const parts = line.split('[RECOMMENDATION]')
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-blue">[RECOMMENDATION]</span>
-            <span className="text-terminal-accent">{parts[1] || ''}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-pink font-bold text-sm">[RECOMMENDATION]</span>
+            <span className="text-terminal-text ml-3 font-medium leading-relaxed">{parts[1] || ''}</span>
           </div>
         )
       } else if (line.startsWith('user@agent:~$')) {
         return (
-          <div key={index} className="flex">
-            <span className="text-terminal-accent">user@agent:~$</span>
-            <span className="ml-2 text-terminal-text">{line.replace('user@agent:~$', '').trim()}</span>
+          <div key={index} className="flex mb-3">
+            <span className="text-terminal-accent font-bold">user@agent:~$</span>
+            <span className="ml-3 text-terminal-text font-medium">{line.replace('user@agent:~$', '').trim()}</span>
           </div>
         )
       } else if (line.startsWith('>')) {
         return (
-          <div key={index} className="text-terminal-muted">
+          <div key={index} className="text-gray-400 mb-1">
             {line}
           </div>
         )
       }
       
-      return (
-        <div key={index} className="text-terminal-text">
-          {line}
-        </div>
-      )
+      // 处理数字标题（如 "1. 标题"）
+      if (line.match(/^\d+\./)) {
+        return (
+          <div key={index} className="mb-2">
+            <div className="text-terminal-cyan font-semibold text-sm mb-1">
+              {line}
+            </div>
+          </div>
+        )
+      }
+      
+      // 处理Title标签
+      if (line.includes('Title:')) {
+        const parts = line.split('Title:')
+        return (
+          <div key={index} className="mb-2">
+            <div className="flex items-center">
+              <span className="text-terminal-orange font-semibold text-sm">Title:</span>
+              <span className="text-terminal-text ml-2 text-sm">{parts[1] || ''}</span>
+            </div>
+          </div>
+        )
+      }
+      
+      // 处理Summary标签
+      if (line.includes('Summary:')) {
+        const parts = line.split('Summary:')
+        return (
+          <div key={index} className="mb-2">
+            <div className="flex items-center">
+              <span className="text-terminal-pink font-semibold text-sm">Summary:</span>
+              <span className="text-terminal-text ml-2 text-sm">{parts[1] || ''}</span>
+            </div>
+          </div>
+        )
+      }
+      
+      // 处理Source行 - 使用灰色
+      if (line.includes('Source:')) {
+        const parts = line.split('Source:')
+        return (
+          <div key={index} className="mb-2">
+            <div className="flex items-center">
+              <span className="text-terminal-light-gray font-semibold text-sm">Source:</span>
+              <span className="text-terminal-light-gray ml-2 text-sm">{parts[1] || ''}</span>
+            </div>
+          </div>
+        )
+      }
+      
+      // 处理时间行 - 使用特殊颜色
+      if (line.includes('Time:') || line.includes('Date:') || line.includes('Published:')) {
+        const parts = line.split(/Time:|Date:|Published:/)
+        const label = line.includes('Time:') ? 'Time:' : line.includes('Date:') ? 'Date:' : 'Published:'
+        return (
+          <div key={index} className="mb-2">
+            <div className="flex items-center">
+              <span className="text-terminal-orange font-semibold text-sm">{label}</span>
+              <span className="text-terminal-gray ml-2 text-sm">{parts[1] || ''}</span>
+            </div>
+          </div>
+        )
+      }
+      
+      // 处理包含链接的行
+      const urlRegex = /(https?:\/\/[^\s]+)/g
+      if (urlRegex.test(line)) {
+        const parts = line.split(urlRegex)
+        return (
+          <div key={index} className="text-terminal-text mb-2 leading-relaxed">
+            {parts.map((part, partIndex) => {
+              if (urlRegex.test(part)) {
+                // 截断长链接，保留前50个字符
+                const maxLength = 50
+                const displayText = part.length > maxLength ? part.substring(0, maxLength) + '...' : part
+                
+                return (
+                  <a
+                    key={partIndex}
+                    href={part}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="terminal-link inline-flex items-center gap-1"
+                    style={{
+                      color: 'var(--primary-light)',
+                      textDecoration: 'underline',
+                      transition: 'color 0.2s ease',
+                      maxWidth: '100%',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--primary)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'var(--primary-light)'
+                    }}
+                    title={part} // 显示完整链接作为tooltip
+                  >
+                    <Link size={12} />
+                    {displayText}
+                  </a>
+                )
+              }
+              return part
+            })}
+          </div>
+        )
+      }
+      
+      // 处理特殊关键词
+      if (line.includes('Category:') || line.includes('Tags:')) {
+        const parts = line.split(/Category:|Tags:/)
+        const label = line.includes('Category:') ? 'Category:' : 'Tags:'
+        return (
+          <div key={index} className="mb-2">
+            <div className="flex items-center">
+              <span className="text-terminal-orange font-semibold text-sm">{label}</span>
+              <span className="text-terminal-gray ml-2 text-sm">{parts[1] || ''}</span>
+            </div>
+          </div>
+        )
+      }
+      
+      // 处理普通文本内容
+      if (line.trim()) {
+        return (
+          <div key={index} className="text-terminal-text mb-2 leading-relaxed">
+            {line}
+          </div>
+        )
+      }
+      
+      // 空行
+      return <div key={index} className="mb-1"></div>
     })
   }
 
@@ -169,11 +316,12 @@ export default function AgentTerminal() {
   return (
     <div className="relative">
       <motion.div
-        className={`terminal-container ${terminalTheme} w-full rounded-lg shadow-2xl overflow-hidden`}
+        className={`terminal-container ${terminalTheme} w-full rounded-lg shadow-2xl overflow-hidden flex flex-col`}
         style={{
           backgroundColor: 'var(--terminal-bg)',
           borderColor: 'var(--terminal-border)',
-          minHeight: '600px'
+          height: '600px',
+          maxHeight: '600px'
         }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -202,11 +350,14 @@ export default function AgentTerminal() {
           {/* 状态显示 */}
           <div className="flex items-center space-x-2 text-xs font-blog" style={{ color: 'var(--terminal-muted)' }}>
             <div className="flex items-center space-x-1">
-              <div className={`w-2 h-2 rounded-full ${
-                agentState.status === 'idle' ? 'bg-green-500' : 
-                agentState.status === 'processing' ? 'bg-yellow-500 animate-pulse' : 
-                'bg-red-500'
-              }`}></div>
+              <Rabbit 
+                size={16} 
+                className={`${
+                  agentState.status === 'idle' ? 'text-green-500' : 
+                  agentState.status === 'processing' ? 'text-yellow-500 animate-pulse' : 
+                  'text-red-500'
+                }`} 
+              />
               <span className="capitalize">{agentState.status}</span>
             </div>
             <span>|</span>
@@ -221,27 +372,29 @@ export default function AgentTerminal() {
           {/* 控制按钮 */}
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setIsMinimized(true)}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              title={isSidebarOpen ? "Hide Commands" : "Show Commands"}
             >
-              <Minimize2 size={14} style={{ color: 'var(--terminal-muted)' }} />
+              <Command size={16} style={{ color: 'var(--terminal-muted)' }} />
             </button>
-            <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors">
-              <Maximize2 size={14} style={{ color: 'var(--terminal-muted)' }} />
-            </button>
-            <button className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors">
-              <X size={14} style={{ color: 'var(--terminal-muted)' }} />
+            <button
+              onClick={() => setIsMinimized(true)}
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Minimize"
+            >
+              <X size={16} style={{ color: 'var(--terminal-muted)' }} />
             </button>
           </div>
         </div>
       </div>
 
       {/* Terminal 内容区域 */}
-      <div className="flex h-[500px]">
+      <div className="flex flex-1 min-h-0">
         {/* 主要终端区域 */}
         <div className="flex-1 flex flex-col">
           {/* 消息显示区域 */}
-          <div className="flex-1 p-4 overflow-y-auto font-mono text-sm font-light leading-relaxed terminal-messages-container custom-scrollbar">
+          <div className="flex-1 p-6 overflow-y-auto font-mono text-sm font-normal leading-relaxed terminal-messages-container custom-scrollbar terminal-content-text">
             {messages.map((message) => (
               <div key={message.id} className="mb-2">
                 {formatMessage(message.content)}
@@ -251,30 +404,24 @@ export default function AgentTerminal() {
           </div>
 
           {/* 输入区域 */}
-          <div className="p-4 border-t" style={{ borderColor: 'var(--terminal-border)' }}>
+          <div className="p-6 border-t" style={{ borderColor: 'var(--terminal-border)' }}>
             <form onSubmit={handleSubmit} className="flex items-center">
-              <span className="text-terminal-accent font-mono text-sm font-light">user@agent:~$</span>
-              <div className="flex-1 flex items-center ml-2">
+              <span className="text-terminal-accent font-mono text-sm font-bold">user@agent:~$</span>
+              <div className="flex-1 flex items-center ml-3">
                 <input
                   ref={inputRef}
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent border-none outline-none font-mono text-sm font-light"
-                  style={{ color: 'var(--terminal-text)' }}
+                  className="flex-1 bg-transparent border-none outline-none font-mono text-sm font-medium terminal-input"
+                  style={{ 
+                    color: 'var(--terminal-text)',
+                    caretColor: 'var(--terminal-accent)'
+                  }}
                   placeholder="Type a command..."
                   disabled={agentState.status === 'processing'}
                 />
-                {!input && agentState.status !== 'processing' && (
-                  <div 
-                    className="w-0.5 h-4 bg-terminal-accent animate-pulse ml-1"
-                    style={{
-                      animation: 'blink 1s infinite',
-                      width: '2px'
-                    }}
-                  ></div>
-                )}
               </div>
               {agentState.status === 'processing' && (
                 <div className="flex items-center space-x-1 ml-2">
@@ -293,10 +440,19 @@ export default function AgentTerminal() {
         </div>
 
         {/* 侧边栏 - 快捷命令 */}
-        <div 
-          className="w-64 border-l p-4 bg-gray-50 dark:bg-gray-800"
+        <motion.div 
+          className="border-l bg-gray-50 dark:bg-gray-800 overflow-hidden"
           style={{ borderColor: 'var(--terminal-border)' }}
+          animate={{ 
+            width: isSidebarOpen ? 256 : 0,
+            opacity: isSidebarOpen ? 1 : 0
+          }}
+          transition={{ 
+            duration: 0.4,
+            ease: "easeInOut"
+          }}
         >
+          <div className="w-64 p-4">
           <h3 className="text-sm font-medium mb-3 font-blog" style={{ color: 'var(--terminal-text)' }}>
             Quick Commands
           </h3>
@@ -304,7 +460,6 @@ export default function AgentTerminal() {
             {[
               { cmd: '/latest', desc: 'Get latest news' },
               { cmd: '/trending', desc: 'Show trends' },
-              { cmd: '/categories', desc: 'News categories' },
               { cmd: '/deepdive', desc: 'Deep analysis' },
               { cmd: '/help', desc: 'Show help' }
             ].map((item) => (
@@ -322,9 +477,11 @@ export default function AgentTerminal() {
               </button>
             ))}
           </div>
-        </div>
+          </div>
+        </motion.div>
       </div>
       </motion.div>
     </div>
   )
 }
+

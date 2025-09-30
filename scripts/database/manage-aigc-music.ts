@@ -3,7 +3,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { query } from '../lib/database'
+import { query } from '../../lib/database'
 
 async function listMusic() {
   const res = await query('SELECT id, title, tags, audio_url, cover_url, duration, likes_count, created_at FROM music_tracks ORDER BY created_at DESC LIMIT 100')

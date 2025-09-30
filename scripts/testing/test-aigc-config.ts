@@ -3,8 +3,8 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { validateCosConfig } from '../lib/tencent-cos-config'
-import { query } from '../lib/database'
+import { validateCosConfig } from '../../lib/tencent-cos-config'
+import { query } from '../../lib/database'
 
 async function testDatabaseConnection() {
   try {

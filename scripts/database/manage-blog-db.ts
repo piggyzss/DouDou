@@ -3,8 +3,8 @@
 import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
-import { query, getRows, getRow } from '../lib/database'
-import { BlogModel } from '../lib/models/blog'
+import { query, getRows, getRow } from '../../lib/database'
+import { BlogModel } from '../../lib/models/blog'
 
 async function showMenu() {
   console.log('\n📝 博客数据库管理工具')

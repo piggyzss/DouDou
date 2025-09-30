@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Rabbit } from 'lucide-react'
+import { Rabbit, PartyPopper } from 'lucide-react'
 
 interface MosaicTile {
   id: string
@@ -25,6 +25,8 @@ export default function Update() {
 
   const [isPaused, setIsPaused] = useState(false)
   const [isClickDisabled, setIsClickDisabled] = useState(false)
+  const [isCelebrating, setIsCelebrating] = useState(false)
+  const [fireworks, setFireworks] = useState<Array<{id: string, x: number, y: number, size: number, direction: number}>>([])
 
   useEffect(() => {
     setIsMounted(true)
@@ -138,7 +140,14 @@ export default function Update() {
     if (!isRabbitActive || isPaused) return
 
     // Check if we've finished all tiles
-    if (currentTileIndex >= tiles.length) return
+    if (currentTileIndex >= tiles.length) {
+      // Start celebration sequence
+      if (!isCelebrating) {
+        setIsCelebrating(true)
+        startCelebration()
+      }
+      return
+    }
 
     const timer = setTimeout(() => {
       const targetTile = tiles[currentTileIndex]
@@ -173,6 +182,50 @@ export default function Update() {
 
     return () => clearTimeout(timer)
   }, [currentTileIndex, tiles, isRabbitActive, isPaused])
+
+  // Celebration sequence: turn around, jump, and create fireworks
+  const startCelebration = () => {
+    // Turn around (flip direction)
+    setTimeout(() => {
+      setRabbitDirection(prev => prev === 'left-to-right' ? 'right-to-left' : 'left-to-right')
+    }, 500)
+
+    // Jump animation (3 jumps)
+    setTimeout(() => {
+      // Create fireworks after jumping
+      createFireworks()
+    }, 2000)
+
+    // Clear fireworks after animation
+    setTimeout(() => {
+      setFireworks([])
+      setIsCelebrating(false)
+    }, 5000)
+  }
+
+  // Create fireworks with different directions and sizes
+  const createFireworks = () => {
+    const newFireworks = []
+    const centerX = rabbitPosition.x + 24 // Center of rabbit
+    const centerY = rabbitPosition.y + 14 // Center of rabbit
+
+    // Create 8 fireworks in different directions
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * 45) * (Math.PI / 180) // 45 degrees apart
+      const distance = 60 + Math.random() * 40 // Random distance 60-100px
+      const size = 16 + Math.random() * 12 // Random size 16-28px
+      
+      newFireworks.push({
+        id: `firework-${i}`,
+        x: centerX + Math.cos(angle) * distance,
+        y: centerY + Math.sin(angle) * distance,
+        size,
+        direction: angle
+      })
+    }
+
+    setFireworks(newFireworks)
+  }
 
   // Handle rabbit click to pause/resume with debounce
   const handleRabbitClick = (e?: React.MouseEvent) => {
@@ -313,14 +366,18 @@ export default function Update() {
                     animate={isPaused ? {
                       // Paused animation - gentle breathing effect
                       scale: [1, 1.05, 1]
+                    } : isCelebrating ? {
+                      // Celebration jumping animation
+                      y: [0, -15, 0, -15, 0, -15, 0],
+                      scale: [1, 1.1, 1, 1.1, 1, 1.1, 1]
                     } : {
                       // No jumping - completely smooth movement
                       scale: 1
                     }}
                     transition={{
-                      duration: isPaused ? 1.5 : 0,
+                      duration: isPaused ? 1.5 : isCelebrating ? 2.5 : 0,
                       ease: "easeInOut",
-                      repeat: isPaused ? Infinity : 0
+                      repeat: isPaused ? Infinity : isCelebrating ? 0 : 0
                     }}
                   >
                     <Rabbit
@@ -333,6 +390,41 @@ export default function Update() {
                   </motion.div>
                 </motion.div>
               )}
+
+              {/* 烟花动画 */}
+              {fireworks.map((firework) => (
+                <motion.div
+                  key={firework.id}
+                  className="absolute z-40"
+                  style={{
+                    left: firework.x,
+                    top: firework.y,
+                    zIndex: 40
+                  }}
+                  initial={{
+                    scale: 0,
+                    opacity: 0,
+                    rotate: 0
+                  }}
+                  animate={{
+                    scale: [0, 1.2, 1],
+                    opacity: [0, 1, 0],
+                    rotate: [0, 360],
+                    y: [0, -20, -40]
+                  }}
+                  transition={{
+                    duration: 2,
+                    ease: "easeOut",
+                    delay: Math.random() * 0.5
+                  }}
+                >
+                  <PartyPopper
+                    size={firework.size}
+                    className="text-yellow-400 drop-shadow-lg"
+                    fill="currentColor"
+                  />
+                </motion.div>
+              ))}
             </div>
           </div>
         </motion.div>

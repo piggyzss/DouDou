@@ -1,8 +1,8 @@
 #!/usr/bin/env ts-node
 
 import 'dotenv/config'
-import { db } from '../lib/database'
-import { fileExists } from '../lib/tencent-cos'
+import { db } from '../../lib/database'
+import { fileExists } from '../../lib/tencent-cos'
 
 type ImageRow = { id: number; file_url: string }
 

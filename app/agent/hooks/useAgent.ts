@@ -48,7 +48,7 @@ export function useAgent() {
     {
       id: '1',
       type: 'system',
-      content: '> Welcome to AI News Agent\n> Intelligence about Intelligence\n> Type \'/help\' for available commands ',
+      content: '> Welcome to AI News Agent\n> Intelligence about Intelligence\n> Type \'/help\' for available commands',
       timestamp: new Date(),
       status: 'success'
     }
