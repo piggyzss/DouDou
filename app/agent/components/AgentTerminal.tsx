@@ -47,9 +47,23 @@ export default function AgentTerminal() {
     }
   }, [isMinimized])
 
-  // 确保输入框始终有焦点
+  // 确保输入框始终有焦点，但不干扰文本选择
   useEffect(() => {
-    const handleClick = () => {
+    const handleClick = (e: MouseEvent) => {
+      // 检查是否在终端消息区域内，如果是则不重新聚焦
+      const target = e.target as HTMLElement
+      const isInMessagesArea = target.closest('.terminal-messages-container')
+      
+      // 如果用户正在选择文本，不重新聚焦
+      if (window.getSelection()?.toString().length > 0) {
+        return
+      }
+      
+      // 如果点击的是终端消息区域，不重新聚焦
+      if (isInMessagesArea) {
+        return
+      }
+      
       if (!isMinimized && inputRef.current) {
         inputRef.current.focus()
       }

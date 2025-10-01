@@ -14,7 +14,7 @@ class NewsCollectorService:
             NewsItem(
                 title="OpenAI releases GPT-4.5 with enhanced reasoning",
                 summary="New model shows 40% improvement in complex reasoning tasks and mathematical problem solving.",
-                url="https://openai.com/blog",
+                url="https://openai.com/blog/gpt-4-5-enhanced-reasoning",
                 source="OpenAI Official Blog",
                 publish_time=(now - timedelta(hours=2, minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Machine Learning",
@@ -23,7 +23,7 @@ class NewsCollectorService:
             NewsItem(
                 title="Gemini Robotics 1.5 brings AI agents into the physical world",
                 summary="RT-2 model enables robots to perform complex manipulation tasks with human-level dexterity.",
-                url="https://deepmind.google/discover/blog",
+                url="https://deepmind.google/discover/blog/gemini-robotics-15-brings-ai-agents-into-the-physical-world/",
                 source="Google DeepMind",
                 publish_time=(now - timedelta(hours=4, minutes=32)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Robotics",
@@ -32,7 +32,7 @@ class NewsCollectorService:
             NewsItem(
                 title="Meta unveils Llama 3 with multimodal capabilities",
                 summary="New open-source model supports text, image, and video understanding with competitive performance.",
-                url="https://ai.meta.com/blog",
+                url="https://ai.meta.com/blog/llama-3-multimodal-capabilities",
                 source="Meta AI",
                 publish_time=(now - timedelta(hours=6, minutes=45)).strftime("%Y-%m-%d %H:%M:%S"),
                 category="Computer Vision",

@@ -819,4 +819,69 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   line-height: 1.7;
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+
+/* 终端文本选择样式 - 允许用户选择文本并复制 */
+.terminal-messages-container {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+.terminal-messages-container * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* 终端文本选中时的浅紫色背景 - 基于主色调#6747ce的浅色版本 */
+.terminal-messages-container ::selection {
+  background-color: rgba(103, 71, 206, 0.2) !important; /* 基于#6747ce的20%透明度浅紫色 */
+  color: var(--terminal-text) !important;
+}
+
+.terminal-messages-container ::-moz-selection {
+  background-color: rgba(103, 71, 206, 0.2) !important; /* 基于#6747ce的20%透明度浅紫色 */
+  color: var(--terminal-text) !important;
+}
+
+/* 确保终端内容区域可以正常选择文本 */
+.terminal-content-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* 终端消息项选择样式 */
+.terminal-messages-container .mb-2,
+.terminal-messages-container .mb-1,
+.terminal-messages-container .mb-3 {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* 防止其他样式干扰文本选择 */
+.terminal-messages-container span,
+.terminal-messages-container div,
+.terminal-messages-container p {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* 确保选中状态持久保持 */
+.terminal-messages-container ::selection {
+  background-color: rgba(103, 71, 206, 0.2) !important;
+  color: var(--terminal-text) !important;
+}
+
+.terminal-messages-container ::-moz-selection {
+  background-color: rgba(103, 71, 206, 0.2) !important;
+  color: var(--terminal-text) !important;
 } 
