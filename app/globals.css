@@ -7,7 +7,20 @@
   --primary-light: #8a6fd8;
   --primary-dark: #4f35a0;
   --secondary: #FADCDA;
-  --accent: #e5be31;
+  
+  /* 新增颜色变量 */
+  --yellow: #fed336;
+  --yellow-bg: #fffbeb;
+  
+  --green1: #8ccc79;
+  --green1-bg: #f4faf2;
+  
+  --green2: #53b88f;
+  --green2-bg: #eef8f4;
+  
+  --blue: #3388ff;
+  --blue-bg: #ebf3ff;
+  
   --text-primary: #000C2A;
   --text-secondary: #444A6E;
   --text-muted: #6c757d;
@@ -18,10 +31,7 @@
   --bg-card: #ffffff;
   /* 博客正文字体变量 */
   --font-body: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
-  /* 终端窗口控制按钮颜色 */
-  --terminal-green: #8ccc79;
-  /* 代码内容文字颜色 */
-  --code-green: #53b88f;
+
   
   /* Terminal 主题变量 - 浅色主题（默认） */
   --terminal-bg: #ffffff;
@@ -36,7 +46,7 @@
   /* 新增颜色变量 */
   --terminal-pink: #eeb8b8;
   --terminal-orange: #fed336;
-  --terminal-cyan: #56d4dd;
+  --terminal-cyan: #53b88f;
   --terminal-purple: #8a6fd8;
   --terminal-gray: #6c757d;
   --terminal-light-gray: #adb5bd;
@@ -644,23 +654,6 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   transform: rotate(5deg);
 }
 
-/* 手绘风格边框 */
-.hand-drawn-border {
-  position: relative;
-}
-
-.hand-drawn-border::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
-  border-radius: 8px;
-  z-index: -1;
-  animation: borderGlow 3s ease-in-out infinite alternate;
-}
 
 @keyframes borderGlow {
   0% {

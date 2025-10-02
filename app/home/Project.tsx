@@ -232,7 +232,7 @@ export default function Project() {
               <div className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                 <Terminal size={14} />
-                <span>latest-blog.md</span>
+                <span className="font-blog">latest-blog.md</span>
               </div>
             </div>
 
@@ -241,9 +241,9 @@ export default function Project() {
               <div className="space-y-3">
                 <div className={`flex items-center gap-2 ${isDarkMode ? 'text-green-400' : 'text-[#53b88f]'
                   }`}>
-                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>$</span>
+                  <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>$</span>
                   <span className={isDarkMode ? 'text-blue-400' : 'text-[#3388ff]'}>cat</span>
-                  <span className={isDarkMode ? 'text-purple-400' : 'text-[var(--primary)]'}>latest-blog.md</span>
+                  <span className={isDarkMode ? 'text-green-400' : 'text-[var(--green1)]'}>latest-blog.md</span>
                 </div>
 
                 {loading ? (
@@ -265,14 +265,13 @@ export default function Project() {
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>date:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>date:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestBlog.published_at || latestBlog.created_at)}</span>
                     </div>
                     <div className={`leading-relaxed text-xs font-thin line-clamp-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
                       }`}>
                       {latestBlog.excerpt || '暂无摘要...'}
                     </div>
-                    <div className={`flex items-center gap-2 mt-3 ${isDarkMode ? 'text-[var(--code-green)]' : 'text-[#53b88f]'
-                      }`}>
+                    <div className={`flex items-center gap-2 mt-3 text-[var(--green2)] }`}>
                       <ChevronRight size={14} />
                       <span>read more...</span>
                     </div>
@@ -328,7 +327,7 @@ export default function Project() {
               <div className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                 <Code size={14} />
-                <span>app.tsx</span>
+                <span className="font-blog">app.tsx</span>
               </div>
             </div>
 
@@ -337,10 +336,9 @@ export default function Project() {
               <div className="space-y-3">
                 <div className={`flex items-center gap-2 ${isDarkMode ? 'text-green-400' : 'text-[#53b88f]'
                   }`}>
-                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>$</span>
+                  <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>$</span>
                   <span className={isDarkMode ? 'text-blue-400' : 'text-[#3388ff]'}>ls</span>
-                  <span className={isDarkMode ? 'text-purple-400' : 'text-[var(--primary)]'}>-la</span>
-                  <span className={isDarkMode ? 'text-green-400' : 'text-[#8ccc79]'}>latest-app/</span>
+                  <span className={isDarkMode ? 'text-green-400' : 'text-[var(--green1)]'}>-la latest-app/</span>
                 </div>
 
                 {loading ? (
@@ -358,19 +356,19 @@ export default function Project() {
                   <div className="space-y-2">
                     <div className={`font-light ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                       }`}>
-                      <span className="text-[var(--primary)]">📱</span> <span className={isDarkMode ? 'text-white' : 'text-gray-700'}>{latestApp.name}</span>
+                      <span className="text-[var(--primary)]">#</span> <span className={isDarkMode ? 'text-white' : 'text-gray-700'}>{latestApp.name}</span>
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>类型:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : latestApp.type === 'game' ? '游戏' : '插件'}</span>
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>类型:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.type === 'app' ? '应用' : latestApp.type === 'miniprogram' ? '小程序' : latestApp.type === 'game' ? '游戏' : '插件'}</span>
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>平台:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.platform === 'web' ? 'Web' : latestApp.platform === 'mobile' ? '移动端' : '微信'}</span>
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>平台:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestApp.platform === 'web' ? 'Web' : latestApp.platform === 'mobile' ? '移动端' : '微信'}</span>
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>创建:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestApp.created_at)}</span>
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>创建:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestApp.created_at)}</span>
                     </div>
                     <div className={`leading-relaxed text-xs font-thin ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
                       }`}>
@@ -381,7 +379,7 @@ export default function Project() {
                         {latestApp.tags.slice(0, 3).map((tag, index) => (
                           <span
                             key={index}
-                            className={`px-2 py-1 text-xs rounded font-light ${isDarkMode
+                            className={`px-2 py-1 text-xs rounded font-blog ${isDarkMode
                                 ? 'bg-gray-700 text-gray-300'
                                 : 'bg-gray-100 text-gray-600'
                               }`}
@@ -391,8 +389,7 @@ export default function Project() {
                         ))}
                       </div>
                     )}
-                    <div className={`flex items-center gap-2 mt-3 ${isDarkMode ? 'text-[var(--code-green)]' : 'text-[#53b88f]'
-                      }`}>
+                    <div className={`flex items-center gap-2 mt-3 text-[var(--green2)]`}>
                       <ChevronRight size={14} />
                       <span>view project...</span>
                     </div>
@@ -405,7 +402,7 @@ export default function Project() {
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>状态:</span> 还没有发布任何应用...
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>状态:</span> 还没有发布任何应用...
                     </div>
                   </div>
                 )}
@@ -448,7 +445,7 @@ export default function Project() {
               <div className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                 <Palette size={14} />
-                <span>aigc.sh</span>
+                <span className="font-blog">aigc.sh</span>
               </div>
             </div>
 
@@ -457,9 +454,9 @@ export default function Project() {
               <div className="space-y-3">
                 <div className={`flex items-center gap-2 ${isDarkMode ? 'text-green-400' : 'text-[#53b88f]'
                   }`}>
-                  <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>$</span>
+                  <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>$</span>
                   <span className={isDarkMode ? 'text-blue-400' : 'text-[#3388ff]'}>python</span>
-                  <span className={isDarkMode ? 'text-purple-400' : 'text-[var(--primary)]'}>generate_artwork.py</span>
+                  <span className={isDarkMode ? 'text-green-400' : 'text-[var(--green1)]'}>generate_artwork.py</span>
                 </div>
 
                 {loading ? (
@@ -481,11 +478,11 @@ export default function Project() {
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>prompt:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestArtwork.title}</span>
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>prompt:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{latestArtwork.title}</span>
                     </div>
                     <div className={`text-xs font-light ${isDarkMode ? 'text-gray-500' : 'text-gray-500'
                       }`}>
-                      <span className={isDarkMode ? 'text-yellow-400' : 'text-[#fed336]'}>created:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestArtwork.created_at)}</span>
+                      <span className={isDarkMode ? 'text-[var(--primary-light)]' : 'text-[var(--primary)]'}>created:</span> <span className={isDarkMode ? 'text-white' : 'text-gray-600'}>{formatDate(latestArtwork.created_at)}</span>
                     </div>
                     {latestArtwork.images && latestArtwork.images.length > 0 ? (
                       <div className={`mt-3 p-2 rounded border ${isDarkMode
@@ -501,8 +498,7 @@ export default function Project() {
                         </div>
                       </div>
                     ) : null}
-                    <div className={`flex items-center gap-2 mt-3 ${isDarkMode ? 'text-[var(--code-green)]' : 'text-[#53b88f]'
-                      }`}>
+                    <div className={`flex items-center gap-2 mt-3 text-[var(--green2)]`}>
                       <ChevronRight size={14} />
                       <span>view gallery...</span>
                     </div>

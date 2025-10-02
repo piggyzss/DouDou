@@ -289,6 +289,7 @@ export default function AppCard({ app }: AppCardProps) {
     }
   }
 
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -345,7 +346,7 @@ export default function AppCard({ app }: AppCardProps) {
 
             {/* 状态标签 */}
             <div className="absolute top-2 left-2">
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}>
+              <span className={`px-2 py-1 text-xs font-blog rounded-full text-center flex items-center justify-center ${getStatusColor(app.status)}`}>
                 {getStatusLabel(app.status)}
               </span>
             </div>

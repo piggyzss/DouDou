@@ -382,10 +382,10 @@ export default function Update() {
                   >
                     <Rabbit
                       size={28}
-                      className="text-[var(--primary)] drop-shadow-sm"
+                      className="text-[var(--primary-dark)] drop-shadow-sm"
                       fill="white"
                       stroke="currentColor"
-                      strokeWidth={1.5}
+                      strokeWidth={1}
                     />
                   </motion.div>
                 </motion.div>

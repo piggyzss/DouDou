@@ -16,13 +16,26 @@ interface ExperienceCard {
 }
 
 export default function About() {
+  // 颜色映射函数 - 将CSS变量转换为实际颜色值
+  const getCardColor = (colorVar: string) => {
+    const colorMap: { [key: string]: string } = {
+      'primary': '#6747ce',
+      'secondary': '#FADCDA', 
+      'blue': '#3388ff',
+      'yellow': '#fed336',
+      'green1': '#8ccc79',
+      'green2': '#53b88f'
+    }
+    return colorMap[colorVar] || colorVar
+  }
+
   const [cards, setCards] = useState<ExperienceCard[]>([
     {
       id: 1,
       title: "前端开发工程师",
       company: "某科技公司",
       description: "负责公司核心产品的前端开发，使用React、TypeScript等技术栈",
-      color: "#6747ce",
+      color: "primary",
       x: 35,
       y: -15,
       rotation: -8
@@ -32,7 +45,7 @@ export default function About() {
       title: "UI/UX设计师",
       company: "设计工作室",
       description: "专注于用户体验设计，创造直观易用的数字产品界面",
-      color: "#fdded9",
+      color: "secondary",
       x: 72,
       y: 10,
       rotation: 12
@@ -42,7 +55,7 @@ export default function About() {
       title: "全栈开发者",
       company: "创业公司",
       description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
-      color: "#3388ff",
+      color: "blue",
       x: 5,
       y: 15,
       rotation: -5
@@ -52,7 +65,7 @@ export default function About() {
       title: "技术顾问",
       company: "咨询公司",
       description: "为客户提供技术解决方案，优化业务流程和系统架构",
-      color: "#fed336",
+      color: "yellow",
       x: 52,
       y: 32,
       rotation: 10
@@ -62,7 +75,7 @@ export default function About() {
       title: "产品经理",
       company: "互联网公司",
       description: "负责产品规划和管理，协调开发团队实现产品目标",
-      color: "#8ccc79",
+      color: "green1",
       x: 17,
       y: 60,
       rotation: -3
@@ -72,7 +85,7 @@ export default function About() {
       title: "软件工程师",
       company: "传统企业",
       description: "参与企业级软件开发，积累丰富的项目经验",
-      color: "#53b88f",
+      color: "green2",
       x: 46,
       y: 75,
       rotation: 7
@@ -311,7 +324,7 @@ export default function About() {
                   <div
                     className="w-40 h-40 p-4 rounded hover:shadow-lg transition-all duration-300 blog-body-text font-body group"
                     style={{
-                      backgroundColor: `${card.color}95`,
+                      backgroundColor: `${getCardColor(card.color)}95`,
                       backdropFilter: 'blur(10px)'
                     }}
                   >
