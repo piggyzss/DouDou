@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { X, Terminal, Wifi, Link, Rabbit, Command } from 'lucide-react'
+import { X, Terminal, Wifi, Link, Bot, Command } from 'lucide-react'
 import { useTerminalTheme } from '../hooks/useTerminalTheme'
 import { useAgent } from '../hooks/useAgent'
 
@@ -55,7 +55,8 @@ export default function AgentTerminal() {
       const isInMessagesArea = target.closest('.terminal-messages-container')
       
       // 如果用户正在选择文本，不重新聚焦
-      if (window.getSelection()?.toString().length > 0) {
+      const selection = window.getSelection()
+      if (selection && selection.toString().length > 0) {
         return
       }
       
@@ -317,7 +318,7 @@ export default function AgentTerminal() {
             color: 'var(--terminal-text)'
           }}
         >
-          <Terminal size={16} />
+          <Terminal size={16} strokeWidth={1.5} />
           <span className="text-sm font-medium font-blog">AI Agent</span>
           {agentState.status === 'processing' && (
             <div className="w-2 h-2 bg-terminal-accent rounded-full animate-pulse"></div>
@@ -353,7 +354,7 @@ export default function AgentTerminal() {
             <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
           </div>
           <div className="flex items-center space-x-2">
-            <Terminal size={16} className="text-terminal-accent" />
+            <Terminal size={16} strokeWidth={1.5} className="text-terminal-accent" />
             <span className="text-sm font-medium font-blog" style={{ color: 'var(--terminal-text)' }}>
               AI News Agent v1.0
             </span>
@@ -364,19 +365,20 @@ export default function AgentTerminal() {
           {/* 状态显示 */}
           <div className="flex items-center space-x-2 text-xs font-blog" style={{ color: 'var(--terminal-muted)' }}>
             <div className="flex items-center space-x-1">
-              <Rabbit 
-                size={16} 
+              <Bot 
+                size={14} 
+                strokeWidth={1.5}
                 className={`${
                   agentState.status === 'idle' ? 'text-green-500' : 
                   agentState.status === 'processing' ? 'text-yellow-500 animate-pulse' : 
                   'text-red-500'
-                }`} 
+                } flex-shrink-0`} 
               />
               <span className="capitalize">{agentState.status}</span>
             </div>
             <span>|</span>
             <div className="flex items-center space-x-1">
-              <Wifi size={12} />
+              <Wifi size={12} strokeWidth={1.5} className="flex-shrink-0" />
               <span>Online</span>
             </div>
             <span>|</span>
@@ -390,14 +392,14 @@ export default function AgentTerminal() {
               className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
               title={isSidebarOpen ? "Hide Commands" : "Show Commands"}
             >
-              <Command size={16} style={{ color: 'var(--terminal-muted)' }} />
+              <Command size={16} strokeWidth={1.5} style={{ color: 'var(--terminal-muted)' }} />
             </button>
             <button
               onClick={() => setIsMinimized(true)}
               className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
               title="Minimize"
             >
-              <X size={16} style={{ color: 'var(--terminal-muted)' }} />
+              <X size={16} strokeWidth={1.5} style={{ color: 'var(--terminal-muted)' }} />
             </button>
           </div>
         </div>

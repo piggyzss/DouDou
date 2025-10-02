@@ -39,7 +39,7 @@ export default function Skills() {
   }, [isImagePreviewOpen])
   
   return (
-    <section className="pt-12 pb-20">
+    <section className="pt-16 pb-32">
       <div className="max-w-7xl mx-auto">
 
         {/* 新的动画标题区域 */}

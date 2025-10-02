@@ -150,7 +150,7 @@ export default function Project() {
   }
 
   return (
-    <section className="pt-12 pb-20">
+    <section className="pt-16 pb-40">
       <div className="max-w-7xl mx-auto">
 
         {/* 新的动画标题区域 */}
@@ -204,8 +204,8 @@ export default function Project() {
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: false }}
             className={`${isDarkMode
-                ? 'bg-gray-900 border-gray-700 hover:border-green-400'
-                : 'bg-white border-gray-200 hover:border-blue-400'
+                ? 'bg-gray-900 border-gray-700'
+                : 'bg-white border-gray-200'
               } border rounded overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300`}
             onClick={() => router.push('/blog')}
             onKeyDown={(e) => {
@@ -300,8 +300,8 @@ export default function Project() {
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: false }}
             className={`${isDarkMode
-                ? 'bg-gray-900 border-gray-700 hover:border-blue-400'
-                : 'bg-white border-gray-200 hover:border-blue-500'
+                ? 'bg-gray-900 border-gray-700'
+                : 'bg-white border-gray-200'
               } border rounded overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300`}
             onClick={() => router.push('/apps')}
             onKeyDown={(e) => {
@@ -420,8 +420,8 @@ export default function Project() {
             transition={{ duration: 0.8, delay: 0.6 }}
             viewport={{ once: false }}
             className={`${isDarkMode
-                ? 'bg-gray-900 border-gray-700 hover:border-purple-400'
-                : 'bg-white border-gray-200 hover:border-purple-500'
+                ? 'bg-gray-900 border-gray-700'
+                : 'bg-white border-gray-200'
               } border rounded overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300`}
             onClick={() => router.push('/aigc')}
             onKeyDown={(e) => {

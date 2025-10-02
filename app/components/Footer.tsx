@@ -1,21 +1,21 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Github, Twitter, Linkedin, Mail } from 'lucide-react'
+import { Github, Rss, Linkedin, Mail } from 'lucide-react'
 
 const socialLinks = [
-  { name: 'GitHub', icon: Github, href: 'https://github.com/yourusername' },
-  { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/yourusername' },
+  { name: 'GitHub', icon: Github, href: 'https://github.com/piggyzss' },
+  { name: 'RSS订阅', icon: Rss, href: '/api/rss' },
   { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/in/yourusername' },
-  { name: 'Email', icon: Mail, href: 'mailto:your.email@example.com' },
+  { name: 'Email', icon: Mail, href: 'mailto:doudou.lookstar@gmail.com' },
 ]
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-bg-secondary dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-bg-secondary dark:bg-gray-900 mt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* 个人信息 */}
           <div className="space-y-4">
@@ -66,7 +66,11 @@ export default function Footer() {
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <social.icon size={20} />
+                  {social.name === 'RSS订阅' ? (
+                    <social.icon size={20} strokeWidth={2.5} />
+                  ) : (
+                    <social.icon size={20} />
+                  )}
                 </motion.a>
               ))}
             </div>

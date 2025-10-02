@@ -5,6 +5,83 @@ import { PenSquare, Calendar, Tag, Eye, Edit, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LikeToggle from '../components/LikeToggle'
 
+// 博客文章图片组件，带有加载后推开动画
+const BlogPostImage = ({ 
+  post, 
+  onImageLoad, 
+  children 
+}: { 
+  post: any, 
+  onImageLoad: (loaded: boolean) => void,
+  children: React.ReactNode
+}) => {
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [contentPushed, setContentPushed] = useState(false)
+
+  const handleImageLoad = () => {
+    setImageLoaded(true)
+    onImageLoad(true)
+    // 图片开始滑入的同时，文案也开始被推动
+    setTimeout(() => {
+      setContentPushed(true)
+    }, 50)
+  }
+
+  return (
+    <>
+      {/* 左侧封面图片 */}
+      {post.cover_url ? (
+        <motion.div 
+          className="w-42 h-full flex-shrink-0 rounded overflow-hidden relative z-10"
+          initial={{ x: -200, opacity: 0 }} // 从左侧完全隐藏开始
+          animate={{ 
+            x: imageLoaded ? 0 : -200, // 图片加载后滑入
+            opacity: imageLoaded ? 1 : 0
+          }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <img
+            src={post.cover_url.startsWith('/') ? post.cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`}
+            alt={post.title}
+            className="w-full h-full object-cover"
+            onLoad={handleImageLoad}
+            onError={() => {
+              setImageLoaded(true)
+              onImageLoad(false)
+            }}
+          />
+        </motion.div>
+      ) : (
+        <motion.div 
+          className="w-42 h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center rounded relative z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <PenSquare className="text-gray-400" size={48} />
+        </motion.div>
+      )}
+
+      {/* 右侧内容 */}
+      <motion.div 
+        className="flex-1 pl-6 flex flex-col justify-between"
+        initial={{ x: -120, opacity: 0.2 }} // 初始位置向左偏移，与图片推进距离相关
+        animate={{ 
+          x: contentPushed ? 0 : -120, // 被推开到正确位置
+          opacity: contentPushed ? 1 : 0.2
+        }}
+        transition={{ 
+          duration: 0.8, // 与图片同步
+          ease: [0.25, 0.46, 0.45, 0.94], // 使用相同的缓动函数
+          delay: 0.05 // 极小的延迟，创造被推动的感觉
+        }}
+      >
+        {children}
+      </motion.div>
+    </>
+  )
+}
+
 // 日期格式化函数
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -127,25 +204,14 @@ export default function BlogPage() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="group relative"
                 >
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 p-4">
-                    <div className="flex h-56">
-                      {/* 左侧封面图片 - 3:4比例 */}
-                      {post.cover_url ? (
-                        <div className="w-42 h-full flex-shrink-0 rounded overflow-hidden">
-                          <img
-                            src={post.cover_url.startsWith('/') ? post.cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`}
-                            alt={post.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-42 h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center rounded">
-                          <PenSquare className="text-gray-400" size={48} />
-                        </div>
-                      )}
-
-                      {/* 右侧内容 */}
-                      <div className="flex-1 pl-6 flex flex-col justify-between">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-500 p-4 overflow-hidden">
+                    <div className="flex h-56 relative">
+                      <BlogPostImage 
+                        post={post} 
+                        onImageLoad={(loaded) => {
+                          // 图片加载完成的回调
+                        }}
+                      >
                         {/* 标题和操作按钮 */}
                         <div className="flex items-center gap-3 mb-4">
                           <h2 className="text-xl font-bold text-text-primary font-heading group-hover:text-primary transition-colors line-clamp-2 flex-1">
@@ -216,7 +282,7 @@ export default function BlogPage() {
                             {generateExcerpt(post.excerpt)}
                           </p>
                         )}
-                      </div>
+                      </BlogPostImage>
                     </div>
                   </div>
                 </motion.article>

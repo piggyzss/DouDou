@@ -884,4 +884,34 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 .terminal-messages-container ::-moz-selection {
   background-color: rgba(103, 71, 206, 0.2) !important;
   color: var(--terminal-text) !important;
+}
+
+/* 头像专用样式 - 确保清晰度和无边框 */
+.avatar-container {
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+.avatar-image {
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.avatar-image:hover,
+.avatar-image:focus,
+.avatar-image:active {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 } 

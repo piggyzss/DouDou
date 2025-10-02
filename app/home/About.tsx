@@ -2,7 +2,7 @@
 
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { useState } from 'react'
-import { User, Award, Heart, Github, Linkedin, Twitter, Mail, MapPin, Calendar, PawPrint, Carrot } from 'lucide-react'
+import { User, Award, Heart, Github, Linkedin, Rss, Mail, MapPin, Calendar, PawPrint, Carrot } from 'lucide-react'
 
 interface ExperienceCard {
   id: number
@@ -95,7 +95,7 @@ export default function About() {
   }
 
   return (
-    <section id="about" className="py-24">
+    <section id="about" className="pt-20 pb-32">
       <div className="max-w-7xl mx-auto">
         {/* 新的动画标题区域 */}
         <motion.div
@@ -155,7 +155,9 @@ export default function About() {
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Links</h3>
               <div className="flex space-x-4">
                 <motion.a
-                  href="#"
+                  href="https://github.com/piggyzss"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
@@ -171,15 +173,18 @@ export default function About() {
                   <Linkedin size={20} />
                 </motion.a>
                 <motion.a
-                  href="#"
+                  href="/api/rss"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
+                  title="订阅RSS"
                 >
-                  <Twitter size={20} />
+                  <Rss size={20} strokeWidth={2.5} />
                 </motion.a>
                 <motion.a
-                  href="#"
+                  href="mailto:doudou.lookstar@gmail.com"
                   className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
@@ -193,7 +198,7 @@ export default function About() {
             <div>
               <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                {['React', 'TypeScript', 'Vue.js', 'Node.js', 'UI/UX Design', 'AI/ML', 'Figma', 'Next.js'].map((skill, index) => (
+                {['React', 'TypeScript', 'Vue.js', 'Node.js', 'Python', 'Webpack', 'UI/UX Design', 'AI Coding'].map((skill, index) => (
                   <span
                     key={skill}
                     className="px-3 py-0.5 border border-gray-300 rounded text-xs blog-body-text hover:border-primary hover:text-primary transition-colors cursor-pointer"
@@ -237,13 +242,47 @@ export default function About() {
             {/* 头像区域 */}
             <div className="text-center mb-8 ml-4">
               <div className="relative w-52 h-52 mx-auto mb-6">
-                {/* 装饰性背景圆圈 */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded blur-sm"></div>
-                <div className="relative w-full h-full">
+                {/* 装饰性背景圆圈 - 移到后面避免影响头像 */}
+                <div className="absolute inset-2 bg-gradient-to-br from-primary/15 to-secondary/15 rounded-full -z-10"></div>
+                {/* 头像容器 */}
+                <div 
+                  className="avatar-container w-full h-full relative z-10"
+                  style={{
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: 'none',
+                    outline: 'none',
+                    boxShadow: 'none',
+                    transition: 'all 0.3s ease',
+                    transform: 'scale(1)',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
+                >
                   <img
                     src="/images/avatar.png"
                     alt="shanshan的头像"
-                    className="w-full h-full object-cover rounded shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                    className="avatar-image"
+                    style={{ 
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      border: 'none !important',
+                      outline: 'none !important',
+                      boxShadow: 'none !important',
+                      margin: '0 !important',
+                      padding: '0 !important',
+                      borderRadius: '0 !important',
+                      display: 'block',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden'
+                    }}
                   />
                 </div>
               </div>
