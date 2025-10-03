@@ -91,7 +91,7 @@ jobs:
         
       # 上传代码质量报告
       - name: 上传质量报告
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: code-quality-reports
@@ -190,7 +190,7 @@ jobs:
       
       # 上传安全报告
       - name: 上传安全报告
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-reports
@@ -227,7 +227,7 @@ jobs:
         continue-on-error: true
         
       - name: 上传许可证报告
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license-report
           path: license-report.json
@@ -307,7 +307,7 @@ jobs:
           fi
           
       - name: 上传汇总报告
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: quality-summary
           path: quality-summary.md
