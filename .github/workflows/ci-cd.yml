@@ -23,7 +23,7 @@ jobs:
     steps:
       # 代码检出
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       # 环境设置 + 缓存恢复
       - name: 设置 Node.js ${{ matrix.node-version }}
@@ -94,7 +94,7 @@ jobs:
     steps:
       # 代码检出
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       # Python 环境设置
       - name: 设置 Python ${{ matrix.python-version }}
@@ -162,7 +162,7 @@ jobs:
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -216,7 +216,7 @@ jobs:
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -290,7 +290,7 @@ jobs:
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
