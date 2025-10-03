@@ -54,7 +54,7 @@
     "cos-nodejs-sdk-v5": "^2.15.4",
     "date-fns": "^2.30.0",
     "dotenv": "^17.2.1",
-    "framer-motion": "^10.16.4",
+    "framer-motion": "^12.23.22",
     "gray-matter": "^4.0.3",
     "highcharts": "^12.4.0",
     "highcharts-react-official": "^3.2.2",
