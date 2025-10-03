@@ -1,0 +1,106 @@
+# GitHub Issue 模板 - Bug 报告
+
+name: 🐛 Bug 报告
+description: 创建 Bug 报告帮助我们改进项目
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees:
+  - uqland
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您报告问题！请填写以下信息帮助我们快速定位和修复问题。
+
+  - type: input
+    id: contact
+    attributes:
+      label: 联系方式
+      description: 如何联系您？
+      placeholder: ex. email@example.com
+    validations:
+      required: false
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 请详细描述遇到的问题
+      placeholder: 告诉我们发生了什么！
+      value: "发生了一个 Bug！"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤
+      description: 如何重现这个问题？
+      placeholder: |
+        1. 访问页面 '...'
+        2. 点击按钮 '...'
+        3. 滚动到 '...'
+        4. 出现错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 期望行为
+      description: 您期望发生什么？
+      placeholder: 应该显示...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 如果适用，请添加截图来帮助解释您的问题
+      placeholder: 拖拽图片到这里...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: 浏览器
+      description: 在哪些浏览器上出现问题？
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Opera
+        - 其他
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息
+      description: |
+        请提供环境相关信息:
+        - 操作系统: [例如 iOS]
+        - 浏览器版本: [例如 Chrome 96]
+        - 设备: [例如 iPhone 12]
+      value: |
+        - OS:
+        - Browser:
+        - Version:
+        - Device:
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: |
+        在这里添加有关问题的任何其他上下文信息。
+        
+        提示：您可以通过拖拽文件到这个区域来附加日志文件。
+    validations:
+      required: false

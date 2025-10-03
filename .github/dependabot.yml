@@ -1,0 +1,48 @@
+# Dependabot 配置
+# 自动更新依赖包
+
+version: 2
+updates:
+  # 前端依赖 (npm)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "uqland"
+    assignees:
+      - "uqland"
+    commit-message:
+      prefix: "npm"
+      include: "scope"
+    
+  # 后端依赖 (pip)
+  - package-ecosystem: "pip"
+    directory: "/agent-backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "uqland"
+    assignees:
+      - "uqland"
+    commit-message:
+      prefix: "pip"
+      include: "scope"
+      
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    reviewers:
+      - "uqland"
+    assignees:
+      - "uqland"
+    commit-message:
+      prefix: "actions"

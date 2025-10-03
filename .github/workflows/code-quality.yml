@@ -1,0 +1,338 @@
+name: Code Quality & Security
+# 1. 实时触发 (与主工作流并行)
+#    - Push 到 main/develop
+#    - PR 创建/更新
+
+# 2. 定时执行 (独立运行)
+#    - 每日 UTC 02:00
+#    - 深度安全扫描
+#    - 依赖漏洞检查
+
+# 3. 手动触发 (workflow_dispatch)
+#    - 可通过 GitHub UI 手动执行
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # 每天 UTC 2:00 运行安全扫描
+    - cron: '0 2 * * *'
+
+jobs:
+  # 代码质量检查
+  code-quality:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史用于分析
+          
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'agent-backend/requirements.txt'
+      
+      - name: 安装前端依赖
+        run: npm ci
+        
+      - name: 安装后端依赖
+        run: |
+          cd agent-backend
+          pip install -r requirements.txt
+          pip install bandit safety semgrep
+      
+      # 前端代码质量
+      - name: ESLint 检查
+        run: |
+          npm run lint -- --format json --output-file eslint-report.json || true
+          
+      - name: TypeScript 编译检查
+        run: |
+          npx tsc --noEmit --skipLibCheck
+          
+      - name: Prettier 格式检查
+        run: |
+          npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,md}"
+      
+      # 后端代码质量
+      - name: Python 代码格式检查
+        run: |
+          cd agent-backend
+          black --check --diff .
+          
+      - name: Python 代码规范检查
+        run: |
+          cd agent-backend
+          flake8 . --format=json --output-file=../flake8-report.json || true
+          
+      - name: Python 类型检查
+        run: |
+          cd agent-backend
+          mypy . --strict || true
+      
+      # 代码复杂度分析
+      - name: 前端复杂度分析
+        run: |
+          npx eslint app/ lib/ --ext .ts,.tsx -f json -o complexity-report.json || true
+        continue-on-error: true
+        
+      # 上传代码质量报告
+      - name: 上传质量报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: code-quality-reports
+          path: |
+            eslint-report.json
+            flake8-report.json
+            complexity-report.json
+          retention-days: 30
+
+  # 安全漏洞扫描
+  security-scan:
+    name: 安全漏洞扫描
+    runs-on: ubuntu-latest
+    
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+      
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'agent-backend/requirements.txt'
+      
+      - name: 安装依赖
+        run: |
+          npm ci
+          cd agent-backend
+          pip install -r requirements.txt
+          pip install bandit safety pip-audit semgrep
+      
+      # 前端依赖漏洞扫描
+      - name: NPM 安全审计
+        run: |
+          npm audit --audit-level=moderate --json > npm-audit.json || true
+          
+      # 后端依赖漏洞扫描
+      - name: Python 依赖安全检查
+        run: |
+          cd agent-backend
+          safety check --json --output ../safety-report.json || true
+          pip-audit --format=json --output=../pip-audit.json || true
+      
+      # 代码安全扫描
+      - name: Bandit 安全扫描
+        run: |
+          cd agent-backend
+          bandit -r . -f json -o ../bandit-report.json || true
+          
+      # Semgrep 安全扫描
+      - name: Semgrep 扫描
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+        continue-on-error: true
+        
+      # CodeQL 分析
+      - name: 初始化 CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript, python
+          queries: security-and-quality
+          
+      - name: 自动构建
+        uses: github/codeql-action/autobuild@v2
+        
+      - name: 执行 CodeQL 分析
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:javascript,python"
+      
+      # 密钥泄露检查
+      - name: 检查密钥泄露
+        run: |
+          # 使用 gitleaks 检查密钥泄露
+          docker run --rm -v $(pwd):/repo zricethezav/gitleaks:latest detect \
+            --source /repo \
+            --report-format json \
+            --report-path /repo/gitleaks-report.json || true
+        continue-on-error: true
+      
+      # 上传安全报告
+      - name: 上传安全报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            npm-audit.json
+            safety-report.json
+            pip-audit.json
+            bandit-report.json
+            gitleaks-report.json
+          retention-days: 90
+
+  # 许可证合规检查
+  license-check:
+    name: 许可证合规检查
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 安装依赖
+        run: npm ci
+        
+      - name: 许可证检查
+        run: |
+          npx license-checker --json --out license-report.json
+          npx license-checker --summary
+        continue-on-error: true
+        
+      - name: 上传许可证报告
+        uses: actions/upload-artifact@v3
+        with:
+          name: license-report
+          path: license-report.json
+          retention-days: 30
+
+  # 性能基线测试
+  performance-baseline:
+    name: 性能基线测试
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 安装依赖
+        run: |
+          npm ci
+          npm install -g lighthouse-ci
+          
+      - name: 构建应用
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          
+      - name: 启动应用
+        run: |
+          npm start &
+          sleep 10
+        
+      - name: Lighthouse CI
+        run: |
+          lhci autorun --config=.lighthouserc.json || true
+        continue-on-error: true
+
+  # 汇总报告
+  quality-summary:
+    name: 质量汇总报告
+    needs: [code-quality, security-scan, license-check]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 下载所有报告
+        uses: actions/download-artifact@v3
+        
+      - name: 生成汇总报告
+        run: |
+          echo "# 代码质量与安全扫描报告" > quality-summary.md
+          echo "" >> quality-summary.md
+          echo "**扫描时间**: $(date)" >> quality-summary.md
+          echo "**分支**: ${{ github.ref_name }}" >> quality-summary.md
+          echo "**提交**: ${{ github.sha }}" >> quality-summary.md
+          echo "" >> quality-summary.md
+          
+          echo "## 扫描结果" >> quality-summary.md
+          echo "- 代码质量检查: ${{ needs.code-quality.result }}" >> quality-summary.md
+          echo "- 安全漏洞扫描: ${{ needs.security-scan.result }}" >> quality-summary.md
+          echo "- 许可证合规: ${{ needs.license-check.result }}" >> quality-summary.md
+          echo "" >> quality-summary.md
+          
+          # 如果有报告文件，添加详细信息
+          if [ -f "code-quality-reports/eslint-report.json" ]; then
+            echo "## ESLint 检查结果" >> quality-summary.md
+            # 解析并格式化 eslint 报告
+          fi
+          
+          if [ -f "security-reports/npm-audit.json" ]; then
+            echo "## NPM 安全审计结果" >> quality-summary.md
+            # 解析并格式化 npm audit 报告
+          fi
+          
+      - name: 上传汇总报告
+        uses: actions/upload-artifact@v3
+        with:
+          name: quality-summary
+          path: quality-summary.md
+          retention-days: 90
+          
+      - name: PR 评论
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = '# 🔍 代码质量与安全扫描结果\n\n';
+            
+            // 添加扫描结果
+            summary += `| 检查项目 | 状态 |\n`;
+            summary += `|---------|------|\n`;
+            summary += `| 代码质量检查 | ${{ needs.code-quality.result == 'success' ? '✅ 通过' : '❌ 失败' }} |\n`;
+            summary += `| 安全漏洞扫描 | ${{ needs.security-scan.result == 'success' ? '✅ 通过' : '❌ 失败' }} |\n`;
+            summary += `| 许可证合规 | ${{ needs.license-check.result == 'success' ? '✅ 通过' : '❌ 失败' }} |\n`;
+            
+            summary += '\n📊 详细报告请查看 [Actions 页面](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

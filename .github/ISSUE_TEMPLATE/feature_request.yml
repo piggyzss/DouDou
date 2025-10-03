@@ -1,0 +1,87 @@
+# GitHub Issue 模板 - 功能请求
+
+name: 🚀 功能请求
+description: 为这个项目建议一个想法
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees:
+  - uqland
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您的建议！请填写以下信息帮助我们了解您的需求。
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 功能描述
+      description: 清楚简洁地描述您想要什么功能
+      placeholder: 我希望能够...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: 问题陈述
+      description: 您的功能请求是否与问题相关？请描述
+      placeholder: 我在使用时遇到的问题是...
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 建议的解决方案
+      description: 清楚简洁地描述您希望发生什么
+      placeholder: 我认为可以通过...来解决
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案
+      description: 清楚简洁地描述您考虑过的任何备选解决方案或功能
+      placeholder: 或者我们也可以...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 优先级
+      description: 这个功能对您有多重要？
+      options:
+        - 低 - 有空时实现
+        - 中 - 希望尽快实现
+        - 高 - 急需这个功能
+        - 紧急 - 阻塞了我的工作
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: 实现意愿
+      description: 您是否愿意帮助实现这个功能？
+      options:
+        - label: 我愿意提交 PR 来实现这个功能
+          required: false
+        - label: 我可以帮助测试这个功能
+          required: false
+        - label: 我可以提供设计或用户体验建议
+          required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息
+      description: |
+        在这里添加有关功能请求的任何其他上下文信息或截图。
+        
+        提示：您可以通过拖拽文件到这个区域来附加设计稿或参考文件。
+    validations:
+      required: false

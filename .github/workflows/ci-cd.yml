@@ -1,0 +1,347 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # 前端测试与构建
+  frontend-test:
+    name: 前端测试
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
+    steps:
+      # 代码检出
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      # 环境设置 + 缓存恢复
+      - name: 设置 Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      # 依赖安装 (npm ci)
+      - name: 安装依赖
+        run: |
+          npm ci
+          npm run preflight
+      
+      # ESLint 检查
+      - name: 代码规范检查
+        run: npm run lint
+        
+      # TypeScript 编译检查
+      - name: TypeScript 类型检查
+        run: npx tsc --noEmit
+      
+      # Jest 测试套件
+      - name: 运行测试套件
+        run: |
+          npm run test:ci
+          npm run test:coverage
+      
+      # 覆盖率上传
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage-${{ matrix.node-version }}
+          fail_ci_if_error: false
+      
+      # Next.js 构建验证
+      - name: 构建应用
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: '--max-old-space-size=4096'
+      
+      - name: 缓存构建产物
+        uses: actions/cache@v3
+        if: matrix.node-version == '20'
+        with:
+          path: .next
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+
+  # 后端测试与构建
+  backend-test:
+    name: 后端测试
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    
+    defaults:
+      run:
+        working-directory: ./agent-backend
+    
+    steps:
+      # 代码检出
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      # Python 环境设置
+      - name: 设置 Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'agent-backend/requirements.txt'
+      
+      # pip 依赖安装
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov black flake8 mypy
+      
+      # Black/Flake8 检查
+      - name: 代码格式检查
+        run: |
+          black --check --diff .
+          flake8 .
+      
+      # MyPy 类型检查
+      - name: 类型检查
+        run: mypy . || true  # 类型检查警告不阻塞流程
+      
+      # Pytest 测试
+      - name: 运行测试
+        run: |
+          pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term
+      
+      # 覆盖率上传
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./agent-backend/coverage.xml
+          flags: backend
+          name: backend-coverage-${{ matrix.python-version }}
+          fail_ci_if_error: false
+      
+      # Docker 镜像构建
+      - name: 构建 Docker 镜像
+        if: matrix.python-version == '3.11'
+        run: |
+          docker build -t doudou-backend:${{ github.sha }} .
+          docker build -t doudou-backend:latest .
+
+      # 容器健康检查  
+      - name: 测试 Docker 镜像
+        if: matrix.python-version == '3.11'
+        run: |
+          # 启动容器进行健康检查
+          docker run -d --name test-container -p 8000:8000 doudou-backend:latest
+          sleep 10
+          # 基本健康检查
+          curl -f http://localhost:8000/health || exit 1
+          docker stop test-container
+          docker rm test-container
+
+  # 安全扫描
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'agent-backend/requirements.txt'
+      
+      - name: 安装依赖
+        run: |
+          npm ci
+          cd agent-backend
+          pip install -r requirements.txt
+          pip install safety pip-audit
+      
+      - name: 前端安全审计
+        run: |
+          npm audit --audit-level=moderate
+        continue-on-error: true
+        
+      - name: 后端安全审计
+        run: |
+          cd agent-backend
+          safety check
+          pip-audit
+        continue-on-error: true
+        
+      - name: CodeQL 分析
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript, python
+          queries: security-and-quality
+        continue-on-error: true
+
+  # 部署到生产环境 仅 main 分支
+  deploy-production:
+    name: 生产环境部署
+    needs: [frontend-test, backend-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: production
+      url: https://doudou.vercel.app
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 恢复构建缓存
+        uses: actions/cache@v3
+        with:
+          path: .next
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+      
+      - name: 部署前端到 Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+        
+      - name: 部署后端到 Railway
+        run: |
+          # 安装 Railway CLI
+          curl -fsSL https://railway.app/install.sh | sh
+          
+          # 部署到 Railway
+          cd agent-backend
+          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+          railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          
+      - name: 等待部署完成
+        run: |
+          echo "等待部署服务启动..."
+          sleep 60
+          
+      - name: 前端健康检查
+        run: |
+          echo "检查前端部署状态..."
+          curl -f "${{ steps.vercel-deploy.outputs.preview-url }}" || exit 1
+          echo "前端部署成功: ${{ steps.vercel-deploy.outputs.preview-url }}"
+          
+      - name: 后端健康检查
+        run: |
+          echo "检查后端部署状态..."
+          # Railway URL 通常需要从环境变量获取
+          if [ -n "${{ secrets.RAILWAY_APP_URL }}" ]; then
+            curl -f "${{ secrets.RAILWAY_APP_URL }}/health" || exit 1
+            echo "后端部署成功: ${{ secrets.RAILWAY_APP_URL }}"
+          else
+            echo "Railway URL 未配置，跳过健康检查"
+          fi
+
+  # 部署到开发环境 仅 develop 分支 - 暂时没有开发环境
+  deploy-development:
+    name: 开发环境部署
+    needs: [frontend-test, backend-test]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: development
+      url: https://doudou-dev.vercel.app
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 部署前端到 Vercel (预览)
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./
+          
+      - name: 部署后端到 Railway (开发)
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh
+          cd agent-backend
+          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+          railway up --service ${{ secrets.RAILWAY_DEV_SERVICE_ID }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  # 通知
+  notify:
+    name: 通知
+    needs: [deploy-production, deploy-development]
+    if: always() && (needs.deploy-production.result != 'skipped' || needs.deploy-development.result != 'skipped')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 通知部署结果
+        uses: 8398a7/action-slack@v3
+        if: always() && secrets.SLACK_WEBHOOK != ''
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            🚀 DouDou 项目部署完成
+            
+            **分支**: ${{ github.ref_name }}
+            **提交**: ${{ github.sha }}
+            **状态**: ${{ job.status }}
+            **环境**: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Development' }}
+            
+            **前端**: ${{ needs.deploy-production.result || needs.deploy-development.result }}
+            **后端**: ${{ needs.deploy-production.result || needs.deploy-development.result }}
+            
+            查看详情: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
