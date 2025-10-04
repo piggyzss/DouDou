@@ -237,9 +237,9 @@ jobs:
         uses: amondnet/vercel-action@v25
         id: vercel-deploy
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-token: PG2AyYGe3VGpVMiFtnZnP0o4
+          vercel-org-id: shanshans-projects-24790134
+          vercel-project-id: prj_BlcQkwwZ6y7T6RwGopTpRrCmFh2q
           vercel-args: '--prod'
           working-directory: ./
         

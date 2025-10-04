@@ -87,6 +87,8 @@ Slack 集成:
 └── 添加到 SLACK_WEBHOOK secret
 ```
 
+ps: 引入CID/CD工作流后，需要关闭vercel自动部署
+
 ---
 
 ## 🔄 核心执行机制
