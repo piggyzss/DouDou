@@ -901,6 +901,3 @@ git push origin test-cicd
 
 ---
 
-**最后更新**: 2025年10月3日  
-**文档版本**: v1.0.0  
-**维护者**: uqland
