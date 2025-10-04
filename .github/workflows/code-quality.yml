@@ -278,7 +278,7 @@ jobs:
     
     steps:
       - name: 下载所有报告
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v5
         
       - name: 生成汇总报告
         run: |
