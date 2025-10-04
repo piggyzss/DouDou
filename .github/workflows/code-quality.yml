@@ -28,7 +28,7 @@ jobs:
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # 获取完整历史用于分析
           
@@ -113,7 +113,7 @@ jobs:
       
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -209,7 +209,7 @@ jobs:
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -241,7 +241,7 @@ jobs:
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
