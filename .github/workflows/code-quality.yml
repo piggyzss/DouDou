@@ -165,16 +165,16 @@ jobs:
         
       # CodeQL 分析
       - name: 初始化 CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript, python
           queries: security-and-quality
           
       - name: 自动构建
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@v3
         
       - name: 执行 CodeQL 分析
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript,python"
       
