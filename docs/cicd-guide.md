@@ -100,7 +100,7 @@ graph LR
 
 #### 后端工作流程 (FastAPI)
 ```yaml
-代码提交 → Black格式化 → Flake8检查 → Pytest测试 → Docker构建 → Railway部署
+代码提交 → Black格式化 → Flake8检查 → Pytest测试 → Docker构建 → Vercel容器化部署
 ```
 
 ### 分支策略
@@ -122,8 +122,8 @@ graph LR
 |------|------|------|
 | **CI/CD 平台** | GitHub Actions | 免费、集成度高、生态丰富 |
 | **前端部署** | Vercel | 专为Next.js优化 |
-| **后端部署** | Railway | 简单、支持Docker |
-| **监控** | GitHub + Vercel + Railway | 原生集成 |
+| **后端部署** | Vercel容器化 | 统一平台、支持Docker |
+| **监控** | GitHub + Vercel | 原生集成 |
 
 ### 架构图
 
@@ -153,8 +153,9 @@ graph LR
         ┌──────────────────┼──────────────────┐
         │                  │                  │
    ┌─────────┐         ┌─────────┐       ┌─────────┐
-   │ Vercel  │         │Railway  │       │Monitor  │
-   │Deploy   │         │Deploy   │       │& Alert  │
+   │ Vercel  │         │Vercel   │       │Monitor  │
+   │Deploy   │         │Container│       │& Alert  │
+   │(Frontend)│        │(Backend)│       │         │
    └─────────┘         └─────────┘       └─────────┘
 ```
 
@@ -220,7 +221,7 @@ strategy:
 
 #### 部署流程
 - **条件部署** - 仅在main分支
-- **Railway集成** - CLI工具部署
+- **Vercel容器化集成** - 使用Vercel Docker部署
 - **健康检查** - 部署后验证
 
 ### 必需的环境变量
@@ -232,10 +233,8 @@ strategy:
 VERCEL_TOKEN=your_vercel_token
 VERCEL_ORG_ID=your_org_id  
 VERCEL_PROJECT_ID=your_project_id
-
-# Railway 部署配置
-RAILWAY_TOKEN=your_railway_token
-RAILWAY_SERVICE_ID=your_service_id
+VERCEL_BACKEND_PROJECT_ID=your_backend_project_id
+VERCEL_BACKEND_DEV_PROJECT_ID=your_dev_project_id
 
 # 数据库配置
 DATABASE_URL=your_database_connection_string
@@ -304,9 +303,9 @@ DISCORD_WEBHOOK=your_discord_webhook_url
 
 - name: 后端健康检查  
   run: |
-    echo "等待Railway部署完成..."
-    sleep 60
-    curl -f ${{ secrets.RAILWAY_URL }}/health || exit 1
+    echo "等待Vercel容器化部署完成..."
+    sleep 90
+    curl -f ${{ secrets.VERCEL_BACKEND_URL }}/health || exit 1
 ```
 
 #### 通知集成
@@ -333,7 +332,7 @@ DISCORD_WEBHOOK=your_discord_webhook_url
 
 #### 应用日志
 - **前端**: Vercel Analytics
-- **后端**: Railway日志系统
+- **后端**: Vercel容器化日志系统
 - **错误跟踪**: 集成Sentry (可选)
 
 ---
@@ -383,7 +382,7 @@ Timeout - Async callback was not invoked within the 10000ms timeout
 
 #### 3. 部署失败
 
-**症状**: Vercel/Railway部署失败
+**症状**: Vercel部署失败
 
 **诊断步骤**:
 ```bash
@@ -427,7 +426,7 @@ vercel --debug
     echo "NPM版本: $(npm --version)"
     echo "当前目录: $(pwd)"
     echo "文件列表: $(ls -la)"
-    env | grep -E "(NODE|NPM|VERCEL|RAILWAY)" | sort
+    env | grep -E "(NODE|NPM|VERCEL)" | sort
 ```
 
 #### 2. 条件调试
@@ -600,7 +599,7 @@ runs-on: ubuntu-latest  # 通常足够
 
 - **[GitHub Actions 文档](https://docs.github.com/en/actions)**
 - **[Vercel 部署指南](https://vercel.com/docs/deployments/overview)**
-- **[Railway 部署文档](https://docs.railway.app/)**
+- **[Vercel 容器化部署文档](https://vercel.com/docs/functions/serverless-functions/runtimes/python)**
 - **[Jest 测试指南](../testing-guide.md)**
 - **[部署指南](../deployment-guide.md)**
 
@@ -611,7 +610,7 @@ runs-on: ubuntu-latest  # 通常足够
 ### 准备阶段
 - [ ] 确认GitHub仓库权限
 - [ ] 准备Vercel部署令牌
-- [ ] 准备Railway部署令牌
+- [ ] 准备Vercel后端项目ID
 - [ ] 配置必要的环境变量
 
 ### 配置阶段

@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Vercel        │    │   Railway       │    │   腾讯云COS     │
+│   Vercel        │    │   Vercel        │    │   腾讯云COS     │
 │   (Next.js前端)  │────│   (Python后端)   │    │   (文件存储)     │
 │   • 静态页面     │    │   • Agent服务    │    │   • 图片资源     │
 │   • API包装层    │    │   • 插件系统     │    │   • 文件上传     │
@@ -12,7 +12,7 @@
         │                        │                        │
     用户访问                  后端逻辑                   资源存储
         │                        │                        │
-   域名DNS解析              Railway容器化              COS CDN加速
+   域名DNS解析              Vercel容器化              COS CDN加速
 ```
 
 # Part 1: 前端部署（Vercel）
@@ -325,94 +325,160 @@ Vercel Postgres: 在 Vercel 项目 Storage 中创建数据库后自动生成
 
 ---
 
-# Part 2: Agent后端部署（Railway）
+# Part 2: Agent后端部署（Vercel容器化）
 
-## 🚅 Railway部署Agent后端
+## 🐳 Vercel容器化部署Agent后端
 
-### 1. 准备Railway部署
+### 1. 准备Vercel容器化部署
 
-**1.1 注册Railway账号**
+**1.1 注册Vercel账号**
 ```bash
-# 访问 railway.app
+# 访问 vercel.com
 # 使用GitHub账号登录（推荐）
 # 连接你的GitHub仓库
 ```
 
-**1.2 安装Railway CLI（可选）**
+**1.2 安装Vercel CLI（可选）**
 ```bash
-npm install -g @railway/cli
-railway login
+npm install -g vercel
+vercel login
 ```
 
 ### 2. 项目配置
 
-**2.1 创建Railway配置文件**
-在 `agent-backend/` 目录下创建 `railway.toml`:
-```toml
-[build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile"
-
-[deploy]
-startCommand = "python -m app.main"
-healthcheckPath = "/health"
-healthcheckTimeout = 300
-
-[env]
-PORT = "8000"
+**2.1 创建Vercel配置文件**
+在 `agent-backend/` 目录下创建 `vercel.json`:
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "Dockerfile",
+      "use": "@vercel/docker",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "/health"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.11",
+    "PORT": "8000",
+    "ENVIRONMENT": "production",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "regions": ["hkg1"],
+  "functions": {
+    "app/main.py": {
+      "maxDuration": 300
+    }
+  }
+}
 ```
 
-**2.2 优化Dockerfile（生产环境）**
+**2.2 优化Dockerfile（多阶段构建）**
 更新 `agent-backend/Dockerfile`:
 ```dockerfile
-FROM python:3.11-slim
+# 多阶段构建优化
+FROM python:3.11-slim as builder
 
 # 设置工作目录
 WORKDIR /app
 
-# 安装系统依赖
+# 安装构建依赖
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制并安装Python依赖
+# 复制requirements文件
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt gunicorn
+
+# 创建虚拟环境并安装依赖
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt gunicorn
+
+# 生产阶段
+FROM python:3.11-slim as production
+
+# 设置工作目录
+WORKDIR /app
+
+# 安装运行时依赖
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# 从构建阶段复制虚拟环境
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # 复制应用代码
 COPY . .
 
-# 创建日志目录
-RUN mkdir -p logs
+# 创建非root用户以提高安全性
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    mkdir -p /app/logs && \
+    chown -R appuser:appuser /app/logs
 
-# 暴露端口
+# 切换到非root用户
+USER appuser
+
+# 暴露端口（Vercel 使用 PORT 环境变量）
 EXPOSE 8000
 
-# 生产环境启动命令
-CMD ["gunicorn", "app.main:app", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+
+# 环境变量
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000 \
+    PYTHONPATH=/app
+
+# 生产环境启动命令（优化Vercel容器化部署）
+CMD ["sh", "-c", "gunicorn app.main:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --timeout 300 --keep-alive 2 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile - --log-level info --preload"]
 ```
 
-### 3. Railway部署步骤
+### 3. Vercel部署步骤
 
 **3.1 通过Dashboard部署（推荐）**
-1. 登录 [railway.app](https://railway.app)
+1. 登录 [vercel.com](https://vercel.com)
 2. 点击 "New Project"
-3. 选择 "Deploy from GitHub repo"
+3. 选择 "Import Git Repository"
 4. 选择你的仓库
 5. 选择 `agent-backend` 目录作为根目录
-6. Railway会自动检测到Dockerfile并开始构建
+6. Vercel会自动检测到Dockerfile并开始构建
 
 **3.2 通过CLI部署**
 ```bash
 cd agent-backend
-railway login
-railway init
-railway up
+vercel --prod
 ```
 
 ### 4. 环境变量配置
 
-**在Railway Dashboard中添加环境变量:**
+**在Vercel Dashboard中添加环境变量:**
 ```bash
 # 应用配置
 DEBUG=false
@@ -423,27 +489,19 @@ PORT=8000
 # CORS配置（重要！）
 ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
-# Redis配置（Railway提供）
-# Railway会自动提供Redis服务，无需手动配置
+# Redis配置（可选）
+REDIS_URL=your_redis_connection_string
 
 # API Keys（可选）
 OPENAI_API_KEY=your_openai_key_here
 ```
 
-### 5. 添加Redis服务
-
-**在Railway项目中添加Redis:**
-1. 在Railway项目页面点击 "New Service"
-2. 选择 "Database" → "Redis"
-3. Railway会自动提供Redis连接信息
-4. 在Agent服务的环境变量中会自动注入 `REDIS_URL`
-
-### 6. 更新前端配置
+### 5. 更新前端配置
 
 **在Vercel环境变量中添加:**
 ```bash
 # Python后端服务地址
-PYTHON_BACKEND_URL=https://your-agent-backend-production.up.railway.app
+PYTHON_BACKEND_URL=https://your-agent-backend.vercel.app
 ```
 
 **更新Next.js API包装层:**
@@ -476,12 +534,12 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-### 7. 部署验证
+### 6. 部署验证
 
-**7.1 检查服务状态**
+**6.1 检查服务状态**
 ```bash
 # 访问健康检查端点
-curl https://your-agent-backend-production.up.railway.app/health
+curl https://your-agent-backend.vercel.app/health
 
 # 预期响应
 {
@@ -490,98 +548,431 @@ curl https://your-agent-backend-production.up.railway.app/health
 }
 ```
 
-**7.2 测试Agent功能**
+**6.2 测试Agent功能**
 ```bash
 # 测试Agent执行
-curl -X POST https://your-agent-backend-production.up.railway.app/api/agent/execute \
+curl -X POST https://your-agent-backend.vercel.app/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "/help", "params": {}}'
 ```
 
-**7.3 前端测试**
+**6.3 前端测试**
 访问 `https://yourdomain.com/agent` 并测试:
 - 输入 `/help` 查看可用命令
 - 输入 `/latest` 获取最新资讯
 - 检查响应时间和稳定性
 
-### 8. 监控和维护
+### 7. 监控和维护
 
-**8.1 Railway监控功能**
-- **实时日志**: Railway Dashboard 提供实时日志查看
-- **资源监控**: CPU、内存、网络使用情况
+**7.1 Vercel监控功能**
+- **实时日志**: Vercel Dashboard 提供实时日志查看
+- **性能监控**: 响应时间、错误率统计
 - **部署历史**: 查看历史部署记录
 - **自动重启**: 服务异常时自动重启
 
-**8.2 设置告警（可选）**
+**7.2 设置告警（可选）**
 ```bash
-# 在Railway中设置健康检查
+# 在Vercel中设置健康检查
 # 如果/health端点连续失败，会自动重启服务
 ```
 
-### 9. 成本优化建议
+### 8. 成本优化建议
 
-**9.1 资源优化**
+**8.1 资源优化**
 ```dockerfile
 # 在Dockerfile中优化资源使用
-CMD ["gunicorn", "app.main:app", 
-     "-w", "1",  # 单进程足够个人网站使用
-     "-k", "uvicorn.workers.UvicornWorker", 
-     "--bind", "0.0.0.0:8000",
-     "--max-requests", "100",  # 限制请求数
-     "--timeout", "30"]        # 设置超时
+CMD ["sh", "-c", "gunicorn app.main:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --timeout 300 --keep-alive 2 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile - --log-level info --preload"]
 ```
 
-**9.2 缓存策略**
+**8.2 缓存策略**
 ```python
 # 在config.py中优化缓存时间
 CACHE_TTL = 7200  # 增加缓存时间到2小时
 NEWS_CACHE_TTL = 3600  # 新闻缓存1小时
 ```
 
+### 9. GitHub和Vercel配置
+
+#### 9.1 GitHub配置
+
+**配置GitHub Secrets**
+
+在GitHub仓库中设置以下secrets：
+
+**步骤：**
+1. 进入你的GitHub仓库
+2. 点击 `Settings` → `Secrets and variables` → `Actions`
+3. 点击 `New repository secret` 添加以下secrets：
+
+```bash
+# Vercel配置 (必需)
+VERCEL_TOKEN=your_vercel_token
+VERCEL_ORG_ID=your_org_id
+VERCEL_PROJECT_ID=your_frontend_project_id
+VERCEL_BACKEND_PROJECT_ID=your_backend_project_id
+VERCEL_BACKEND_DEV_PROJECT_ID=your_dev_backend_project_id
+
+# 可选配置
+SLACK_WEBHOOK=your_slack_webhook_url
+```
+
+**获取Vercel配置信息**
+
+**获取Vercel Token：**
+1. 登录 [Vercel Dashboard](https://vercel.com/dashboard)
+2. 点击右上角头像 → `Settings`
+3. 选择 `Tokens` 标签
+4. 点击 `Create Token`
+5. 输入名称，选择过期时间
+6. 复制生成的token
+
+**获取Vercel Org ID：**
+1. 在Vercel Dashboard中，点击 `Settings`
+2. 在左侧菜单找到 `General`
+3. 复制 `Team ID` 或 `Personal Account ID`
+
+**获取Project ID：**
+1. 在Vercel Dashboard中，选择你的项目
+2. 点击 `Settings` → `General`
+3. 复制 `Project ID`
+
+#### 9.2 Vercel配置
+
+**创建前端项目**
+
+**步骤：**
+1. 登录 [Vercel Dashboard](https://vercel.com/dashboard)
+2. 点击 `New Project`
+3. 选择 `Import Git Repository`
+4. 选择你的GitHub仓库
+5. 配置项目设置：
+   - **Framework Preset**: Next.js
+   - **Root Directory**: `./` (默认)
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next`
+   - **Install Command**: `npm install`
+
+**创建后端项目**
+
+**步骤：**
+1. 在Vercel Dashboard中，再次点击 `New Project`
+2. 选择 `Import Git Repository`
+3. 选择你的GitHub仓库
+4. 配置项目设置：
+   - **Root Directory**: `./agent-backend`
+   - **Framework Preset**: Other
+   - **Build Command**: 留空（使用Docker）
+   - **Output Directory**: 留空
+
+**配置环境变量**
+
+**后端环境变量：**
+1. 进入后端项目
+2. 点击 `Settings` → `Environment Variables`
+3. 添加以下变量：
+
+```bash
+# 应用配置
+DEBUG=false
+APP_NAME=AI News Agent
+HOST=0.0.0.0
+PORT=8000
+
+# CORS配置（重要！）
+ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+
+# 可选配置
+REDIS_URL=your_redis_connection_string
+OPENAI_API_KEY=your_openai_key_here
+```
+
+**前端环境变量：**
+```bash
+# 后端服务地址
+PYTHON_BACKEND_URL=https://your-backend-project.vercel.app
+
+# 网站配置
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+NODE_ENV=production
+
+# 数据库配置
+DATABASE_URL=your_database_connection_string
+
+# 腾讯云COS配置
+COS_SECRET_ID=your_cos_secret_id
+COS_SECRET_KEY=your_cos_secret_key
+COS_BUCKET=your_bucket_name
+COS_REGION=ap-beijing
+COS_APP_ID=your_cos_app_id
+COS_DOMAIN=https://your_bucket.cos.ap-beijing.myqcloud.com
+```
+
+#### 9.3 验证配置
+
+**测试GitHub Actions**
+
+**步骤：**
+1. 推送代码到main分支：
+```bash
+git add .
+git commit -m "feat: 配置Vercel容器化部署"
+git push origin main
+```
+
+2. 检查GitHub Actions运行状态：
+   - 进入GitHub仓库
+   - 点击 `Actions` 标签
+   - 查看CI/CD流程是否成功
+
+**验证部署结果**
+
+**检查前端部署：**
+```bash
+# 访问前端URL
+curl https://your-frontend-project.vercel.app
+
+# 检查健康检查端点
+curl https://your-frontend-project.vercel.app/api/health
+```
+
+**检查后端部署：**
+```bash
+# 访问后端健康检查
+curl https://your-backend-project.vercel.app/health
+
+# 测试Agent功能
+curl -X POST https://your-backend-project.vercel.app/api/agent/execute \
+  -H "Content-Type: application/json" \
+  -d '{"command":"/help","params":{}}'
+```
+
+**配置检查清单**
+- [ ] GitHub Secrets配置完成
+- [ ] Vercel前端项目创建
+- [ ] Vercel后端项目创建
+- [ ] 环境变量配置完成
+- [ ] GitHub Actions运行成功
+- [ ] 前端部署验证通过
+- [ ] 后端部署验证通过
+- [ ] 健康检查端点正常
+- [ ] Agent功能测试通过
+
 ### 10. 故障排除
 
-**常见问题:**
+#### 10.1 常见问题
 
-**10.1 部署失败**
-```bash
-# 检查构建日志
-railway logs
+**GitHub Actions失败**
+- 检查GitHub Secrets是否正确配置
+- 确认Vercel Token是否有效
+- 查看Actions日志中的错误信息
 
-# 常见原因：
-# - Dockerfile路径错误
-# - 依赖安装失败
-# - 端口配置错误
-```
+**Vercel部署失败**
+- 检查vercel.json配置是否正确
+- 确认Dockerfile路径是否正确
+- 查看Vercel构建日志
 
-**10.2 服务无响应**
+**环境变量问题**
+- 确认所有必需的环境变量都已设置
+- 检查变量名拼写是否正确
+- 重新部署项目使环境变量生效
+
+**服务无响应**
 ```bash
 # 检查服务状态
-railway status
+vercel ls
 
 # 查看实时日志
-railway logs --follow
+vercel logs --follow
 
 # 重启服务
-railway restart
+vercel --prod
 ```
 
-**10.3 CORS错误**
-确保Railway环境变量中的 `ALLOWED_ORIGINS` 包含你的前端域名。
+**CORS错误**
+确保Vercel环境变量中的 `ALLOWED_ORIGINS` 包含你的前端域名。
+
+#### 10.2 调试命令
+
+```bash
+# 本地测试Docker镜像
+cd agent-backend
+docker build -t test-backend .
+docker run -p 8000:8000 test-backend
+
+# 检查Vercel CLI
+npx vercel --version
+npx vercel login
+npx vercel ls
+
+# 检查容器状态
+docker ps
+docker logs <container_id>
+
+# 测试健康检查
+curl http://localhost:8000/health
+```
+
+#### 10.3 高级调试
+
+**检查GitHub Actions日志**
+1. 进入GitHub仓库
+2. 点击 `Actions` 标签
+3. 选择失败的workflow
+4. 查看详细的错误日志
+
+**检查Vercel构建日志**
+1. 进入Vercel Dashboard
+2. 选择项目
+3. 点击 `Deployments` 标签
+4. 查看构建日志
+
+**网络连接测试**
+```bash
+# 测试DNS解析
+nslookup your-domain.com
+
+# 测试端口连通性
+telnet your-backend.vercel.app 443
+
+# 测试HTTPS连接
+curl -I https://your-backend.vercel.app/health
+```
 
 ## 📊 最终成本估算
 
 **总体年度成本:**
 - **域名**: 30元/年
 - **Vercel**: 免费（个人项目）
-- **Railway**: 免费（小流量）
+- **Vercel容器化**: 免费（小流量）
 - **腾讯云COS**: 10-20元/月
 - **总计**: 约50元/年
 
-**Railway成本说明:**
-- 免费额度: $5/月
-- 超出后: $0.02/小时 (约$15/月)
+**Vercel成本说明:**
+- 免费额度: 100GB带宽/月
+- 超出后: $0.40/GB
 - 个人网站通常在免费范围内
 
 **扩展建议:**
 当网站流量增长时，可以考虑升级到付费计划或迁移到专用服务器。
+
+## 🐳 Vercel容器化技术详解
+
+### 多阶段Docker构建优化
+
+**构建阶段优化:**
+```dockerfile
+# 多阶段构建
+FROM python:3.11-slim as builder
+
+# 安装构建依赖
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建虚拟环境并安装依赖
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt gunicorn
+```
+
+**生产阶段优化:**
+```dockerfile
+# 生产阶段
+FROM python:3.11-slim as production
+
+# 从构建阶段复制虚拟环境
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 创建非root用户以提高安全性
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app && \
+    mkdir -p /app/logs && \
+    chown -R appuser:appuser /app/logs
+
+# 切换到非root用户
+USER appuser
+```
+
+### 性能优化配置
+
+**Docker优化:**
+- 多阶段构建减小镜像体积
+- 虚拟环境复用
+- 非root用户运行
+
+**应用优化:**
+- Gunicorn工作进程配置
+- 请求超时设置
+- 内存使用优化
+
+**Vercel优化:**
+- 区域选择 (hkg1)
+- 函数超时配置
+- 路由规则优化
+
+### 监控和日志
+
+**健康检查端点:**
+- 路径: `/health`
+- 方法: GET
+- 响应: JSON格式的健康状态
+
+**日志配置:**
+- 应用日志: 标准输出
+- 访问日志: Gunicorn访问日志
+- 错误日志: 详细错误信息
+
+### 故障排除
+
+**常见问题:**
+
+1. **容器启动失败**
+   - 检查Dockerfile语法
+   - 验证依赖安装
+   - 查看容器日志
+
+2. **健康检查失败**
+   - 确认端口配置
+   - 检查应用启动
+   - 验证网络连接
+
+3. **部署超时**
+   - 增加超时时间
+   - 优化构建过程
+   - 检查资源限制
+
+**调试命令:**
+```bash
+# 本地测试Docker镜像
+docker build -t test-backend .
+docker run -p 8000:8000 test-backend
+
+# 检查容器状态
+docker ps
+docker logs <container_id>
+
+# 测试健康检查
+curl http://localhost:8000/health
+```
+
+### 最佳实践
+
+1. **安全性**
+   - 使用非root用户
+   - 最小化依赖
+   - 定期更新基础镜像
+
+2. **性能**
+   - 多阶段构建
+   - 缓存优化
+   - 资源限制
+
+3. **可维护性**
+   - 清晰的文档
+   - 自动化测试
+   - 监控告警
 

@@ -135,24 +135,54 @@ jobs:
           name: backend-coverage-${{ matrix.python-version }}
           fail_ci_if_error: false
       
-      # Docker 镜像构建
+      # Docker 镜像构建和测试
       - name: 构建 Docker 镜像
         if: matrix.python-version == '3.11'
         run: |
+          echo "🐳 开始构建Docker镜像..."
           docker build -t doudou-backend:${{ github.sha }} .
           docker build -t doudou-backend:latest .
+          echo "✅ Docker镜像构建完成"
 
       # 容器健康检查  
       - name: 测试 Docker 镜像
         if: matrix.python-version == '3.11'
         run: |
+          echo "🧪 开始Docker容器测试..."
+          
           # 启动容器进行健康检查
-          docker run -d --name test-container -p 8000:8000 doudou-backend:latest
-          sleep 10
+          docker run -d --name test-container -p 8000:8000 \
+            -e PORT=8000 \
+            -e ENVIRONMENT=test \
+            doudou-backend:latest
+          
+          # 等待容器启动
+          echo "⏳ 等待容器启动..."
+          sleep 30
+          
+          # 检查容器状态
+          if ! docker ps | grep -q test-container; then
+            echo "❌ 容器启动失败"
+            docker logs test-container
+            exit 1
+          fi
+          
           # 基本健康检查
-          curl -f http://localhost:8000/health || exit 1
+          echo "🔍 执行健康检查..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8000/health --max-time 10; then
+              echo "✅ 健康检查通过"
+              break
+            else
+              echo "⏳ 等待服务响应 (第 $i 次)..."
+              sleep 10
+            fi
+          done
+          
+          # 清理容器
           docker stop test-container
           docker rm test-container
+          echo "✅ Docker容器测试完成"
 
   # 安全扫描
   security-scan:
@@ -243,22 +273,24 @@ jobs:
           vercel-args: '--prod'
           working-directory: ./
         
-      - name: 部署后端到 Railway
-        run: |
-          # 安装 Railway CLI
-          curl -fsSL https://railway.app/install.sh | sh
-          
-          # 部署到 Railway
-          cd agent-backend
-          railway login --token ${{ secrets.RAILWAY_TOKEN }}
-          railway up --service ${{ secrets.RAILWAY_SERVICE_ID }}
+      - name: 部署后端到 Vercel (容器化)
+        uses: amondnet/vercel-action@v25
+        id: vercel-backend-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./agent-backend
+          scope: ${{ secrets.VERCEL_ORG_ID }}
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           
       - name: 等待部署完成
         run: |
           echo "等待部署服务启动..."
-          sleep 60
+          sleep 90
           
       - name: 前端健康检查
         run: |
@@ -266,15 +298,33 @@ jobs:
           curl -f "${{ steps.vercel-deploy.outputs.preview-url }}" || exit 1
           echo "前端部署成功: ${{ steps.vercel-deploy.outputs.preview-url }}"
           
-      - name: 后端健康检查
+      - name: 后端容器健康检查
         run: |
-          echo "检查后端部署状态..."
-          # Railway URL 通常需要从环境变量获取
-          if [ -n "${{ secrets.RAILWAY_APP_URL }}" ]; then
-            curl -f "${{ secrets.RAILWAY_APP_URL }}/health" || exit 1
-            echo "后端部署成功: ${{ secrets.RAILWAY_APP_URL }}"
+          echo "检查后端容器化部署状态..."
+          if [ -n "${{ steps.vercel-backend-deploy.outputs.preview-url }}" ]; then
+            BACKEND_URL="${{ steps.vercel-backend-deploy.outputs.preview-url }}"
+            echo "后端URL: $BACKEND_URL"
+            
+            # 等待容器完全启动
+            for i in {1..10}; do
+              echo "尝试连接后端服务 (第 $i 次)..."
+              if curl -f "$BACKEND_URL/health" --max-time 30; then
+                echo "✅ 后端容器健康检查通过"
+                break
+              else
+                echo "⏳ 等待后端服务启动..."
+                sleep 15
+              fi
+            done
+            
+            # 最终健康检查
+            curl -f "$BACKEND_URL/health" --max-time 30 || {
+              echo "❌ 后端容器健康检查失败"
+              exit 1
+            }
+            echo "✅ 后端容器部署成功: $BACKEND_URL"
           else
-            echo "Railway URL 未配置，跳过健康检查"
+            echo "⚠️ 后端部署URL未获取到，跳过健康检查"
           fi
 
   # 部署到开发环境 仅 develop 分支 - 暂时没有开发环境
@@ -301,20 +351,25 @@ jobs:
       - name: 部署前端到 Vercel (预览)
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-token: PG2AyYGe3VGpVMiFtnZnP0o4
+          vercel-org-id: shanshans-projects-24790134
+          vercel-project-id: prj_BlcQkwwZ6y7T6RwGopTpRrCmFh2q
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./
           
-      - name: 部署后端到 Railway (开发)
-        run: |
-          curl -fsSL https://railway.app/install.sh | sh
-          cd agent-backend
-          railway login --token ${{ secrets.RAILWAY_TOKEN }}
-          railway up --service ${{ secrets.RAILWAY_DEV_SERVICE_ID }}
+      - name: 部署后端到 Vercel (开发环境容器化)
+        uses: amondnet/vercel-action@v25
+        id: vercel-backend-dev-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BACKEND_DEV_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./agent-backend
+          scope: ${{ secrets.VERCEL_ORG_ID }}
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
   # 通知
   notify:
@@ -340,7 +395,7 @@ jobs:
             **环境**: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Development' }}
             
             **前端**: ${{ needs.deploy-production.result || needs.deploy-development.result }}
-            **后端**: ${{ needs.deploy-production.result || needs.deploy-development.result }}
+            **后端容器**: ${{ needs.deploy-production.result || needs.deploy-development.result }}
             
             查看详情: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         env:

@@ -27,6 +27,8 @@ export default function Update() {
   const [isClickDisabled, setIsClickDisabled] = useState(false)
   const [isCelebrating, setIsCelebrating] = useState(false)
   const [fireworks, setFireworks] = useState<Array<{id: string, x: number, y: number, size: number, direction: number}>>([])
+  const [rabbitJumpPosition, setRabbitJumpPosition] = useState({ x: 0, y: 0 })
+  const [isJumping, setIsJumping] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -190,39 +192,73 @@ export default function Update() {
       setRabbitDirection(prev => prev === 'left-to-right' ? 'right-to-left' : 'left-to-right')
     }, 500)
 
-    // Jump animation (3 jumps)
+    // Start jumping sequence
     setTimeout(() => {
-      // Create fireworks after jumping
-      createFireworks()
-    }, 2000)
+      setIsJumping(true)
+      performJumpSequence()
+    }, 1000)
 
     // Clear fireworks after animation
     setTimeout(() => {
       setFireworks([])
       setIsCelebrating(false)
-    }, 5000)
+      setIsJumping(false)
+    }, 6000)
   }
 
-  // Create fireworks with different directions and sizes
+  // Perform jumping sequence with 3 jumps forward
+  const performJumpSequence = () => {
+    const jumpSteps = 3
+    const jumpDistance = 40 // Distance per jump
+    const jumpHeight = -15 // Upward movement
+    const jumpDuration = 400 // Duration per jump in ms
+    
+    let currentStep = 0
+    
+    const performJump = () => {
+      if (currentStep >= jumpSteps) {
+        // All jumps completed, create fireworks
+        setTimeout(() => {
+          createFireworks()
+        }, 300)
+        return
+      }
+      
+      // Calculate new position
+      const direction = rabbitDirection === 'left-to-right' ? 1 : -1
+      const newX = rabbitPosition.x + (jumpDistance * direction * (currentStep + 1))
+      const newY = rabbitPosition.y + jumpHeight
+      
+      // Update position
+      setRabbitJumpPosition({ x: newX, y: newY })
+      
+      // Reset Y position after jump
+      setTimeout(() => {
+        setRabbitJumpPosition({ x: newX, y: rabbitPosition.y })
+        currentStep++
+        
+        // Next jump
+        setTimeout(performJump, 200)
+      }, jumpDuration)
+    }
+    
+    performJump()
+  }
+
+  // Create fireworks around the rabbit
   const createFireworks = () => {
     const newFireworks = []
     const centerX = rabbitPosition.x + 24 // Center of rabbit
     const centerY = rabbitPosition.y + 14 // Center of rabbit
 
-    // Create 8 fireworks in different directions
-    for (let i = 0; i < 8; i++) {
-      const angle = (i * 45) * (Math.PI / 180) // 45 degrees apart
-      const distance = 60 + Math.random() * 40 // Random distance 60-100px
-      const size = 16 + Math.random() * 12 // Random size 16-28px
-      
-      newFireworks.push({
-        id: `firework-${i}`,
-        x: centerX + Math.cos(angle) * distance,
-        y: centerY + Math.sin(angle) * distance,
-        size,
-        direction: angle
-      })
-    }
+    // Create a single firework near the rabbit
+    newFireworks.push({
+      id: 'firework-main',
+      x: centerX + 20, // Slightly to the right of rabbit
+      y: centerY - 10, // Slightly above rabbit
+      size: 24,
+      direction: 0
+    })
 
     setFireworks(newFireworks)
   }
@@ -350,8 +386,8 @@ export default function Update() {
                     pointerEvents: 'auto' // Ensure pointer events work
                   }}
                   animate={{
-                    x: rabbitPosition.x,
-                    y: rabbitPosition.y,
+                    x: isJumping ? rabbitJumpPosition.x : rabbitPosition.x,
+                    y: isJumping ? rabbitJumpPosition.y : rabbitPosition.y,
                     scaleX: rabbitDirection === 'right-to-left' ? -1 : 1 // Flip rabbit when going right to left
                   }}
                   transition={{
@@ -407,20 +443,20 @@ export default function Update() {
                     rotate: 0
                   }}
                   animate={{
-                    scale: [0, 1.2, 1],
-                    opacity: [0, 1, 0],
-                    rotate: [0, 360],
-                    y: [0, -20, -40]
+                    scale: [0, 1.3, 1, 0.8],
+                    opacity: [0, 1, 0.8, 0],
+                    rotate: [0, 180, 360],
+                    y: [0, -15, -25]
                   }}
                   transition={{
-                    duration: 2,
+                    duration: 3,
                     ease: "easeOut",
-                    delay: Math.random() * 0.5
+                    delay: 0
                   }}
                 >
                   <PartyPopper
                     size={firework.size}
-                    className="text-yellow-400 drop-shadow-lg"
+                    className="text-[var(--primary)] drop-shadow-lg"
                     fill="currentColor"
                   />
                 </motion.div>

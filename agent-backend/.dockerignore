@@ -19,11 +19,14 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual environments
 venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
@@ -34,16 +37,28 @@ ENV/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Logs
 logs/
 *.log
 
-# Environment files
-.env
-.env.local
-.env.*.local
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/
+*.md
+README*
 
 # Git
 .git/
@@ -52,20 +67,20 @@ logs/
 # Docker
 Dockerfile*
 docker-compose*.yml
+.dockerignore
 
-# Cache
-.cache/
-.pytest_cache/
+# Railway
+railway.toml
 
-# Coverage
-.coverage
-htmlcov/
+# Vercel
+vercel.json
+.vercel/
 
-# Documentation
-*.md
-docs/
+# Environment files
+.env
+.env.local
+.env.*.local
 
-# Tests
-tests/
-*_test.py
-test_*.py
+# Temporary files
+tmp/
+temp/

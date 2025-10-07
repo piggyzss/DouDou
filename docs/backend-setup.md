@@ -148,7 +148,7 @@ CMD ["gunicorn", "app.main:app",
 ### 1. 请求处理流程
 
 ```
-用户请求 → Railway Load Balancer → Docker容器 → Gunicorn → Uvicorn Worker → FastAPI应用
+用户请求 → Vercel Load Balancer → Docker容器 → Gunicorn → Uvicorn Worker → FastAPI应用
     ↓              ↓                   ↓           ↓            ↓              ↓
 HTTP请求        容器路由           容器接收      进程分发      异步处理        业务逻辑
 ```
@@ -157,19 +157,19 @@ HTTP请求        容器路由           容器接收      进程分发      异
 
 1. **用户发送请求**
    ```bash
-   curl -X POST https://your-app.railway.app/api/agent/execute \
+   curl -X POST https://your-app.vercel.app/api/agent/execute \
      -H "Content-Type: application/json" \
      -d '{"command": "/latest", "params": {}}'
    ```
 
-2. **Railway接收并路由**
-   - Railway的负载均衡器接收请求
+2. **Vercel接收并路由**
+   - Vercel的负载均衡器接收请求
    - 根据域名路由到对应的Docker容器
    - 检查容器健康状态
 
 3. **Docker容器处理**
    - 容器监听8000端口
-   - 接收来自Railway的HTTP请求
+   - 接收来自Vercel的HTTP请求
    - 将请求传递给容器内的Gunicorn主进程
 
 4. **Gunicorn分发请求**
@@ -205,7 +205,7 @@ HTTP请求        容器路由           容器接收      进程分发      异
 
 6. **响应返回**
    ```
-   FastAPI → Uvicorn Worker → Gunicorn Master → Docker → Railway → 用户
+   FastAPI → Uvicorn Worker → Gunicorn Master → Docker → Vercel → 用户
       ↓           ↓              ↓             ↓        ↓       ↓
    JSON响应    序列化响应      进程间通信     容器网络   负载均衡  HTTP响应
    ```
@@ -213,13 +213,13 @@ HTTP请求        容器路由           容器接收      进程分发      异
 ### 2. 容器启动流程
 
 ```bash
-# 1. Railway从GitHub拉取代码
+# 1. Vercel从GitHub拉取代码
 git clone https://github.com/your-repo.git
 
-# 2. Railway构建Docker镜像
+# 2. Vercel构建Docker镜像
 docker build -t your-app-12345 ./agent-backend
 
-# 3. Railway启动容器
+# 3. Vercel启动容器
 docker run -d \
   --name your-app-container \
   -p 8000:8000 \
@@ -366,25 +366,48 @@ CMD ["gunicorn", "app.main:app", \
      "--error-logfile", "-"]                          # 错误日志输出到stderr
 ```
 
-### Railway部署配置
+### Vercel部署配置
 
-```toml
-# railway.toml
-[build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile"
-
-[deploy]
-startCommand = "gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
-healthcheckPath = "/health"
-healthcheckTimeout = 300
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
-
-[env]
-PORT = "8000"
-DEBUG = "false"
-LOG_LEVEL = "info"
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "Dockerfile",
+      "use": "@vercel/docker",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "/health"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.11",
+    "PORT": "8000",
+    "ENVIRONMENT": "production",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "regions": ["hkg1"],
+  "functions": {
+    "app/main.py": {
+      "maxDuration": 300
+    }
+  }
+}
 ```
 
 ## 🔍 监控和调试
@@ -392,8 +415,8 @@ LOG_LEVEL = "info"
 ### 1. 查看进程结构
 
 ```bash
-# 在Railway容器中查看进程
-railway run ps aux
+# 在Vercel容器中查看进程
+vercel logs --follow
 
 # 输出示例：
 USER   PID  %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -405,8 +428,8 @@ root    16   2.1  3.2  67890  32543 ?        S    10:00   0:04 gunicorn: worker 
 ### 2. 实时日志监控
 
 ```bash
-# Railway日志查看
-railway logs --follow
+# Vercel日志查看
+vercel logs --follow
 
 # 日志输出示例：
 [2024-01-20 10:00:01] [INFO] Starting gunicorn 21.2.0
@@ -455,10 +478,10 @@ async def health_check():
 **问题：服务无响应**
 ```bash
 # 检查步骤：
-1. railway logs --follow                    # 查看实时日志
-2. railway ps                              # 查看服务状态
-3. curl https://your-app.railway.app/health # 测试健康检查
-4. railway restart                         # 重启服务
+1. vercel logs --follow                    # 查看实时日志
+2. vercel ls                              # 查看服务状态
+3. curl https://your-app.vercel.app/health # 测试健康检查
+4. vercel --prod                          # 重新部署
 ```
 
 **问题：内存使用过高**

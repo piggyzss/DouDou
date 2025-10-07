@@ -1,0 +1,10 @@
+# 忽略Python相关文件，强制使用Docker
+*.py
+requirements.txt
+venv/
+__pycache__/
+.pytest_cache/
+
+# 保留Docker相关文件
+!Dockerfile
+!vercel.json

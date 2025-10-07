@@ -1,0 +1,11 @@
+{
+  "name": "agent-backend-docker",
+  "version": "1.0.0",
+  "description": "Docker-based Python backend",
+  "scripts": {
+    "build": "echo 'Using Docker build'"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

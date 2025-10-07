@@ -2,7 +2,7 @@
 
 ## 🎯 在 Vercel 中配置 DATABASE_URL
 
-### 方法 1: 使用 Vercel Postgres（推荐）
+### 方法: 使用 Vercel Postgres（推荐）
 
 这是最简单和推荐的方式：
 
@@ -34,50 +34,6 @@ POSTGRES_PASSWORD="password"
 POSTGRES_DATABASE="database"
 ```
 
-### 方法 2: 手动设置 DATABASE_URL
-
-如果你有自己的 PostgreSQL 数据库：
-
-#### 通过 Vercel Dashboard
-1. 进入你的 Vercel 项目
-2. 点击 "Settings" 标签
-3. 点击 "Environment Variables"
-4. 点击 "Add New"
-5. 设置：
-   - **Name**: `DATABASE_URL`
-   - **Value**: `postgresql://username:password@host:port/database`
-   - **Environments**: 选择 Production, Preview, Development
-
-#### 通过 Vercel CLI
-```bash
-# 安装 Vercel CLI（如果还没有）
-npm i -g vercel
-
-# 登录
-vercel login
-
-# 添加环境变量
-vercel env add DATABASE_URL
-# 然后输入你的数据库连接字符串
-```
-
-### 方法 3: 使用其他数据库服务
-
-#### Supabase
-1. 在 [Supabase](https://supabase.com) 创建项目
-2. 进入 Settings > Database
-3. 复制 Connection string
-4. 在 Vercel 中添加为 `DATABASE_URL`
-
-#### PlanetScale
-1. 在 [PlanetScale](https://planetscale.com) 创建数据库
-2. 创建 Connection string
-3. 在 Vercel 中添加为 `DATABASE_URL`
-
-#### Railway
-1. 在 [Railway](https://railway.app) 创建 PostgreSQL 数据库
-2. 复制 Connection URL
-3. 在 Vercel 中添加为 `DATABASE_URL`
 
 ## 🔧 数据库连接字符串格式
 
