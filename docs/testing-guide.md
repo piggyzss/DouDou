@@ -1,6 +1,7 @@
 # DouDou 项目测试指南
 
 ## 📋 目录
+
 1. [测试框架概览](#🎯-测试框架概览)
 2. [测试架构设计](#🏗️-测试架构设计)
 3. [测试类型说明](#📊-测试类型说明)
@@ -15,35 +16,35 @@
 
 ### 主要测试框架
 
-| 框架 | 用途 | 测试类型 |
-|------|------|----------|
-| **Jest** | 单元测试、API测试、组件测试 | 逻辑测试、函数测试 |
-| **React Testing Library** | 集成测试、用户交互测试 | 组件协作、用户行为 |
-| **MSW (Mock Service Worker)** | API模拟 | 网络请求模拟 |
-| **Supertest** | API路由测试 | HTTP接口测试 |
+| 框架                          | 用途                        | 测试类型           |
+| ----------------------------- | --------------------------- | ------------------ |
+| **Jest**                      | 单元测试、API测试、组件测试 | 逻辑测试、函数测试 |
+| **React Testing Library**     | 集成测试、用户交互测试      | 组件协作、用户行为 |
+| **MSW (Mock Service Worker)** | API模拟                     | 网络请求模拟       |
+| **Supertest**                 | API路由测试                 | HTTP接口测试       |
 
 ### 测试环境配置
 
 ```javascript
 // jest.config.js
 module.exports = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.setup.js'],
+  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/tests/setup/jest.setup.js"],
   testMatch: [
-    '<rootDir>/tests/unit/**/*.test.{js,jsx,ts,tsx}',
-    '<rootDir>/tests/components/**/*.test.{js,jsx,ts,tsx}',
-    '<rootDir>/tests/api/**/*.test.{js,jsx,ts,tsx}',
-    '<rootDir>/tests/integration/**/*.test.{js,jsx,ts,tsx}'
+    "<rootDir>/tests/unit/**/*.test.{js,jsx,ts,tsx}",
+    "<rootDir>/tests/components/**/*.test.{js,jsx,ts,tsx}",
+    "<rootDir>/tests/api/**/*.test.{js,jsx,ts,tsx}",
+    "<rootDir>/tests/integration/**/*.test.{js,jsx,ts,tsx}",
   ],
   coverageThreshold: {
     global: {
       branches: 70,
       functions: 70,
       lines: 70,
-      statements: 70
-    }
-  }
-}
+      statements: 70,
+    },
+  },
+};
 ```
 
 ---
@@ -135,30 +136,31 @@ tests/
 
 ```typescript
 // tests/unit/lib/models/app.test.ts
-describe('AppModel', () => {
-  describe('create', () => {
-    it('should create a new app with valid data', async () => {
+describe("AppModel", () => {
+  describe("create", () => {
+    it("should create a new app with valid data", async () => {
       const appData = {
-        name: 'Test App',
-        description: 'Test Description',
-        tags: ['React', 'TypeScript'],
-        type: 'app',
-        platform: 'web',
-        status: 'online',
-        experience_method: 'download'
-      }
-      
-      const app = await AppModel.create(appData)
-      
-      expect(app).toBeDefined()
-      expect(app.name).toBe(appData.name)
-      expect(app.slug).toBe('test-app')
-    })
-  })
-})
+        name: "Test App",
+        description: "Test Description",
+        tags: ["React", "TypeScript"],
+        type: "app",
+        platform: "web",
+        status: "online",
+        experience_method: "download",
+      };
+
+      const app = await AppModel.create(appData);
+
+      expect(app).toBeDefined();
+      expect(app.name).toBe(appData.name);
+      expect(app.slug).toBe("test-app");
+    });
+  });
+});
 ```
 
 #### 覆盖范围
+
 - ✅ 数据模型 CRUD 操作
 - ✅ 工具函数逻辑
 - ✅ 数据验证和转换
@@ -180,9 +182,9 @@ describe('AppCard', () => {
       name: 'Test App',
       description: 'Test Description'
     }
-    
+
     render(<AppCard app={mockApp} />)
-    
+
     expect(screen.getByText('Test App')).toBeInTheDocument()
     expect(screen.getByText('Test Description')).toBeInTheDocument()
   })
@@ -190,6 +192,7 @@ describe('AppCard', () => {
 ```
 
 #### 覆盖范围
+
 - ✅ 组件渲染
 - ✅ 用户交互
 - ✅ 状态变化
@@ -204,22 +207,23 @@ describe('AppCard', () => {
 
 ```typescript
 // tests/api/apps.test.ts
-describe('/api/apps', () => {
-  it('should return apps list', async () => {
+describe("/api/apps", () => {
+  it("should return apps list", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-      url: '/api/apps?page=1&limit=10'
-    })
-    
-    await GET(req, res)
-    
-    expect(res._getStatusCode()).toBe(200)
-    expect(JSON.parse(res._getData())).toHaveProperty('apps')
-  })
-})
+      method: "GET",
+      url: "/api/apps?page=1&limit=10",
+    });
+
+    await GET(req, res);
+
+    expect(res._getStatusCode()).toBe(200);
+    expect(JSON.parse(res._getData())).toHaveProperty("apps");
+  });
+});
 ```
 
 #### 覆盖范围
+
 - ✅ HTTP 请求处理
 - ✅ 参数验证
 - ✅ 响应格式
@@ -237,16 +241,16 @@ describe('/api/apps', () => {
 describe('App Creation Integration', () => {
   it('should create app with form submission', async () => {
     const user = userEvent.setup()
-    
+
     render(<CreateAppModal isOpen={true} onClose={mockOnClose} />)
-    
+
     // 填写表单
     await user.type(screen.getByLabelText(/应用名称/i), 'New App')
     await user.type(screen.getByLabelText(/描述/i), 'New Description')
-    
+
     // 提交表单
     await user.click(screen.getByRole('button', { name: /创建/i }))
-    
+
     // 验证结果
     await waitFor(() => {
       expect(mockOnClose).toHaveBeenCalled()
@@ -256,6 +260,7 @@ describe('App Creation Integration', () => {
 ```
 
 #### 覆盖范围
+
 - ✅ 用户完整流程
 - ✅ 组件间数据传递
 - ✅ API 集成
@@ -289,16 +294,17 @@ npm run test:ci
 
 ### 测试覆盖率目标
 
-| 测试类型 | 覆盖率目标 | 当前状态 |
-|---------|-----------|----------|
-| 单元测试 | ≥ 80% | 🟡 进行中 |
-| 组件测试 | ≥ 70% | 🟡 进行中 |
-| API 测试 | ≥ 90% | 🟡 进行中 |
-| 集成测试 | ≥ 60% | 🟡 进行中 |
+| 测试类型 | 覆盖率目标 | 当前状态  |
+| -------- | ---------- | --------- |
+| 单元测试 | ≥ 80%      | 🟡 进行中 |
+| 组件测试 | ≥ 70%      | 🟡 进行中 |
+| API 测试 | ≥ 90%      | 🟡 进行中 |
+| 集成测试 | ≥ 60%      | 🟡 进行中 |
 
 ### 测试执行策略
 
 #### 开发阶段
+
 ```bash
 # 快速反馈 - 运行相关测试
 npm run test:unit -- --testPathPattern="app"
@@ -306,12 +312,14 @@ npm run test:components -- --testPathPattern="AppCard"
 ```
 
 #### 提交前
+
 ```bash
 # 运行所有测试
 npm run test:all
 ```
 
 #### CI/CD 流程
+
 ```bash
 # 完整测试套件
 npm run test:ci
@@ -325,18 +333,18 @@ npm run test:ci
 
 ```typescript
 // ✅ 好的测试命名
-describe('AppModel', () => {
-  describe('create', () => {
-    it('should create a new app with valid data', () => {})
-    it('should throw error when required fields are missing', () => {})
-  })
-})
+describe("AppModel", () => {
+  describe("create", () => {
+    it("should create a new app with valid data", () => {});
+    it("should throw error when required fields are missing", () => {});
+  });
+});
 
 // ❌ 避免的测试命名
-describe('AppModel', () => {
-  it('test create', () => {})
-  it('should work', () => {})
-})
+describe("AppModel", () => {
+  it("test create", () => {});
+  it("should work", () => {});
+});
 ```
 
 ### 2. 测试结构 (AAA 模式)
@@ -346,13 +354,13 @@ it('should handle user login', async () => {
   // Arrange - 准备测试数据
   const user = userEvent.setup()
   const mockUser = { email: 'test@example.com', password: 'password' }
-  
+
   // Act - 执行测试操作
   render(<LoginForm />)
   await user.type(screen.getByLabelText(/邮箱/i), mockUser.email)
   await user.type(screen.getByLabelText(/密码/i), mockUser.password)
   await user.click(screen.getByRole('button', { name: /登录/i }))
-  
+
   // Assert - 验证结果
   await waitFor(() => {
     expect(screen.getByText(/登录成功/i)).toBeInTheDocument()
@@ -364,15 +372,15 @@ it('should handle user login', async () => {
 
 ```typescript
 // ✅ 好的 Mock 使用
-jest.mock('@/lib/database', () => ({
+jest.mock("@/lib/database", () => ({
   query: jest.fn(),
-  getRow: jest.fn()
-}))
+  getRow: jest.fn(),
+}));
 
 // ✅ 测试中重置 Mock
 beforeEach(() => {
-  jest.clearAllMocks()
-})
+  jest.clearAllMocks();
+});
 
 // ❌ 避免过度 Mock
 // 不要 Mock 所有依赖，只 Mock 外部依赖
@@ -383,17 +391,17 @@ beforeEach(() => {
 ```typescript
 // ✅ 使用 waitFor 等待异步操作
 await waitFor(() => {
-  expect(screen.getByText('加载完成')).toBeInTheDocument()
-})
+  expect(screen.getByText("加载完成")).toBeInTheDocument();
+});
 
 // ✅ 使用 userEvent 处理用户交互
-const user = userEvent.setup()
-await user.click(button)
+const user = userEvent.setup();
+await user.click(button);
 
 // ❌ 避免使用 setTimeout
 setTimeout(() => {
-  expect(something).toBe(true)
-}, 1000)
+  expect(something).toBe(true);
+}, 1000);
 ```
 
 ### 5. 测试数据管理
@@ -402,13 +410,13 @@ setTimeout(() => {
 // ✅ 使用工厂函数创建测试数据
 const createMockApp = (overrides = {}) => ({
   id: 1,
-  name: 'Test App',
-  description: 'Test Description',
-  ...overrides
-})
+  name: "Test App",
+  description: "Test Description",
+  ...overrides,
+});
 
 // ✅ 在测试中复用数据
-const mockApp = createMockApp({ name: 'Custom App' })
+const mockApp = createMockApp({ name: "Custom App" });
 ```
 
 ---
@@ -422,11 +430,12 @@ const mockApp = createMockApp({ name: 'Custom App' })
 **问题**: `ReferenceError: document is not defined`
 
 **解决方案**:
+
 ```javascript
 // jest.config.js
 module.exports = {
-  testEnvironment: 'jsdom'  // 确保使用 jsdom 环境
-}
+  testEnvironment: "jsdom", // 确保使用 jsdom 环境
+};
 ```
 
 #### 2. 模块导入问题
@@ -434,13 +443,14 @@ module.exports = {
 **问题**: `Cannot resolve module '@/lib/database'`
 
 **解决方案**:
+
 ```javascript
 // jest.config.js
 module.exports = {
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/$1'  // 确保路径映射正确
-  }
-}
+    "^@/(.*)$": "<rootDir>/$1", // 确保路径映射正确
+  },
+};
 ```
 
 #### 3. 异步测试超时
@@ -448,16 +458,20 @@ module.exports = {
 **问题**: `Timeout - Async callback was not invoked within the 5000ms timeout`
 
 **解决方案**:
+
 ```typescript
 // 增加超时时间
-it('should handle slow API', async () => {
+it("should handle slow API", async () => {
   // 测试代码
-}, 10000)  // 10秒超时
+}, 10000); // 10秒超时
 
 // 或使用 waitFor
-await waitFor(() => {
-  expect(something).toBe(true)
-}, { timeout: 10000 })
+await waitFor(
+  () => {
+    expect(something).toBe(true);
+  },
+  { timeout: 10000 },
+);
 ```
 
 #### 4. Mock 不生效
@@ -465,14 +479,15 @@ await waitFor(() => {
 **问题**: Mock 函数没有被调用
 
 **解决方案**:
+
 ```typescript
 // 确保 Mock 在正确的位置
-jest.mock('@/lib/api', () => ({
-  fetchData: jest.fn()
-}))
+jest.mock("@/lib/api", () => ({
+  fetchData: jest.fn(),
+}));
 
 // 在测试中验证 Mock 调用
-expect(mockFetchData).toHaveBeenCalledWith(expectedParams)
+expect(mockFetchData).toHaveBeenCalledWith(expectedParams);
 ```
 
 #### 5. 组件渲染错误
@@ -480,6 +495,7 @@ expect(mockFetchData).toHaveBeenCalledWith(expectedParams)
 **问题**: `TypeError: Cannot read property 'map' of undefined`
 
 **解决方案**:
+
 ```typescript
 // 提供完整的测试数据
 const mockData = {
@@ -508,10 +524,10 @@ it('should render correctly', () => {
 it('should handle click', async () => {
   const user = userEvent.setup()
   render(<Component />)
-  
+
   const button = screen.getByRole('button')
   console.log('Button found:', button)  // 调试信息
-  
+
   await user.click(button)
 })
 ```
@@ -536,6 +552,7 @@ npm run test -- --verbose
 ## 💡 快速参考
 
 ### 测试命令速查
+
 ```bash
 npm run test                 # 运行所有测试
 npm run test:watch          # 监听模式
@@ -547,41 +564,43 @@ npm run test:integration   # 集成测试
 ```
 
 ### 常用断言
+
 ```typescript
 // 元素存在
-expect(screen.getByText('Hello')).toBeInTheDocument()
+expect(screen.getByText("Hello")).toBeInTheDocument();
 
 // 元素不存在
-expect(screen.queryByText('Error')).not.toBeInTheDocument()
+expect(screen.queryByText("Error")).not.toBeInTheDocument();
 
 // 元素可见
-expect(screen.getByRole('button')).toBeVisible()
+expect(screen.getByRole("button")).toBeVisible();
 
 // 元素禁用
-expect(screen.getByRole('button')).toBeDisabled()
+expect(screen.getByRole("button")).toBeDisabled();
 
 // 类名检查
-expect(element).toHaveClass('active')
+expect(element).toHaveClass("active");
 
 // 属性检查
-expect(element).toHaveAttribute('href', '/home')
+expect(element).toHaveAttribute("href", "/home");
 ```
 
 ### Mock 速查
+
 ```typescript
 // Mock 函数
-const mockFn = jest.fn()
-mockFn.mockReturnValue('value')
-mockFn.mockResolvedValue('async value')
+const mockFn = jest.fn();
+mockFn.mockReturnValue("value");
+mockFn.mockResolvedValue("async value");
 
 // Mock 模块
-jest.mock('module', () => ({
-  function: jest.fn()
-}))
+jest.mock("module", () => ({
+  function: jest.fn(),
+}));
 
 // 验证调用
-expect(mockFn).toHaveBeenCalledWith('arg')
-expect(mockFn).toHaveBeenCalledTimes(1)
+expect(mockFn).toHaveBeenCalledWith("arg");
+expect(mockFn).toHaveBeenCalledTimes(1);
 ```
 
 ---
@@ -593,6 +612,7 @@ expect(mockFn).toHaveBeenCalledTimes(1)
 #### ✅ 已完成的测试
 
 **组件测试 (Components)**
+
 - ✅ `AppCard` - 应用卡片组件 (27个测试通过)
 - ✅ `LikeToggle` - 点赞切换组件 (所有测试通过)
 - ✅ `Navigation` - 导航组件 (新增)
@@ -603,35 +623,40 @@ expect(mockFn).toHaveBeenCalledTimes(1)
 - ✅ `ConfirmModal` - 确认模态框 (新增)
 
 **API测试 (API Routes)**
+
 - ✅ `/api/apps` - 应用相关API
 - ✅ `/api/likes` - 点赞相关API
 
 **集成测试 (Integration)**
+
 - ✅ `app-creation` - 应用创建流程
 - ✅ `like-system` - 点赞系统集成
 
 #### 🔄 需要完善的测试
 
 **组件测试**
+
 - ⚠️ `CreateAppModal` - 创建应用模态框
 - ⚠️ `FilterBar` - 过滤栏组件
 - ⚠️ `VideoModal` - 视频模态框
 
 **页面集成测试**
+
 - ⚠️ `blog` 页面相关测试
 - ⚠️ `aigc` 页面相关测试
 
 **单元测试**
+
 - ⚠️ `lib/models` - 数据模型测试
 
 ### 测试统计
 
-| 测试类型 | 已完成 | 总数 | 覆盖率 |
-|---------|--------|------|--------|
-| 组件测试 | 8 | 11 | 73% |
-| API测试 | 2 | 2 | 100% |
-| 集成测试 | 2 | 4 | 50% |
-| 单元测试 | 0 | 1 | 0% |
+| 测试类型 | 已完成 | 总数   | 覆盖率  |
+| -------- | ------ | ------ | ------- |
+| 组件测试 | 8      | 11     | 73%     |
+| API测试  | 2      | 2      | 100%    |
+| 集成测试 | 2      | 4      | 50%     |
+| 单元测试 | 0      | 1      | 0%      |
 | **总计** | **12** | **18** | **67%** |
 
 ### 测试质量指标

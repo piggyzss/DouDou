@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
@@ -16,38 +16,44 @@ export async function GET() {
       site: {
         url: !!process.env.NEXT_PUBLIC_SITE_URL,
         nodeEnv: process.env.NODE_ENV,
-      }
-    }
+      },
+    };
 
     // 检查数据库连接
-    let dbStatus = 'unknown'
+    let dbStatus = "unknown";
     if (process.env.DATABASE_URL) {
       try {
-        const { Pool } = await import('pg')
+        const { Pool } = await import("pg");
         const pool = new Pool({
           connectionString: process.env.DATABASE_URL,
-          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-        })
-        await pool.query('SELECT 1')
-        await pool.end()
-        dbStatus = 'connected'
+          ssl:
+            process.env.NODE_ENV === "production"
+              ? { rejectUnauthorized: false }
+              : false,
+        });
+        await pool.query("SELECT 1");
+        await pool.end();
+        dbStatus = "connected";
       } catch (error) {
-        dbStatus = 'error'
+        dbStatus = "error";
       }
     }
 
     return NextResponse.json({
-      status: 'ok',
+      status: "ok",
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       envCheck,
       database: dbStatus,
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL
-    })
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    });
   } catch (error) {
-    return NextResponse.json({
-      status: 'error',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        status: "error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
   }
 }

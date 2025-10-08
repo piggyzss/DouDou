@@ -1,21 +1,32 @@
-"use client"
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 interface Props {
-  isOpen: boolean
-  imageUrl: string
-  hasPrev: boolean
-  hasNext: boolean
-  onClose: () => void
-  onPrev: () => void
-  onNext: () => void
-  currentIndex?: number
-  total?: number
+  isOpen: boolean;
+  imageUrl: string;
+  hasPrev: boolean;
+  hasNext: boolean;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  currentIndex?: number;
+  total?: number;
 }
 
-export default function ImagePreview({ isOpen, imageUrl, hasPrev, hasNext, onClose, onPrev, onNext, currentIndex, total }: Props) {
+export default function ImagePreview({
+  isOpen,
+  imageUrl,
+  hasPrev,
+  hasNext,
+  onClose,
+  onPrev,
+  onNext,
+  currentIndex,
+  total,
+}: Props) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -37,11 +48,12 @@ export default function ImagePreview({ isOpen, imageUrl, hasPrev, hasNext, onClo
             <div className="py-6">
               <div className="relative inline-block">
                 {/* 左上角计数器（图片内） */}
-                {(typeof currentIndex === 'number' && typeof total === 'number') && (
-                  <div className="absolute top-2 left-2 text-white text-sm bg-black/50 px-2 py-0.5 rounded z-10">
-                    {currentIndex + 1} / {total}
-                  </div>
-                )}
+                {typeof currentIndex === "number" &&
+                  typeof total === "number" && (
+                    <div className="absolute top-2 left-2 text-white text-sm bg-black/50 px-2 py-0.5 rounded z-10">
+                      {currentIndex + 1} / {total}
+                    </div>
+                  )}
                 {/* 关闭按钮（图片内右上角） */}
                 <motion.button
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -82,12 +94,18 @@ export default function ImagePreview({ isOpen, imageUrl, hasPrev, hasNext, onClo
                   </motion.button>
                 )}
 
-                <img src={imageUrl} alt="预览图片" className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl" />
+                <Image
+                  src={imageUrl}
+                  alt="预览图片"
+                  width={800}
+                  height={600}
+                  className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl"
+                />
               </div>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

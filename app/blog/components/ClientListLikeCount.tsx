@@ -1,8 +1,14 @@
-"use client"
+"use client";
 
-import LikeToggle from '../../components/LikeToggle'
+import LikeToggle from "../../components/LikeToggle";
 
-export default function ClientListLikeCount({ postId, initial }: { postId: number; initial: number }) {
+export default function ClientListLikeCount({
+  postId,
+  initial,
+}: {
+  postId: number;
+  initial: number;
+}) {
   return (
     <LikeToggle
       targetType="blog"
@@ -15,7 +21,5 @@ export default function ClientListLikeCount({ postId, initial }: { postId: numbe
       unlikedColorClass="text-text-muted"
       likedColorClass="text-red-500"
     />
-  )
+  );
 }
-
-

@@ -1,47 +1,46 @@
-'use client'
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
-import { X } from 'lucide-react'
-import { useTheme } from '../providers'
-import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { X } from "lucide-react";
+import { useTheme } from "../providers";
+import { useState, useEffect } from "react";
 
 export default function Skills() {
-  const { theme } = useTheme()
-  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false)
-  
+  const { theme } = useTheme();
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+
   const handleImageClick = () => {
-    setIsImagePreviewOpen(true)
-  }
-  
+    setIsImagePreviewOpen(true);
+  };
+
   const handleClosePreview = () => {
-    setIsImagePreviewOpen(false)
-  }
+    setIsImagePreviewOpen(false);
+  };
 
   // 添加ESC键关闭功能
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isImagePreviewOpen) {
-        handleClosePreview()
+      if (event.key === "Escape" && isImagePreviewOpen) {
+        handleClosePreview();
       }
-    }
+    };
 
     if (isImagePreviewOpen) {
-      document.addEventListener('keydown', handleKeyDown)
+      document.addEventListener("keydown", handleKeyDown);
       // 防止背景滚动
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = 'unset'
-    }
-  }, [isImagePreviewOpen])
-  
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isImagePreviewOpen]);
+
   return (
     <section className="pt-16 pb-32">
       <div className="max-w-7xl mx-auto">
-
         {/* 新的动画标题区域 */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -59,7 +58,7 @@ export default function Skills() {
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
               className="h-0.5 bg-text-primary flex-1 max-w-32"
-              style={{ transformOrigin: 'right' }}
+              style={{ transformOrigin: "right" }}
             />
 
             {/* 标题 */}
@@ -80,7 +79,7 @@ export default function Skills() {
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
               className="h-0.5 bg-text-primary flex-1 max-w-32"
-              style={{ transformOrigin: 'left' }}
+              style={{ transformOrigin: "left" }}
             />
           </div>
         </motion.div>
@@ -102,7 +101,11 @@ export default function Skills() {
               onClick={handleImageClick}
             >
               <Image
-                src={theme === 'dark' ? '/assets/images/skill_dark.svg' : '/assets/images/skill.svg'}
+                src={
+                  theme === "dark"
+                    ? "/assets/images/skill_dark.svg"
+                    : "/assets/images/skill.svg"
+                }
                 alt="技能展示"
                 width={800}
                 height={400}
@@ -149,10 +152,14 @@ export default function Skills() {
                     <X size={22} />
                   </motion.button>
 
-                  <img 
-                    src={theme === 'dark' ? '/assets/images/skill_dark.svg' : '/assets/images/skill.svg'} 
-                    alt="技能展示" 
-                    className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl" 
+                  <Image
+                    src={
+                      theme === "dark"
+                        ? "/assets/images/skill_dark.svg"
+                        : "/assets/images/skill.svg"
+                    }
+                    alt="技能展示"
+                    className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl"
                   />
                 </div>
               </div>
@@ -161,5 +168,5 @@ export default function Skills() {
         )}
       </AnimatePresence>
     </section>
-  )
+  );
 }

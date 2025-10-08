@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Menu,
   X,
@@ -14,44 +14,44 @@ import {
   PenSquare,
   Code,
   Palette,
-  Bot
-} from 'lucide-react'
-import { useTheme } from '../providers'
+  Bot,
+} from "lucide-react";
+import { useTheme } from "../providers";
 
 const navItems = [
-  { name: 'Hi', href: '/', icon: Carrot },
-  { name: 'Blog', href: '/blog', icon: PenSquare },
-  { name: 'App', href: '/apps', icon: Code },
-  { name: 'AIGC', href: '/aigc', icon: Palette },
-  { name: 'Agent', href: '/agent', icon: Bot },
-]
+  { name: "Hi", href: "/", icon: Carrot },
+  { name: "Blog", href: "/blog", icon: PenSquare },
+  { name: "App", href: "/apps", icon: Code },
+  { name: "AIGC", href: "/aigc", icon: Palette },
+  { name: "Agent", href: "/agent", icon: Bot },
+];
 
 export default function Navigation() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const pathname = usePathname()
-  const { theme, toggleTheme } = useTheme()
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // 这里可以添加搜索逻辑
-  }
+  };
 
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg'
-          : 'bg-transparent'
+          ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg"
+          : "bg-transparent"
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -62,7 +62,7 @@ export default function Navigation() {
           {/* 左侧导航 */}
           <div className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => {
-              const Icon = item.icon
+              const Icon = item.icon;
               return (
                 <div
                   key={item.name}
@@ -72,23 +72,33 @@ export default function Navigation() {
                     href={item.href}
                     className={`relative px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-center space-x-2 ${
                       pathname === item.href
-                        ? 'text-primary'
-                        : 'text-text-secondary hover:text-primary'
+                        ? "text-primary"
+                        : "text-text-secondary hover:text-primary"
                     }`}
                   >
-                    <Icon size={16} className="icon-hover-rotate text-current flex-shrink-0" strokeWidth={1.5} />
-                    <span className="font-medium leading-none">{item.name}</span>
+                    <Icon
+                      size={16}
+                      className="icon-hover-rotate text-current flex-shrink-0"
+                      strokeWidth={1.5}
+                    />
+                    <span className="font-medium leading-none">
+                      {item.name}
+                    </span>
                     {pathname === item.href && (
                       <motion.div
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                         layoutId="activeTab"
                         initial={false}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 30,
+                        }}
                       />
                     )}
                   </Link>
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -104,7 +114,10 @@ export default function Navigation() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-64 px-4 py-2 pl-10 text-sm bg-bg-secondary dark:bg-gray-800 border-none outline-none rounded-full placeholder-text-light text-text-secondary focus:placeholder-text-light focus:ring-0 focus:bg-bg-tertiary dark:focus:bg-gray-700 transition-all duration-500 ease-in-out"
                 />
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary" />
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
+                />
               </div>
             </form>
 
@@ -115,7 +128,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
             </motion.button>
 
             {/* 移动端菜单按钮 */}
@@ -137,7 +150,7 @@ export default function Navigation() {
           animate={isOpen ? "open" : "closed"}
           variants={{
             open: { opacity: 1, height: "auto" },
-            closed: { opacity: 0, height: 0 }
+            closed: { opacity: 0, height: 0 },
           }}
           transition={{ duration: 0.3 }}
         >
@@ -152,12 +165,15 @@ export default function Navigation() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full px-4 py-2 pl-10 text-sm bg-bg-secondary dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full outline-none placeholder-text-light text-text-secondary focus:placeholder-text-light focus:border-transparent focus:ring-0 focus:bg-bg-tertiary dark:focus:bg-gray-700 transition-all duration-500 ease-in-out"
                 />
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent" />
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent"
+                />
               </div>
             </form>
 
             {navItems.map((item) => {
-              const Icon = item.icon
+              const Icon = item.icon;
               return (
                 <div
                   key={item.name}
@@ -167,20 +183,26 @@ export default function Navigation() {
                     href={item.href}
                     className={`block px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-center space-x-2 ${
                       pathname === item.href
-                        ? 'text-primary bg-primary/10'
-                        : 'text-text-secondary hover:text-primary hover:bg-gray-100 transition-all duration-300 dark:hover:bg-gray-800'
+                        ? "text-primary bg-primary/10"
+                        : "text-text-secondary hover:text-primary hover:bg-gray-100 transition-all duration-300 dark:hover:bg-gray-800"
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    <Icon size={16} className="icon-hover-rotate text-current flex-shrink-0" strokeWidth={1.5} />
-                    <span className="font-medium leading-none">{item.name}</span>
+                    <Icon
+                      size={16}
+                      className="icon-hover-rotate text-current flex-shrink-0"
+                      strokeWidth={1.5}
+                    />
+                    <span className="font-medium leading-none">
+                      {item.name}
+                    </span>
                   </Link>
                 </div>
-              )
+              );
             })}
           </div>
         </motion.div>
       </div>
     </motion.nav>
-  )
+  );
 }

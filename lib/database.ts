@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from 'pg'
+import { Pool, PoolClient } from "pg";
 
 // 数据库配置
 function getDatabaseConfig() {
@@ -11,99 +11,104 @@ function getDatabaseConfig() {
       idleTimeoutMillis: 10000, // 减少空闲超时时间
       connectionTimeoutMillis: 10000, // 增加连接超时时间
       acquireTimeoutMillis: 10000, // 获取连接超时
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl:
+        process.env.NODE_ENV === "production"
+          ? { rejectUnauthorized: false }
+          : false,
       // 添加重连配置
       reconnect: true,
       reconnectTries: 3,
-      reconnectInterval: 1000
-    }
+      reconnectInterval: 1000,
+    };
   }
-  
+
   // 回退到单独的环境变量（本地开发）
   return {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME || 'doudou_db',
-    user: process.env.DB_USER || 'doudou_user',
-    password: process.env.DB_PASSWORD || 'doudou_password',
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT || "5432"),
+    database: process.env.DB_NAME || "doudou_db",
+    user: process.env.DB_USER || "doudou_user",
+    password: process.env.DB_PASSWORD || "doudou_password",
     max: 10,
     min: 1,
     idleTimeoutMillis: 10000,
     connectionTimeoutMillis: 10000,
     acquireTimeoutMillis: 10000,
-  }
+  };
 }
 
-const dbConfig = getDatabaseConfig()
+const dbConfig = getDatabaseConfig();
 
 // 创建连接池
-const pool = new Pool(dbConfig)
+const pool = new Pool(dbConfig);
 
 // 连接池事件监听
-pool.on('connect', (client: PoolClient) => {
-  console.log('✅ Database connected')
-})
+pool.on("connect", (client: PoolClient) => {
+  console.log("✅ Database connected");
+});
 
-pool.on('error', (err: Error, client: PoolClient) => {
-  console.error('❌ Database connection error:', err)
-})
+pool.on("error", (err: Error, client: PoolClient) => {
+  console.error("❌ Database connection error:", err);
+});
 
-pool.on('remove', (client: PoolClient) => {
-  console.log('🔌 Database connection removed')
-})
+pool.on("remove", (client: PoolClient) => {
+  console.log("🔌 Database connection removed");
+});
 
 // 数据库操作工具函数
 export async function query(text: string, params?: any[]) {
-  const start = Date.now()
+  const start = Date.now();
   try {
-    const res = await pool.query(text, params)
-    const duration = Date.now() - start
-    console.log(`📊 Query executed in ${duration}ms: ${text}`)
-    return res
+    const res = await pool.query(text, params);
+    const duration = Date.now() - start;
+    console.log(`📊 Query executed in ${duration}ms: ${text}`);
+    return res;
   } catch (error) {
-    console.error('❌ Query error:', error)
-    throw error
+    console.error("❌ Query error:", error);
+    throw error;
   }
 }
 
 export async function getRow(text: string, params?: any[]) {
-  const res = await query(text, params)
-  return res.rows[0]
+  const res = await query(text, params);
+  return res.rows[0];
 }
 
 export async function getRows(text: string, params?: any[]) {
-  const res = await query(text, params)
-  return res.rows
+  const res = await query(text, params);
+  return res.rows;
 }
 
-export async function transaction(callback: (client: PoolClient) => Promise<any>) {
-  const client = await pool.connect()
+export async function transaction(
+  callback: (client: PoolClient) => Promise<any>,
+) {
+  const client = await pool.connect();
   try {
-    await client.query('BEGIN')
-    const result = await callback(client)
-    await client.query('COMMIT')
-    return result
+    await client.query("BEGIN");
+    const result = await callback(client);
+    await client.query("COMMIT");
+    return result;
   } catch (error) {
-    await client.query('ROLLBACK')
-    throw error
+    await client.query("ROLLBACK");
+    throw error;
   } finally {
-    client.release()
+    client.release();
   }
 }
 
 export async function closePool() {
-  await pool.end()
+  await pool.end();
 }
 
 // 数据库初始化
 export async function initDatabase() {
   try {
     // 创建表结构
-    await createTables()
-    console.log('✅ Database tables created successfully')
+    await createTables();
+    console.log("✅ Database tables created successfully");
   } catch (error) {
-    console.error('❌ Database initialization failed:', error)
-    throw error
+    console.error("❌ Database initialization failed:", error);
+    throw error;
   }
 }
 
@@ -122,7 +127,7 @@ async function createTables() {
       status VARCHAR(20) DEFAULT 'active',
       cover_image_url VARCHAR(500)
     )
-  `)
+  `);
 
   // 创建图片资源表
   await query(`
@@ -140,7 +145,7 @@ async function createTables() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       sort_order INTEGER DEFAULT 0
     )
-  `)
+  `);
 
   // 创建点赞记录表
   await query(`
@@ -152,7 +157,7 @@ async function createTables() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(collection_id, ip_address)
     )
-  `)
+  `);
 
   // 创建音乐表
   await query(`
@@ -168,7 +173,7 @@ async function createTables() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       status VARCHAR(20) DEFAULT 'active'
     )
-  `)
+  `);
 
   // 创建视频表
   await query(`
@@ -184,7 +189,7 @@ async function createTables() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       status VARCHAR(20) DEFAULT 'active'
     )
-  `)
+  `);
 
   // 创建博客文章表
   await query(`
@@ -207,7 +212,7 @@ async function createTables() {
       meta_title VARCHAR(255),
       meta_description TEXT
     )
-  `)
+  `);
 
   // 创建点赞表（匿名）
   await query(`
@@ -221,23 +226,47 @@ async function createTables() {
       status VARCHAR(10) DEFAULT 'liked',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-  `)
-  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_anon ON likes(target_type, target_id, anon_id) WHERE anon_id IS NOT NULL`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_likes_target ON likes(target_type, target_id)`)
+  `);
+  await query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_anon ON likes(target_type, target_id, anon_id) WHERE anon_id IS NOT NULL`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_likes_target ON likes(target_type, target_id)`,
+  );
   // 兼容 ON CONFLICT 使用的非部分唯一索引（避免部分索引不匹配导致冲突错误）
-  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_all ON likes(target_type, target_id, anon_id)`)
-  await query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_ipua ON likes(target_type, target_id, ip_hash, ua_hash)`)
+  await query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_all ON likes(target_type, target_id, anon_id)`,
+  );
+  await query(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_likes_unique_ipua ON likes(target_type, target_id, ip_hash, ua_hash)`,
+  );
 
   // 创建索引
-  await query(`CREATE INDEX IF NOT EXISTS idx_artwork_collections_created_at ON artwork_collections(created_at)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_artwork_collections_tags ON artwork_collections USING GIN(tags)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_artwork_images_collection_id ON artwork_images(collection_id)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_music_tracks_created_at ON music_tracks(created_at)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_music_tracks_status ON music_tracks(status)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at)`)
-  await query(`CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status)`)
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_artwork_collections_created_at ON artwork_collections(created_at)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_artwork_collections_tags ON artwork_collections USING GIN(tags)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_artwork_images_collection_id ON artwork_images(collection_id)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_music_tracks_created_at ON music_tracks(created_at)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_music_tracks_status ON music_tracks(status)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at)`,
+  );
+  await query(`CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status)`);
 }
 
 // 导出数据库实例
@@ -246,7 +275,7 @@ export const db = {
   getRow: getRow,
   getRows: getRows,
   transaction: transaction,
-  end: closePool
-}
+  end: closePool,
+};
 
-export default pool
+export default pool;

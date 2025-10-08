@@ -1,21 +1,21 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
-import { Code, Smartphone, Gamepad2, Wallet, Puzzle } from 'lucide-react'
+import { motion } from "framer-motion";
+import { Code, Smartphone, Gamepad2, Wallet, Puzzle } from "lucide-react";
 
 interface FilterBarProps {
-  onFilter: (type: string) => void
-  selectedType: string
+  onFilter: (type: string) => void;
+  selectedType: string;
 }
 
 function FilterBar({ onFilter, selectedType }: FilterBarProps) {
   const typeOptions = [
-    { value: 'all', label: '全部', icon: Wallet, size: 18 },
-    { value: 'app', label: '应用', icon: Code, size: 20 },
-    { value: 'miniprogram', label: '小程序', icon: Smartphone, size: 20 },
-    { value: 'game', label: '游戏', icon: Gamepad2, size: 20 },
-    { value: 'plugin', label: '插件', icon: Puzzle, size: 18 }
-  ]
+    { value: "all", label: "全部", icon: Wallet, size: 18 },
+    { value: "app", label: "应用", icon: Code, size: 20 },
+    { value: "miniprogram", label: "小程序", icon: Smartphone, size: 20 },
+    { value: "game", label: "游戏", icon: Gamepad2, size: 20 },
+    { value: "plugin", label: "插件", icon: Puzzle, size: 18 },
+  ];
 
   return (
     <motion.div
@@ -25,15 +25,15 @@ function FilterBar({ onFilter, selectedType }: FilterBarProps) {
       className="flex space-x-4"
     >
       {typeOptions.map((option) => {
-        const Icon = option.icon
+        const Icon = option.icon;
         return (
           <div key={option.value} className="relative group">
             <motion.button
               onClick={() => onFilter(option.value)}
               className={`p-2 rounded-full transition-all duration-300 ${
                 selectedType === option.value
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-text-secondary hover:text-text-primary'
+                  ? "bg-primary text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-text-secondary hover:text-text-primary"
               }`}
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
@@ -46,10 +46,10 @@ function FilterBar({ onFilter, selectedType }: FilterBarProps) {
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
             </div>
           </div>
-        )
+        );
       })}
     </motion.div>
-  )
+  );
 }
 
-export default FilterBar
+export default FilterBar;

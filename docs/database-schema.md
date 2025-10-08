@@ -252,13 +252,13 @@ CREATE OR REPLACE FUNCTION update_artwork_likes_count()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UPDATE artwork_collections 
-        SET likes_count = likes_count + 1 
+        UPDATE artwork_collections
+        SET likes_count = likes_count + 1
         WHERE id = NEW.collection_id;
         RETURN NEW;
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE artwork_collections 
-        SET likes_count = likes_count - 1 
+        UPDATE artwork_collections
+        SET likes_count = likes_count - 1
         WHERE id = OLD.collection_id;
         RETURN OLD;
     END IF;
@@ -295,7 +295,7 @@ CREATE TRIGGER trigger_update_artwork_collections_updated_at
 
 ```sql
 CREATE VIEW artwork_collections_stats AS
-SELECT 
+SELECT
     ac.id,
     ac.title,
     ac.created_at,
@@ -328,12 +328,12 @@ CREATE TABLE likes (
 );
 
 -- 唯一索引：防止重复点赞
-CREATE UNIQUE INDEX idx_likes_unique_anon 
-ON likes(target_type, target_id, anon_id) 
+CREATE UNIQUE INDEX idx_likes_unique_anon
+ON likes(target_type, target_id, anon_id)
 WHERE anon_id IS NOT NULL;
 
-CREATE UNIQUE INDEX idx_likes_unique_ipua 
-ON likes(target_type, target_id, ip_hash, ua_hash) 
+CREATE UNIQUE INDEX idx_likes_unique_ipua
+ON likes(target_type, target_id, ip_hash, ua_hash)
 WHERE anon_id IS NULL;
 
 -- 查询索引
@@ -356,32 +356,32 @@ BEGIN
             table_name TEXT;
         BEGIN
             SELECT COUNT(*) INTO current_count
-            FROM likes 
-            WHERE target_type = NEW.target_type 
-            AND target_id = NEW.target_id 
+            FROM likes
+            WHERE target_type = NEW.target_type
+            AND target_id = NEW.target_id
             AND status = 'liked';
-            
+
             -- 根据目标类型更新对应业务表
             CASE NEW.target_type
                 WHEN 'artwork' THEN
-                    UPDATE artwork_collections 
-                    SET likes_count = current_count 
+                    UPDATE artwork_collections
+                    SET likes_count = current_count
                     WHERE id = NEW.target_id;
                 WHEN 'blog' THEN
-                    UPDATE blog_posts 
-                    SET likes_count = current_count 
+                    UPDATE blog_posts
+                    SET likes_count = current_count
                     WHERE id = NEW.target_id;
                 WHEN 'music' THEN
-                    UPDATE music_tracks 
-                    SET likes_count = current_count 
+                    UPDATE music_tracks
+                    SET likes_count = current_count
                     WHERE id = NEW.target_id;
                 WHEN 'video' THEN
-                    UPDATE videos 
-                    SET likes_count = current_count 
+                    UPDATE videos
+                    SET likes_count = current_count
                     WHERE id = NEW.target_id;
                 WHEN 'app' THEN
-                    UPDATE apps 
-                    SET likes_count = current_count 
+                    UPDATE apps
+                    SET likes_count = current_count
                     WHERE id = NEW.target_id;
             END CASE;
         END;
@@ -392,31 +392,31 @@ BEGIN
             current_count INTEGER;
         BEGIN
             SELECT COUNT(*) INTO current_count
-            FROM likes 
-            WHERE target_type = OLD.target_type 
-            AND target_id = OLD.target_id 
+            FROM likes
+            WHERE target_type = OLD.target_type
+            AND target_id = OLD.target_id
             AND status = 'liked';
-            
+
             CASE OLD.target_type
                 WHEN 'artwork' THEN
-                    UPDATE artwork_collections 
-                    SET likes_count = current_count 
+                    UPDATE artwork_collections
+                    SET likes_count = current_count
                     WHERE id = OLD.target_id;
                 WHEN 'blog' THEN
-                    UPDATE blog_posts 
-                    SET likes_count = current_count 
+                    UPDATE blog_posts
+                    SET likes_count = current_count
                     WHERE id = OLD.target_id;
                 WHEN 'music' THEN
-                    UPDATE music_tracks 
-                    SET likes_count = current_count 
+                    UPDATE music_tracks
+                    SET likes_count = current_count
                     WHERE id = OLD.target_id;
                 WHEN 'video' THEN
-                    UPDATE videos 
-                    SET likes_count = current_count 
+                    UPDATE videos
+                    SET likes_count = current_count
                     WHERE id = OLD.target_id;
                 WHEN 'app' THEN
-                    UPDATE apps 
-                    SET likes_count = current_count 
+                    UPDATE apps
+                    SET likes_count = current_count
                     WHERE id = OLD.target_id;
             END CASE;
         END;
@@ -438,23 +438,23 @@ CREATE TRIGGER trigger_sync_likes_count
 ```sql
 -- 点赞排行榜视图
 CREATE VIEW likes_ranking AS
-SELECT 
+SELECT
     target_type,
     target_id,
     COUNT(*) as likes_count,
     MAX(created_at) as last_liked_at
-FROM likes 
+FROM likes
 WHERE status = 'liked'
 GROUP BY target_type, target_id
 ORDER BY likes_count DESC, last_liked_at DESC;
 
 -- 每日点赞统计视图
 CREATE VIEW daily_likes_stats AS
-SELECT 
+SELECT
     DATE(created_at) as date,
     target_type,
     COUNT(*) as likes_count
-FROM likes 
+FROM likes
 WHERE status = 'liked'
 GROUP BY DATE(created_at), target_type
 ORDER BY date DESC, target_type;
@@ -470,65 +470,65 @@ DECLARE
     r RECORD;
 BEGIN
     -- 修复 artwork_collections 表
-    FOR r IN 
+    FOR r IN
         SELECT target_id, COUNT(*) as actual_count
-        FROM likes 
+        FROM likes
         WHERE target_type = 'artwork' AND status = 'liked'
         GROUP BY target_id
     LOOP
-        UPDATE artwork_collections 
-        SET likes_count = r.actual_count 
+        UPDATE artwork_collections
+        SET likes_count = r.actual_count
         WHERE id = r.target_id;
     END LOOP;
-    
+
     -- 修复 blog_posts 表
-    FOR r IN 
+    FOR r IN
         SELECT target_id, COUNT(*) as actual_count
-        FROM likes 
+        FROM likes
         WHERE target_type = 'blog' AND status = 'liked'
         GROUP BY target_id
     LOOP
-        UPDATE blog_posts 
-        SET likes_count = r.actual_count 
+        UPDATE blog_posts
+        SET likes_count = r.actual_count
         WHERE id = r.target_id;
     END LOOP;
-    
+
     -- 修复 music_tracks 表
-    FOR r IN 
+    FOR r IN
         SELECT target_id, COUNT(*) as actual_count
-        FROM likes 
+        FROM likes
         WHERE target_type = 'music' AND status = 'liked'
         GROUP BY target_id
     LOOP
-        UPDATE music_tracks 
-        SET likes_count = r.actual_count 
+        UPDATE music_tracks
+        SET likes_count = r.actual_count
         WHERE id = r.target_id;
     END LOOP;
-    
+
     -- 修复 videos 表
-    FOR r IN 
+    FOR r IN
         SELECT target_id, COUNT(*) as actual_count
-        FROM likes 
+        FROM likes
         WHERE target_type = 'video' AND status = 'liked'
         GROUP BY target_id
     LOOP
-        UPDATE videos 
-        SET likes_count = r.actual_count 
+        UPDATE videos
+        SET likes_count = r.actual_count
         WHERE id = r.target_id;
     END LOOP;
-    
+
     -- 修复 apps 表
-    FOR r IN 
+    FOR r IN
         SELECT target_id, COUNT(*) as actual_count
-        FROM likes 
+        FROM likes
         WHERE target_type = 'app' AND status = 'liked'
         GROUP BY target_id
     LOOP
-        UPDATE apps 
-        SET likes_count = r.actual_count 
+        UPDATE apps
+        SET likes_count = r.actual_count
         WHERE id = r.target_id;
     END LOOP;
-    
+
     RAISE NOTICE '点赞计数修复完成';
 END;
 $$ LANGUAGE plpgsql;
@@ -537,11 +537,13 @@ $$ LANGUAGE plpgsql;
 ## 🚀 部署方案
 
 ### 方案一：本地PostgreSQL（开发环境）
+
 - 安装PostgreSQL
 - 创建数据库和用户
 - 运行SQL脚本创建表
 
 ### 方案二：腾讯云PostgreSQL（生产环境）
+
 - 购买腾讯云PostgreSQL实例
 - 配置安全组和网络
 - 连接并创建表结构

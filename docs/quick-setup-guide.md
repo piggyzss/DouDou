@@ -36,6 +36,7 @@
 ### 第三步：环境变量配置
 
 **后端环境变量：**
+
 ```
 DEBUG=false
 APP_NAME=AI News Agent
@@ -45,6 +46,7 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
 **前端环境变量：**
+
 ```
 PYTHON_BACKEND_URL=https://your-backend-project.vercel.app
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
@@ -67,16 +69,19 @@ curl https://your-backend-project.vercel.app/health
 ## 🔧 获取配置信息
 
 ### 获取Vercel Token
+
 1. 登录 [Vercel Dashboard](https://vercel.com/dashboard)
 2. 点击头像 → `Settings` → `Tokens`
 3. 点击 `Create Token`
 4. 复制生成的token
 
 ### 获取Vercel Org ID
+
 1. Vercel Dashboard → `Settings` → `General`
 2. 复制 `Team ID` 或 `Personal Account ID`
 
 ### 获取Project ID
+
 1. 选择项目 → `Settings` → `General`
 2. 复制 `Project ID`
 
@@ -96,20 +101,24 @@ curl https://your-backend-project.vercel.app/health
 ### Vercel后端项目配置问题
 
 **问题1：Framework Preset自动选择FastAPI**
+
 - **解决方案**：手动选择 `Other`，不要选择 `FastAPI`
 - **原因**：Vercel检测到Python项目自动选择FastAPI，但我们需要Docker部署
 
 **问题2：Build Command置灰且内容为npm命令**
+
 - **解决方案**：将Build Command留空，让Vercel使用Dockerfile
 - **原因**：Vercel误认为这是Node.js项目
 
 **问题3：部署报错**
+
 - **解决方案**：
   1. 确保vercel.json配置正确（已更新）
   2. 确保Dockerfile在agent-backend目录下
   3. 重新部署项目
 
 **正确的后端项目配置：**
+
 ```
 Root Directory: ./agent-backend
 Framework: Other
@@ -120,14 +129,17 @@ Output Directory: (留空)
 ### 其他常见问题
 
 **GitHub Actions失败**
+
 - 检查Secrets是否正确配置
 - 确认Vercel Token有效性
 
 **Vercel部署失败**
+
 - 检查vercel.json配置
 - 确认Dockerfile路径
 
 **服务无响应**
+
 ```bash
 # 检查服务状态
 vercel ls

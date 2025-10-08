@@ -7,6 +7,7 @@
 ## 技术架构
 
 ### 整体架构图
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Next.js UI   │────│  Next.js API   │────│  Python Agent  │
@@ -23,19 +24,21 @@
 ## 1. 导航和路由设计
 
 ### 1.1 导航栏更新
+
 在现有导航项中添加 Agent 选项：
 
 ```typescript
 const navItems = [
-  { name: 'Hi', href: '/', icon: Carrot },
-  { name: 'Blog', href: '/blog', icon: PenSquare },
-  { name: 'App', href: '/apps', icon: Code },
-  { name: 'AIGC', href: '/aigc', icon: Palette },
-  { name: 'Agent', href: '/agent', icon: Bot }, // 新增
-]
+  { name: "Hi", href: "/", icon: Carrot },
+  { name: "Blog", href: "/blog", icon: PenSquare },
+  { name: "App", href: "/apps", icon: Code },
+  { name: "AIGC", href: "/aigc", icon: Palette },
+  { name: "Agent", href: "/agent", icon: Bot }, // 新增
+];
 ```
 
 ### 1.2 路由结构
+
 ```
 app/
 ├── agent/
@@ -64,6 +67,7 @@ app/
 ### 2.1 Terminal 风格界面
 
 #### 设计理念
+
 - 模仿开发者控制台/终端界面
 - 默认浅色主题，自动适配整站主题切换
 - 绿色/蓝色字体突出显示
@@ -73,6 +77,7 @@ app/
 #### 界面布局
 
 **浅色主题（默认）**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ AI News Agent v1.0                                     [×]  │
@@ -103,6 +108,7 @@ app/
 ```
 
 **深色主题（自动适配）**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ AI News Agent v1.0                                     [×]  │
@@ -133,12 +139,13 @@ app/
 ```
 
 #### 颜色方案
+
 ```css
 /* 浅色主题（默认） */
 :root {
   --terminal-bg: #ffffff;
   --terminal-text: #24292f;
-  --terminal-green: #53b88f ;
+  --terminal-green: #53b88f;
   --terminal-blue: #3388ff;
   --terminal-yellow: #ffd33d;
   --terminal-red: #d73a49;
@@ -148,7 +155,7 @@ app/
 }
 
 /* 深色主题适配 */
-[data-theme='dark'] .terminal-container,
+[data-theme="dark"] .terminal-container,
 .dark .terminal-container {
   --terminal-bg: #0d1117;
   --terminal-text: #c9d1d9;
@@ -163,7 +170,7 @@ app/
 
 /* 系统主题适配 */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .terminal-container {
+  :root:not([data-theme="light"]) .terminal-container {
     --terminal-bg: #0d1117;
     --terminal-text: #c9d1d9;
     --terminal-green: #7c3aed;
@@ -180,6 +187,7 @@ app/
 ### 2.2 交互功能
 
 #### 支持的命令
+
 ```bash
 /help                   # 显示帮助信息
 latest                  # 获取最新 AI 资讯
@@ -194,6 +202,7 @@ config                  # 配置设置
 ```
 
 #### 特殊功能
+
 - 命令自动补全
 - 上下箭头浏览历史命令
 - Ctrl+C 中断当前操作
@@ -203,45 +212,52 @@ config                  # 配置设置
 ### 2.3 主题适配实现
 
 #### 主题检测和切换
+
 ```typescript
 // hooks/useTheme.ts
-import { useEffect, useState } from 'react'
-import { useTheme } from '@/app/providers'
+import { useEffect, useState } from "react";
+import { useTheme } from "@/app/providers";
 
 export function useTerminalTheme() {
-  const { theme } = useTheme()
-  const [terminalTheme, setTerminalTheme] = useState<'light' | 'dark'>('light')
+  const { theme } = useTheme();
+  const [terminalTheme, setTerminalTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     // 根据整站主题自动切换终端主题
-    if (theme === 'dark') {
-      setTerminalTheme('dark')
-      document.documentElement.setAttribute('data-terminal-theme', 'dark')
-    } else if (theme === 'light') {
-      setTerminalTheme('light')
-      document.documentElement.setAttribute('data-terminal-theme', 'light')
+    if (theme === "dark") {
+      setTerminalTheme("dark");
+      document.documentElement.setAttribute("data-terminal-theme", "dark");
+    } else if (theme === "light") {
+      setTerminalTheme("light");
+      document.documentElement.setAttribute("data-terminal-theme", "light");
     } else {
       // 系统主题
-      const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setTerminalTheme(isDarkMode ? 'dark' : 'light')
-      document.documentElement.setAttribute('data-terminal-theme', isDarkMode ? 'dark' : 'light')
+      const isDarkMode = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      setTerminalTheme(isDarkMode ? "dark" : "light");
+      document.documentElement.setAttribute(
+        "data-terminal-theme",
+        isDarkMode ? "dark" : "light",
+      );
     }
-  }, [theme])
+  }, [theme]);
 
-  return terminalTheme
+  return terminalTheme;
 }
 ```
 
 #### 终端组件主题适配
+
 ```typescript
 // components/Terminal.tsx
 import { useTerminalTheme } from '@/hooks/useTheme'
 
 export default function Terminal() {
   const terminalTheme = useTerminalTheme()
-  
+
   return (
-    <div 
+    <div
       className={`terminal-container ${terminalTheme}`}
       style={{
         backgroundColor: 'var(--terminal-bg)',
@@ -256,13 +272,17 @@ export default function Terminal() {
 ```
 
 #### CSS 变量动态切换
+
 ```css
 /* 终端主题样式 */
 .terminal-container {
   background-color: var(--terminal-bg);
   color: var(--terminal-text);
   border: 1px solid var(--terminal-border);
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .terminal-container.light {
@@ -304,16 +324,19 @@ export default function Terminal() {
 ### 2.4 响应式设计
 
 #### 桌面端 (≥1024px)
+
 - 全屏终端界面
 - 侧边栏显示快捷命令
 - 多窗口支持
 
 #### 平板端 (768px-1023px)
+
 - 适配触摸操作
 - 虚拟键盘友好
 - 简化侧边栏
 
 #### 移动端 (≤767px)
+
 - 全屏模式
 - 触摸优化的输入框
 - 滑动手势支持
@@ -323,6 +346,7 @@ export default function Terminal() {
 ### 3.1 Python Agent 核心
 
 #### 技术选型
+
 ```python
 # 核心框架
 fastapi              # Web API 框架
@@ -353,6 +377,7 @@ prometheus_client   # 监控指标
 ```
 
 #### 项目结构
+
 ```
 agent/
 ├── app/
@@ -400,6 +425,7 @@ agent/
 ### 3.2 Next.js API 包装层
 
 #### API 路由设计
+
 ```typescript
 // app/api/agent/chat/route.ts
 export async function POST(request: NextRequest) {
@@ -408,7 +434,7 @@ export async function POST(request: NextRequest) {
   // 错误处理和重试逻辑
 }
 
-// app/api/agent/news/route.ts  
+// app/api/agent/news/route.ts
 export async function GET(request: NextRequest) {
   // 获取新闻数据
   // 缓存处理
@@ -423,9 +449,10 @@ export async function GET() {
 ```
 
 #### WebSocket 支持
+
 ```typescript
 // lib/websocket-server.ts
-import { Server } from 'socket.io'
+import { Server } from "socket.io";
 
 export function initWebSocketServer() {
   // 初始化 WebSocket 服务器
@@ -439,6 +466,7 @@ export function initWebSocketServer() {
 ### 4.1 数据源分类
 
 #### 技术新闻源
+
 ```python
 TECH_NEWS_SOURCES = {
     'techcrunch': {
@@ -460,6 +488,7 @@ TECH_NEWS_SOURCES = {
 ```
 
 #### 学术资源
+
 ```python
 ACADEMIC_SOURCES = {
     'arxiv': {
@@ -476,6 +505,7 @@ ACADEMIC_SOURCES = {
 ```
 
 #### 社交媒体
+
 ```python
 SOCIAL_SOURCES = {
     'reddit': {
@@ -492,36 +522,38 @@ SOCIAL_SOURCES = {
 ### 4.2 数据处理流程
 
 #### 数据收集
+
 ```python
 class NewsCollector:
     async def collect_from_source(self, source_config):
         """从单个数据源收集新闻"""
         pass
-        
+
     async def collect_all_sources(self):
         """并发收集所有数据源"""
         pass
-        
+
     def deduplicate(self, news_list):
         """去重处理"""
         pass
-        
+
     def classify_news(self, news_item):
         """新闻分类"""
         pass
 ```
 
 #### 数据存储
+
 ```python
 class NewsStorage:
     def save_news(self, news_data):
         """保存新闻到数据库"""
         pass
-        
+
     def get_latest_news(self, limit=10):
         """获取最新新闻"""
         pass
-        
+
     def search_news(self, keyword, limit=10):
         """搜索新闻"""
         pass
@@ -530,6 +562,7 @@ class NewsStorage:
 ### 4.3 更新策略
 
 #### 定时任务
+
 ```python
 # 使用 Celery 定时任务
 from celery import Celery
@@ -542,7 +575,7 @@ def collect_hourly_news():
     """每小时收集新闻"""
     pass
 
-@app.task  
+@app.task
 def collect_daily_summary():
     """每日新闻摘要"""
     pass
@@ -554,7 +587,7 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute=0),
     },
     'daily-summary': {
-        'task': 'collect_daily_summary', 
+        'task': 'collect_daily_summary',
         'schedule': crontab(hour=8, minute=0),
     },
 }
@@ -565,6 +598,7 @@ app.conf.beat_schedule = {
 ### 5.1 对话流程
 
 #### 命令解析
+
 ```python
 class CommandParser:
     def parse_command(self, user_input: str) -> dict:
@@ -576,25 +610,26 @@ class CommandParser:
             'categories': self.show_categories,
             'summarize': self.summarize_news,
         }
-        
+
     async def execute_command(self, command: dict) -> str:
         """执行命令并返回结果"""
         pass
 ```
 
 #### 智能对话
+
 ```python
 class ChatAgent:
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4")
         self.memory = ConversationBufferMemory()
-        
+
     async def chat(self, user_message: str) -> str:
         """智能对话功能"""
         # 结合新闻数据进行对话
         # 提供上下文相关的回答
         pass
-        
+
     def get_news_context(self, query: str) -> str:
         """获取相关新闻作为上下文"""
         pass
@@ -603,6 +638,7 @@ class ChatAgent:
 ### 5.2 输出格式化
 
 #### 新闻展示格式
+
 ```python
 class NewsFormatter:
     def format_news_list(self, news_list: List[News]) -> str:
@@ -614,19 +650,20 @@ class NewsFormatter:
             output += "│\n"
         output += "└──────────────────────────────────────┘"
         return output
-        
+
     def format_news_detail(self, news: News) -> str:
         """格式化新闻详情"""
         pass
 ```
 
 #### 进度显示
+
 ```python
 class ProgressDisplay:
     def show_loading(self, message: str):
         """显示加载动画"""
         pass
-        
+
     def show_progress(self, current: int, total: int):
         """显示进度条"""
         pass
@@ -637,42 +674,45 @@ class ProgressDisplay:
 ### 6.1 缓存策略
 
 #### Redis 缓存
+
 ```python
 class CacheService:
     def __init__(self):
         self.redis_client = redis.Redis(
-            host='localhost', 
-            port=6379, 
+            host='localhost',
+            port=6379,
             decode_responses=True
         )
-        
+
     def cache_news(self, key: str, news_data: dict, ttl: int = 3600):
         """缓存新闻数据"""
         pass
-        
+
     def get_cached_news(self, key: str) -> dict:
         """获取缓存的新闻"""
         pass
 ```
 
 #### 前端缓存
+
 ```typescript
 // 使用 SWR 进行数据缓存
-import useSWR from 'swr'
+import useSWR from "swr";
 
 export function useNews() {
-  const { data, error } = useSWR('/api/agent/news', fetcher, {
+  const { data, error } = useSWR("/api/agent/news", fetcher, {
     refreshInterval: 300000, // 5分钟刷新一次
     revalidateOnFocus: false,
-  })
-  
-  return { news: data, isLoading: !error && !data, error }
+  });
+
+  return { news: data, isLoading: !error && !data, error };
 }
 ```
 
 ### 6.2 并发处理
 
 #### 异步数据收集
+
 ```python
 import asyncio
 import aiohttp
@@ -682,7 +722,7 @@ class AsyncNewsCollector:
         """并发收集多个数据源"""
         async with aiohttp.ClientSession() as session:
             tasks = [
-                self.collect_from_source(session, source) 
+                self.collect_from_source(session, source)
                 for source in sources
             ]
             results = await asyncio.gather(*tasks)
@@ -694,6 +734,7 @@ class AsyncNewsCollector:
 ### 7.1 系统监控
 
 #### 性能指标
+
 ```python
 from prometheus_client import Counter, Histogram, Gauge
 
@@ -705,6 +746,7 @@ NEWS_COUNT = Gauge('agent_news_count', 'Total news count')
 ```
 
 #### 健康检查
+
 ```python
 @app.get("/health")
 async def health_check():
@@ -723,6 +765,7 @@ async def health_check():
 ### 7.2 日志系统
 
 #### 结构化日志
+
 ```python
 from loguru import logger
 
@@ -744,8 +787,9 @@ logger.error("Failed to fetch news: {error}", error=str(e))
 ### 8.1 容器化部署
 
 #### Docker Compose
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   agent-backend:
@@ -757,14 +801,14 @@ services:
       - DATABASE_URL=sqlite:///./agent.db
     depends_on:
       - redis
-      
+
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-      
+
   nginx:
     image: nginx:alpine
     ports:
@@ -781,25 +825,26 @@ volumes:
 ### 8.2 CI/CD 流程
 
 #### GitHub Actions
+
 ```yaml
 name: Deploy Agent Module
 
 on:
   push:
     branches: [main]
-    paths: ['agent-backend/**', 'app/agent/**']
+    paths: ["agent-backend/**", "app/agent/**"]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Build and Deploy Backend
         run: |
           docker build -t agent-backend ./agent-backend
           docker push ${{ secrets.REGISTRY_URL }}/agent-backend
-          
+
       - name: Deploy to Production
         run: |
           # 部署脚本
@@ -810,6 +855,7 @@ jobs:
 ### 9.1 API 安全
 
 #### 认证授权
+
 ```python
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -830,6 +876,7 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 ```
 
 #### 请求限制
+
 ```python
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -846,6 +893,7 @@ async def get_news(request: Request):
 ### 9.2 数据安全
 
 #### 敏感信息处理
+
 ```python
 import os
 from cryptography.fernet import Fernet
@@ -853,11 +901,11 @@ from cryptography.fernet import Fernet
 class SecurityManager:
     def __init__(self):
         self.cipher = Fernet(os.environ.get('ENCRYPTION_KEY'))
-        
+
     def encrypt_data(self, data: str) -> str:
         """加密敏感数据"""
         return self.cipher.encrypt(data.encode()).decode()
-        
+
     def decrypt_data(self, encrypted_data: str) -> str:
         """解密数据"""
         return self.cipher.decrypt(encrypted_data.encode()).decode()
@@ -868,6 +916,7 @@ class SecurityManager:
 ### 10.1 单元测试
 
 #### Python 后端测试
+
 ```python
 import pytest
 from fastapi.testclient import TestClient
@@ -888,6 +937,7 @@ def test_chat_endpoint():
 ```
 
 #### 前端组件测试
+
 ```typescript
 import { render, screen } from '@testing-library/react'
 import Terminal from '@/app/agent/components/Terminal'
@@ -897,7 +947,7 @@ describe('Terminal Component', () => {
     render(<Terminal />)
     expect(screen.getByText('user@agent:~$')).toBeInTheDocument()
   })
-  
+
   it('handles command input', async () => {
     render(<Terminal />)
     const input = screen.getByRole('textbox')
@@ -909,6 +959,7 @@ describe('Terminal Component', () => {
 ### 10.2 集成测试
 
 #### API 集成测试
+
 ```python
 @pytest.mark.asyncio
 async def test_news_collection_pipeline():
@@ -922,24 +973,28 @@ async def test_news_collection_pipeline():
 ## 11. 项目时间线
 
 ### Phase 1: 基础架构 (Week 1-2)
+
 - [ ] 创建 Agent 页面路由和基础组件
 - [ ] 设计终端界面 UI
 - [ ] 搭建 Python FastAPI 后端框架
 - [ ] 配置 Redis 缓存服务
 
-### Phase 2: 核心功能 (Week 3-4)  
+### Phase 2: 核心功能 (Week 3-4)
+
 - [ ] 实现新闻数据收集爬虫
 - [ ] 开发 Agent 命令解析系统
 - [ ] 集成 OpenAI API 进行智能对话
 - [ ] 实现 WebSocket 实时通信
 
 ### Phase 3: 优化完善 (Week 5-6)
+
 - [ ] 添加缓存和性能优化
 - [ ] 完善错误处理和重试机制
 - [ ] 实现监控和日志系统
 - [ ] 编写单元测试和集成测试
 
 ### Phase 4: 部署上线 (Week 7-8)
+
 - [ ] 容器化部署配置
 - [ ] 配置 CI/CD 流程
 - [ ] 生产环境部署
@@ -948,18 +1003,21 @@ async def test_news_collection_pipeline():
 ## 12. 预期效果
 
 ### 用户体验
+
 - 提供直观的终端界面，符合开发者习惯
 - 实时获取最新 AI 资讯，信息及时准确
 - 支持自然语言交互，用户体验友好
 - 响应速度快，支持并发访问
 
 ### 技术价值
+
 - 展示全栈开发能力
 - 体现 AI 技术集成能力
 - 提供可扩展的架构设计
 - 建立完善的监控和运维体系
 
 ### 商业价值
+
 - 提升个人品牌影响力
 - 展示技术实力和创新能力
 - 为后续项目积累技术经验
@@ -967,4 +1025,4 @@ async def test_news_collection_pipeline():
 
 ---
 
-*本设计方案为 Agent 模块的详细技术规划，涵盖了从前端界面到后端架构的完整解决方案。在具体实施过程中，可根据实际需求进行调整和优化。*
+_本设计方案为 Agent 模块的详细技术规划，涵盖了从前端界面到后端架构的完整解决方案。在具体实施过程中，可根据实际需求进行调整和优化。_

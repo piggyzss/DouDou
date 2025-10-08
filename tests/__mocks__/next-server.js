@@ -3,7 +3,7 @@ const mockResponse = {
   json: jest.fn(() => Promise.resolve({})),
   status: 200,
   headers: new Headers(),
-}
+};
 
 const NextResponse = {
   json: jest.fn((data, init) => {
@@ -11,11 +11,11 @@ const NextResponse = {
       json: () => Promise.resolve(data),
       status: init?.status || 200,
       headers: new Headers(init?.headers || {}),
-    }
-    return response
+    };
+    return response;
   }),
-}
+};
 
 module.exports = {
   NextResponse,
-}
+};

@@ -1,9 +1,11 @@
 # Run All Tests and Fix Failures
 
 ## Overview
+
 Execute the full test suite and systematically fix any failures, ensuring code quality and functionality.
 
 ## Steps
+
 1. **Run test suite**
    - Execute all tests in the project
    - Capture output and identify failures

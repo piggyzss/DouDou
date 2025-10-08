@@ -1,46 +1,55 @@
-"use client"
+"use client";
 
-import { motion } from 'framer-motion'
-import { AlertTriangle, AlertCircle, Info } from 'lucide-react'
+import { motion } from "framer-motion";
+import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 
 interface ConfirmModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-  title: string
-  message: string
-  confirmText?: string
-  cancelText?: string
-  type?: 'danger' | 'warning' | 'info'
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  type?: "danger" | "warning" | "info";
 }
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = '确认', cancelText = '取消', type = 'danger' }: ConfirmModalProps) {
-  if (!isOpen) return null
+export default function ConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = "确认",
+  cancelText = "取消",
+  type = "danger",
+}: ConfirmModalProps) {
+  if (!isOpen) return null;
 
   const getTypeStyles = () => {
     switch (type) {
-      case 'danger':
+      case "danger":
         return {
           icon: <AlertTriangle className="text-red-500" size={24} />,
-          button: 'bg-red-500 hover:bg-red-600 text-white',
-          border: 'border-red-200 dark:border-red-800'
-        }
-      case 'warning':
+          button: "bg-red-500 hover:bg-red-600 text-white",
+          border: "border-red-200 dark:border-red-800",
+        };
+      case "warning":
         return {
           icon: <AlertCircle className="text-yellow-500" size={24} />,
-          button: 'bg-yellow-500 hover:bg-yellow-600 text-white',
-          border: 'border-yellow-200 dark:border-yellow-800'
-        }
+          button: "bg-yellow-500 hover:bg-yellow-600 text-white",
+          border: "border-yellow-200 dark:border-yellow-800",
+        };
       default:
         return {
           icon: <Info className="text-blue-500" size={24} />,
-          button: 'bg-blue-500 hover:bg-blue-600 text-white',
-          border: 'border-blue-200 dark:border-blue-800'
-        }
+          button: "bg-blue-500 hover:bg-blue-600 text-white",
+          border: "border-blue-200 dark:border-blue-800",
+        };
     }
-  }
+  };
 
-  const styles = getTypeStyles()
+  const styles = getTypeStyles();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -51,9 +60,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         className={`bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative border ${styles.border}`}
       >
         <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0">
-            {styles.icon}
-          </div>
+          <div className="flex-shrink-0">{styles.icon}</div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white font-heading mb-2">
               {title}
@@ -72,8 +79,8 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
           </button>
           <button
             onClick={() => {
-              onConfirm()
-              onClose()
+              onConfirm();
+              onClose();
             }}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${styles.button}`}
           >
@@ -82,5 +89,5 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

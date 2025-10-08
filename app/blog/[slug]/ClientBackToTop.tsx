@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import { ArrowUp } from 'lucide-react'
+import { ArrowUp } from "lucide-react";
 
 export default function ClientBackToTop() {
   const onClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   return (
     <button
       onClick={onClick}
@@ -14,7 +14,5 @@ export default function ClientBackToTop() {
     >
       <ArrowUp size={16} />
     </button>
-  )
+  );
 }
-
-

@@ -1,8 +1,8 @@
-import { query } from '../../lib/database'
+import { query } from "../../lib/database";
 
 async function initAppsDatabase() {
   try {
-    console.log('开始初始化Apps数据库表...')
+    console.log("开始初始化Apps数据库表...");
 
     // 创建apps表
     await query(`
@@ -36,7 +36,7 @@ async function initAppsDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         published_at TIMESTAMP
       )
-    `)
+    `);
 
     // 创建app_daily_stats表
     await query(`
@@ -49,7 +49,7 @@ async function initAppsDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(app_id, date)
       )
-    `)
+    `);
 
     // 创建app_likes表
     await query(`
@@ -61,7 +61,7 @@ async function initAppsDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(app_id, ip_address)
       )
-    `)
+    `);
 
     // 创建app_tags表
     await query(`
@@ -73,19 +73,33 @@ async function initAppsDatabase() {
         color VARCHAR(7) DEFAULT '#6B7280',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `)
+    `);
 
     // 创建索引
-    await query('CREATE INDEX IF NOT EXISTS idx_apps_slug ON apps(slug)')
-    await query('CREATE INDEX IF NOT EXISTS idx_apps_status ON apps(status)')
-    await query('CREATE INDEX IF NOT EXISTS idx_apps_type ON apps(type)')
-    await query('CREATE INDEX IF NOT EXISTS idx_apps_platform ON apps(platform)')
-    await query('CREATE INDEX IF NOT EXISTS idx_apps_created_at ON apps(created_at)')
-    await query('CREATE INDEX IF NOT EXISTS idx_apps_published_at ON apps(published_at)')
-    await query('CREATE INDEX IF NOT EXISTS idx_app_daily_stats_app_id ON app_daily_stats(app_id)')
-    await query('CREATE INDEX IF NOT EXISTS idx_app_daily_stats_date ON app_daily_stats(date)')
-    await query('CREATE INDEX IF NOT EXISTS idx_app_likes_app_id ON app_likes(app_id)')
-    await query('CREATE INDEX IF NOT EXISTS idx_app_tags_slug ON app_tags(slug)')
+    await query("CREATE INDEX IF NOT EXISTS idx_apps_slug ON apps(slug)");
+    await query("CREATE INDEX IF NOT EXISTS idx_apps_status ON apps(status)");
+    await query("CREATE INDEX IF NOT EXISTS idx_apps_type ON apps(type)");
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_apps_platform ON apps(platform)",
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_apps_created_at ON apps(created_at)",
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_apps_published_at ON apps(published_at)",
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_app_daily_stats_app_id ON app_daily_stats(app_id)",
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_app_daily_stats_date ON app_daily_stats(date)",
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_app_likes_app_id ON app_likes(app_id)",
+    );
+    await query(
+      "CREATE INDEX IF NOT EXISTS idx_app_tags_slug ON app_tags(slug)",
+    );
 
     // 创建更新时间触发器
     await query(`
@@ -96,20 +110,20 @@ async function initAppsDatabase() {
           RETURN NEW;
       END;
       $$ language 'plpgsql'
-    `)
+    `);
 
     await query(`
       CREATE TRIGGER update_apps_updated_at 
       BEFORE UPDATE ON apps 
       FOR EACH ROW 
       EXECUTE FUNCTION update_updated_at_column()
-    `)
+    `);
 
-    console.log('✅ Apps数据库表初始化完成!')
-    
+    console.log("✅ Apps数据库表初始化完成!");
+
     // 插入一些测试数据
-    console.log('插入测试数据...')
-    
+    console.log("插入测试数据...");
+
     // 插入测试应用
     await query(`
       INSERT INTO apps (name, slug, description, tags, type, platform, status, experience_method, download_url, cover_image_url, video_url, dau, downloads, likes_count, trend, published_at)
@@ -118,7 +132,7 @@ async function initAppsDatabase() {
         ('智能记账本', 'smart-expense-tracker', '简洁易用的记账应用，支持多账户管理、分类统计、预算提醒，让理财变得简单高效。', ARRAY['记账', '理财', '工具'], 'app', 'mobile', 'online', 'download', 'https://play.google.com/expense-tracker', 'https://example.com/cover2.jpg', 'https://example.com/video2.mp4', 856, 2345, 89, '+8%', CURRENT_TIMESTAMP),
         ('像素冒险', 'pixel-adventure', '复古风格的像素冒险游戏，探索神秘世界，收集道具，挑战各种关卡，体验经典游戏乐趣。', ARRAY['游戏', '像素', '冒险'], 'game', 'web', 'online', 'qrcode', NULL, 'https://example.com/cover3.jpg', 'https://example.com/video3.mp4', 2341, 8901, 256, '+15%', CURRENT_TIMESTAMP)
       ON CONFLICT (slug) DO NOTHING
-    `)
+    `);
 
     // 插入测试标签
     await query(`
@@ -134,7 +148,7 @@ async function initAppsDatabase() {
         ('像素', 'pixel', '像素风格应用', '#F7DC6F'),
         ('冒险', 'adventure', '冒险类游戏', '#BB8FCE')
       ON CONFLICT (slug) DO NOTHING
-    `)
+    `);
 
     // 插入测试统计数据
     await query(`
@@ -162,13 +176,12 @@ async function initAppsDatabase() {
         (3, CURRENT_DATE - INTERVAL '1 day', 2320, 260),
         (3, CURRENT_DATE, 2341, 240)
       ON CONFLICT (app_id, date) DO NOTHING
-    `)
+    `);
 
-    console.log('✅ 测试数据插入完成!')
-    
+    console.log("✅ 测试数据插入完成!");
   } catch (error) {
-    console.error('❌ 初始化Apps数据库失败:', error)
-    throw error
+    console.error("❌ 初始化Apps数据库失败:", error);
+    throw error;
   }
 }
 
@@ -176,13 +189,13 @@ async function initAppsDatabase() {
 if (require.main === module) {
   initAppsDatabase()
     .then(() => {
-      console.log('🎉 Apps数据库初始化完成!')
-      process.exit(0)
+      console.log("🎉 Apps数据库初始化完成!");
+      process.exit(0);
     })
     .catch((error) => {
-      console.error('💥 Apps数据库初始化失败:', error)
-      process.exit(1)
-    })
+      console.error("💥 Apps数据库初始化失败:", error);
+      process.exit(1);
+    });
 }
 
-export { initAppsDatabase }
+export { initAppsDatabase };

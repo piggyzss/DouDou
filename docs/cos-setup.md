@@ -25,6 +25,7 @@ JWT_SECRET=your_jwt_secret_key_here
 ## 🔧 获取配置信息
 
 ### 1. SecretId 和 SecretKey
+
 - 登录腾讯云控制台
 - 进入访问管理CAM：https://console.cloud.tencent.com/cam
 - 在用户列表中找到您创建的子用户
@@ -32,11 +33,13 @@ JWT_SECRET=your_jwt_secret_key_here
 - 复制SecretId和SecretKey
 
 ### 2. 存储桶信息
+
 - 进入对象存储COS：https://console.cloud.tencent.com/cos
 - 在存储桶列表中找到您的存储桶
 - 记录存储桶名称和地域信息
 
 ### 3. AppId
+
 - 在存储桶概览页面查看AppId
 
 ## 🧪 测试连接
@@ -48,6 +51,7 @@ npx tsx scripts/test-cos.ts
 ```
 
 如果看到以下输出，说明配置成功：
+
 ```
 🧪 Testing Tencent Cloud COS connection...
 
@@ -86,12 +90,12 @@ your-bucket/
 ### 1. 在组件中使用文件上传
 
 ```tsx
-import { FileUpload } from '@/app/components/FileUpload'
+import { FileUpload } from "@/app/components/FileUpload";
 
 export default function MyComponent() {
   const handleUpload = (url: string) => {
-    console.log('File uploaded:', url)
-  }
+    console.log("File uploaded:", url);
+  };
 
   return (
     <FileUpload
@@ -100,36 +104,33 @@ export default function MyComponent() {
       accept="image/*"
       multiple={true}
     />
-  )
+  );
 }
 ```
 
 ### 2. 在API中使用文件上传
 
 ```typescript
-import { uploadFile } from '@/lib/tencent-cos'
+import { uploadFile } from "@/lib/tencent-cos";
 
 // 上传单个文件
-const result = await uploadFile(
-  fileBuffer,
-  'image.jpg',
-  'image/jpeg',
-  'blog'
-)
+const result = await uploadFile(fileBuffer, "image.jpg", "image/jpeg", "blog");
 
 if (result.success) {
-  console.log('File URL:', result.url)
+  console.log("File URL:", result.url);
 }
 ```
 
 ## 🔒 安全配置
 
 ### 1. 存储桶权限设置
+
 - 在COS控制台中设置存储桶权限
 - 配置防盗链规则
 - 设置跨域访问规则
 
 ### 2. 密钥安全
+
 - 不要将密钥提交到代码仓库
 - 定期轮换密钥
 - 使用最小权限原则
@@ -137,10 +138,12 @@ if (result.success) {
 ## 📊 监控和日志
 
 ### 1. 访问日志
+
 - 在COS控制台查看访问日志
 - 监控文件上传和下载情况
 
 ### 2. 错误处理
+
 - 检查控制台错误日志
 - 监控API响应状态
 
@@ -163,6 +166,7 @@ if (result.success) {
 ### 获取帮助
 
 如果遇到问题，请检查：
+
 1. 环境变量配置是否正确
 2. 网络连接是否正常
 3. 腾讯云控制台中的配置
@@ -170,6 +174,7 @@ if (result.success) {
 ## 🎯 下一步
 
 现在您可以：
+
 1. 启动开发服务器：`npm run dev`
 2. 测试文件上传功能
 3. 在博客和AIGC页面中使用文件上传

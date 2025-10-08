@@ -1,5 +1,5 @@
 // Mock for lib/models/app
-const mockDatabase = require('./database')
+const mockDatabase = require("./database");
 
 module.exports = {
   getApps: mockDatabase.getApps,
@@ -7,4 +7,4 @@ module.exports = {
   getAppById: mockDatabase.getAppById,
   updateApp: mockDatabase.updateApp,
   deleteApp: mockDatabase.deleteApp,
-}
+};

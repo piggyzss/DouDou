@@ -7,6 +7,7 @@
 ## 🏗️ 架构设计
 
 ### 混合模式架构
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   本地前端      │────│   Docker后端    │    │   Docker Redis  │
@@ -83,28 +84,30 @@ DouDou/
 ### Docker Compose服务
 
 #### agent-backend服务
+
 ```yaml
 agent-backend:
   build:
     context: ./agent-backend
-    dockerfile: Dockerfile.dev      # 使用开发专用Dockerfile
+    dockerfile: Dockerfile.dev # 使用开发专用Dockerfile
   ports:
-    - "8000:8000"                   # 映射端口
+    - "8000:8000" # 映射端口
   volumes:
-    - ./agent-backend:/app:cached   # 代码热重载
+    - ./agent-backend:/app:cached # 代码热重载
   environment:
-    - DEBUG=true                    # 开发模式
-    - ALLOWED_ORIGINS=http://localhost:3000  # CORS配置
+    - DEBUG=true # 开发模式
+    - ALLOWED_ORIGINS=http://localhost:3000 # CORS配置
 ```
 
 #### redis服务（可选）
+
 ```yaml
 redis:
   image: redis:7-alpine
   ports:
-    - "6379:6379"                   # Redis端口
+    - "6379:6379" # Redis端口
   volumes:
-    - redis_data:/data              # 数据持久化
+    - redis_data:/data # 数据持久化
 ```
 
 ### 环境变量配置
@@ -112,11 +115,13 @@ redis:
 开发环境会自动配置以下环境变量：
 
 **Python后端环境变量:**
+
 - `DEBUG=true` - 开发模式
 - `LOG_LEVEL=debug` - 详细日志
 - `ALLOWED_ORIGINS=http://localhost:3000` - CORS配置
 
 **前端环境变量 (.env.local):**
+
 - `PYTHON_BACKEND_URL=http://localhost:8000` - 后端服务地址
 
 ---
@@ -126,6 +131,7 @@ redis:
 ### 日常开发流程
 
 1. **启动开发环境**
+
    ```bash
    ./scripts/docker/start-dev-docker.sh
    ```
@@ -135,20 +141,22 @@ redis:
    - **后端代码**: 编辑后容器自动重启，无需手动操作
 
 3. **测试验证**
+
    ```bash
    # 测试后端API
    curl http://localhost:8000/health
-   
+
    # 测试Agent功能
    # 访问 http://localhost:3000/agent
    # 输入命令如: /help, /latest
    ```
 
 4. **查看日志**
+
    ```bash
    # 查看后端日志
    docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend
-   
+
    # 查看所有服务状态
    docker-compose -f scripts/docker/docker-compose.dev.yml ps
    ```
@@ -156,11 +164,13 @@ redis:
 ### 代码热重载机制
 
 #### 前端热重载
+
 - **机制**: Next.js内置热重载
 - **触发**: 保存TypeScript/React文件
 - **效果**: 浏览器自动刷新，状态保持
 
 #### 后端热重载
+
 - **机制**: uvicorn `--reload` 参数 + Docker volumes
 - **触发**: 保存Python文件
 - **效果**: 容器内服务自动重启
@@ -168,19 +178,21 @@ redis:
 ### 调试指南
 
 #### 前端调试（Cursor）
+
 ```typescript
 // 在Cursor中设置断点正常工作
 export default function AgentPage() {
-  const [command, setCommand] = useState('')
-  
+  const [command, setCommand] = useState("");
+
   const handleSubmit = async () => {
     debugger; // 断点会正常触发
     // ... 调试代码
-  }
+  };
 }
 ```
 
 #### 后端调试（日志）
+
 ```python
 # Python代码中使用日志调试
 from loguru import logger
@@ -236,6 +248,7 @@ curl -X POST http://localhost:3000/api/agent/execute \
 #### 1. Docker容器启动失败
 
 **问题**: 容器无法启动或立即退出
+
 ```bash
 # 查看详细错误日志
 docker-compose -f scripts/docker/docker-compose.dev.yml logs agent-backend
@@ -250,6 +263,7 @@ docker-compose -f scripts/docker/docker-compose.dev.yml build --no-cache
 #### 2. 端口占用问题
 
 **问题**: 端口8000或3000被占用
+
 ```bash
 # 查看端口占用
 lsof -i :8000
@@ -267,6 +281,7 @@ kill -9 $(lsof -ti:8000)
 **问题**: 代码修改后没有自动重启
 
 **后端热重载问题:**
+
 ```bash
 # 检查volumes挂载
 docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend ls -la /app
@@ -276,6 +291,7 @@ docker-compose -f scripts/docker/docker-compose.dev.yml restart agent-backend
 ```
 
 **前端热重载问题:**
+
 ```bash
 # 清理Next.js缓存
 rm -rf .next
@@ -332,6 +348,7 @@ docker-compose -f scripts/docker/docker-compose.dev.yml logs --tail 50 agent-bac
 ### 依赖更新
 
 #### 前端依赖更新
+
 ```bash
 # 在本地更新
 npm update
@@ -342,6 +359,7 @@ npm run dev
 ```
 
 #### 后端依赖更新
+
 ```bash
 # 更新requirements.txt后重新构建
 docker-compose -f scripts/docker/docker-compose.dev.yml build --no-cache agent-backend
@@ -368,6 +386,7 @@ docker-compose -f scripts/docker/docker-compose.dev.yml build --no-cache
 ### Docker性能优化
 
 #### 1. 使用缓存优化构建
+
 ```dockerfile
 # 在Dockerfile.dev中，依赖安装放在前面
 COPY requirements.txt .
@@ -377,6 +396,7 @@ COPY . .
 ```
 
 #### 2. 优化volumes挂载
+
 ```yaml
 # 使用cached选项（macOS）
 volumes:
@@ -384,6 +404,7 @@ volumes:
 ```
 
 #### 3. 减少镜像大小
+
 ```bash
 # 查看镜像分层
 docker history doudou-agent-backend-dev
@@ -412,6 +433,7 @@ docker system prune -a
 ### 环境一致性
 
 开发环境和生产环境使用相同的：
+
 - **Docker基础镜像**: python:3.11-slim
 - **Python依赖**: requirements.txt
 - **环境变量结构**: 相同的配置项
@@ -431,6 +453,7 @@ docker run -e DEBUG=false -p 8000:8000 your-production-image
 ## 📚 扩展资料
 
 ### 相关文档
+
 - **[本地开发指南](./local-development-guide.md)** - 传统开发环境
 - **[后端技术架构](./backend-setup.md)** - 技术栈详解
 - **[部署指南](./deployment-guide.md)** - 生产环境部署

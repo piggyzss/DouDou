@@ -1,197 +1,215 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { Play, Download, ExternalLink, Heart, Users, TrendingUp, MessageCircle, Calendar, QrCode } from 'lucide-react'
-import VideoModal from './VideoModal'
-import HighchartsReact from 'highcharts-react-official'
-import Highcharts from 'highcharts'
-import { App } from '@/lib/models/app'
+import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Play,
+  Download,
+  ExternalLink,
+  Heart,
+  Users,
+  TrendingUp,
+  MessageCircle,
+  Calendar,
+  QrCode,
+} from "lucide-react";
+import VideoModal from "./VideoModal";
+import HighchartsReact from "highcharts-react-official";
+import Image from "next/image";
+import Highcharts from "highcharts";
+import { App } from "@/lib/models/app";
 
 interface AppCardProps {
-  app: App
+  app: App;
 }
 
 // 日期格式化函数
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 export default function AppCard({ app }: AppCardProps) {
-  const [showVideoModal, setShowVideoModal] = useState(false)
-  const [dauTrend, setDauTrend] = useState<number[]>([])
-  const [liked, setLiked] = useState(false)
-  const [buttonWidth, setButtonWidth] = useState(0)
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [dauTrend, setDauTrend] = useState<number[]>([]);
+  const [liked, setLiked] = useState(false);
+  const [buttonWidth, setButtonWidth] = useState(0);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // 获取DAU趋势数据
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch(`/api/apps/${app.id}/stats?days=7`)
+        const response = await fetch(`/api/apps/${app.id}/stats?days=7`);
         if (response.ok) {
-          const data = await response.json()
-          const trendData = data.stats.map((stat: any) => stat.dau).reverse()
-          
+          const data = await response.json();
+          const trendData = data.stats.map((stat: any) => stat.dau).reverse();
+
           // 如果数据不足7天，用0补齐
-          const paddedData = []
+          const paddedData = [];
           for (let i = 0; i < 7; i++) {
-            paddedData.push(trendData[i] || 0)
+            paddedData.push(trendData[i] || 0);
           }
-          
-          setDauTrend(paddedData)
+
+          setDauTrend(paddedData);
         } else {
           // 如果请求失败，用0补齐7天数据
-          setDauTrend(new Array(7).fill(0))
+          setDauTrend(new Array(7).fill(0));
         }
       } catch (error) {
-        console.error('获取统计数据失败:', error)
+        
         // 如果出错，用0补齐7天数据
-        setDauTrend(new Array(7).fill(0))
+        setDauTrend(new Array(7).fill(0));
       }
-    }
+    };
 
-    fetchStats()
-  }, [app.id, app.dau])
+    fetchStats();
+  }, [app.id, app.dau]);
 
   // 检查点赞状态
   useEffect(() => {
     const checkLikeStatus = async () => {
       try {
-        const response = await fetch(`/api/apps/${app.id}/like`)
+        const response = await fetch(`/api/apps/${app.id}/like`);
         if (response.ok) {
-          const data = await response.json()
-          setLiked(data.liked)
+          const data = await response.json();
+          setLiked(data.liked);
         }
       } catch (error) {
-        console.error('检查点赞状态失败:', error)
+        
       }
-    }
+    };
 
-    checkLikeStatus()
-  }, [app.id])
+    checkLikeStatus();
+  }, [app.id]);
 
   // 获取按钮宽度
   useEffect(() => {
     const updateButtonWidth = () => {
       if (buttonRef.current) {
-        setButtonWidth(buttonRef.current.offsetWidth)
+        setButtonWidth(buttonRef.current.offsetWidth);
       }
-    }
+    };
 
-    updateButtonWidth()
-    window.addEventListener('resize', updateButtonWidth)
-    
+    updateButtonWidth();
+    window.addEventListener("resize", updateButtonWidth);
+
     return () => {
-      window.removeEventListener('resize', updateButtonWidth)
-    }
-  }, [])
+      window.removeEventListener("resize", updateButtonWidth);
+    };
+  }, []);
 
   // 处理点赞
   const handleLike = async () => {
     try {
       const response = await fetch(`/api/apps/${app.id}/like`, {
-        method: 'POST'
-      })
+        method: "POST",
+      });
       if (response.ok) {
-        const data = await response.json()
-        setLiked(data.liked)
+        const data = await response.json();
+        setLiked(data.liked);
       }
     } catch (error) {
-      console.error('点赞失败:', error)
+      
     }
-  }
+  };
 
   // DAU趋势图表配置
   const getDauChartOptions = () => {
-    const dates: string[] = []
-    const fullDates: string[] = []
+    const dates: string[] = [];
+    const fullDates: string[] = [];
     for (let i = 6; i >= 0; i--) {
-      const date = new Date()
-      date.setDate(date.getDate() - i)
-      dates.push(date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' }))
-      fullDates.push(date.toLocaleDateString('zh-CN', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit'
-      }).replace(/\//g, '/'))
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      dates.push(
+        date.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" }),
+      );
+      fullDates.push(
+        date
+          .toLocaleDateString("zh-CN", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+          .replace(/\//g, "/"),
+      );
     }
 
     // 计算Y轴范围
-    const minValue = Math.min(...dauTrend)
-    const maxValue = Math.max(...dauTrend)
-    const range = maxValue - minValue
-    const padding = range > 0 ? range * 0.1 : 1 // 10% padding，如果全为0则给1的padding
-    
+    const minValue = Math.min(...dauTrend);
+    const maxValue = Math.max(...dauTrend);
+    const range = maxValue - minValue;
+    const padding = range > 0 ? range * 0.1 : 1; // 10% padding，如果全为0则给1的padding
+
     // 智能计算合适的刻度单位
-    const rawRange = maxValue - minValue + padding * 2
-    const idealTickCount = 5 // 理想的刻度数量
-    const rawTickSize = rawRange / idealTickCount
-    
-    let tickSize = 1
-    let yMin = 0
-    let yMax = 1
-    let yAxisTicks: number[] = [0, 1]
-    
+    const rawRange = maxValue - minValue + padding * 2;
+    const idealTickCount = 5; // 理想的刻度数量
+    const rawTickSize = rawRange / idealTickCount;
+
+    let tickSize = 1;
+    let yMin = 0;
+    let yMax = 1;
+    let yAxisTicks: number[] = [0, 1];
+
     if (rawRange > 0) {
       // 计算合适的刻度单位（1, 2, 5, 10, 20, 50, 100, 200, 500, 1000等）
-      const magnitude = Math.pow(10, Math.floor(Math.log10(rawTickSize)))
-      const normalizedTickSize = rawTickSize / magnitude
-      
+      const magnitude = Math.pow(10, Math.floor(Math.log10(rawTickSize)));
+      const normalizedTickSize = rawTickSize / magnitude;
+
       if (normalizedTickSize <= 1) {
-        tickSize = magnitude
+        tickSize = magnitude;
       } else if (normalizedTickSize <= 2) {
-        tickSize = 2 * magnitude
+        tickSize = 2 * magnitude;
       } else if (normalizedTickSize <= 5) {
-        tickSize = 5 * magnitude
+        tickSize = 5 * magnitude;
       } else {
-        tickSize = 10 * magnitude
+        tickSize = 10 * magnitude;
       }
-      
+
       // 计算Y轴范围
-      yMin = Math.floor((minValue - padding) / tickSize) * tickSize
-      yMax = Math.ceil((maxValue + padding) / tickSize) * tickSize
-      
+      yMin = Math.floor((minValue - padding) / tickSize) * tickSize;
+      yMax = Math.ceil((maxValue + padding) / tickSize) * tickSize;
+
       // 生成Y轴刻度
-      yAxisTicks = []
+      yAxisTicks = [];
       for (let i = yMin; i <= yMax; i += tickSize) {
-        yAxisTicks.push(i)
+        yAxisTicks.push(i);
       }
     }
 
     return {
       chart: {
-        type: 'line',
+        type: "line",
         height: 180,
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         spacing: [5, 5, 5, 5],
         animation: {
-          duration: 1000
-        }
+          duration: 1000,
+        },
       },
       title: {
-        text: ''
+        text: "",
       },
       xAxis: {
         categories: dates,
         labels: {
           style: {
-            fontSize: '10px',
-            color: '#6B7280'
-          }
+            fontSize: "10px",
+            color: "#6B7280",
+          },
         },
         lineWidth: 0,
         tickLength: 0,
-        gridLineWidth: 0
+        gridLineWidth: 0,
       },
       yAxis: {
         title: {
-          text: ''
+          text: "",
         },
         min: yMin,
         max: yMax,
@@ -199,124 +217,142 @@ export default function AppCard({ app }: AppCardProps) {
         labels: {
           enabled: true,
           style: {
-            fontSize: '10px',
-            color: '#6B7280'
-          }
+            fontSize: "10px",
+            color: "#6B7280",
+          },
         },
         gridLineWidth: 1,
-        gridLineColor: '#F3F4F6',
+        gridLineColor: "#F3F4F6",
         lineWidth: 0,
         tickLength: 0,
         plotBands: yAxisTicks.slice(0, -1).map((tick, index) => ({
           from: tick,
           to: yAxisTicks[index + 1],
-          color: index % 2 === 0 ? '#f1f8fc' : 'transparent'
-        }))
+          color: index % 2 === 0 ? "#f1f8fc" : "transparent",
+        })),
       },
-      series: [{
-        name: 'DAU',
-        data: dauTrend,
-        color: '#006aff',
-        lineWidth: 2,
-        marker: {
-          radius: 3,
-          fillColor: '#006aff',
-          lineWidth: 0
+      series: [
+        {
+          name: "DAU",
+          data: dauTrend,
+          color: "#006aff",
+          lineWidth: 2,
+          marker: {
+            radius: 3,
+            fillColor: "#006aff",
+            lineWidth: 0,
+          },
+          animation: {
+            duration: 1000,
+            easing: "easeOutBounce",
+          },
         },
-        animation: {
-          duration: 1000,
-          easing: 'easeOutBounce'
-        }
-      }],
+      ],
       legend: {
-        enabled: false
+        enabled: false,
       },
       credits: {
-        enabled: false
+        enabled: false,
       },
       tooltip: {
         enabled: true,
-        backgroundColor: '#ffffff',
-        borderColor: '#e5e7eb',
+        backgroundColor: "#ffffff",
+        borderColor: "#e5e7eb",
         borderWidth: 1,
         borderRadius: 8,
         shadow: {
-          color: 'rgba(0, 0, 0, 0.1)',
+          color: "rgba(0, 0, 0, 0.1)",
           offsetX: 0,
           offsetY: 2,
           opacity: 0.1,
-          width: 3
+          width: 3,
         },
         style: {
-          color: '#374151',
-          fontSize: '12px'
+          color: "#374151",
+          fontSize: "12px",
         },
-        formatter: function(this: any): string {
-          const pointIndex = this.point.index
-          const fullDate = fullDates[pointIndex]
+        formatter: function (this: any): string {
+          const pointIndex = this.point.index;
+          const fullDate = fullDates[pointIndex];
           return `<div style="padding: 8px;">
             <div style="font-weight: 600; margin-bottom: 4px; color: #111827;">${fullDate}</div>
             <div style="color: #6b7280;">DAU: <span style="color: #006aff; font-weight: 600;">${this.y.toLocaleString()}</span></div>
-          </div>`
-        }
+          </div>`;
+        },
       },
       plotOptions: {
         line: {
           animation: {
-            duration: 1000
-          }
-        }
-      }
-    }
-  }
+            duration: 1000,
+          },
+        },
+      },
+    };
+  };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'app': return '应用'
-      case 'miniprogram': return '小程序'
-      case 'game': return '游戏'
-      case 'plugin': return '插件'
-      default: return '应用'
+      case "app":
+        return "应用";
+      case "miniprogram":
+        return "小程序";
+      case "game":
+        return "游戏";
+      case "plugin":
+        return "插件";
+      default:
+        return "应用";
     }
-  }
+  };
 
   const getPlatformLabel = (platform: string) => {
     switch (platform) {
-      case 'web': return 'Web'
-      case 'mobile': return '移动端'
-      case 'wechat': return '微信'
-      default: return 'Web'
+      case "web":
+        return "Web";
+      case "mobile":
+        return "移动端";
+      case "wechat":
+        return "微信";
+      default:
+        return "Web";
     }
-  }
+  };
 
-  
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      case 'beta': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'development': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+      case "online":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "beta":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "development":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
-  }
+  };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'online': return '已上线'
-      case 'beta': return '测试版'
-      case 'development': return '开发中'
-      default: return '未知'
+      case "online":
+        return "已上线";
+      case "beta":
+        return "测试版";
+      case "development":
+        return "开发中";
+      default:
+        return "未知";
     }
-  }
+  };
 
   const formatNumber = (num: number | undefined) => {
     if (num === undefined || num === null) {
-      return '0'
+      return "0";
     }
     if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K'
+      return (num / 1000).toFixed(1) + "K";
     }
-    return num.toString()
-  }
+    return num.toString();
+  };
 
   return (
     <>
@@ -324,14 +360,18 @@ export default function AppCard({ app }: AppCardProps) {
         <div className="flex h-72">
           {/* 左侧封面图片 - 3:4比例 */}
           <div className="w-48 h-full flex-shrink-0 rounded overflow-hidden relative group/cover">
-            <img
-              src={app.cover_image_url ? `/api/apps/proxy-image?url=${encodeURIComponent(app.cover_image_url)}` : '/images/placeholder-app.png'}
+            <Image
+              src={
+                app.cover_image_url
+                  ? `/api/apps/proxy-image?url=${encodeURIComponent(app.cover_image_url)}`
+                  : "/images/placeholder-app.png"
+              }
               alt={app.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
             />
-            
+
             {/* 播放按钮覆盖层 */}
-            <div 
+            <div
               className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center cursor-pointer hover:bg-opacity-40 transition-all duration-300 opacity-0 group-hover/cover:opacity-100"
               onClick={() => setShowVideoModal(true)}
             >
@@ -340,13 +380,18 @@ export default function AppCard({ app }: AppCardProps) {
                 whileTap={{ scale: 0.9 }}
                 className="bg-white bg-opacity-90 rounded-full p-3"
               >
-                <Play className="w-6 h-6 text-gray-800 ml-0.5" fill="currentColor" />
+                <Play
+                  className="w-6 h-6 text-gray-800 ml-0.5"
+                  fill="currentColor"
+                />
               </motion.div>
             </div>
 
             {/* 状态标签 */}
             <div className="absolute top-2 left-2">
-              <span className={`px-2 py-1 text-xs font-blog rounded-full text-center flex items-center justify-center ${getStatusColor(app.status)}`}>
+              <span
+                className={`px-2 py-1 text-xs font-blog rounded-full text-center flex items-center justify-center ${getStatusColor(app.status)}`}
+              >
                 {getStatusLabel(app.status)}
               </span>
             </div>
@@ -357,9 +402,7 @@ export default function AppCard({ app }: AppCardProps) {
             {/* 标题和操作按钮 */}
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-xl font-bold text-text-primary font-heading group-hover:text-primary transition-colors line-clamp-2 flex-1">
-                <Link href={`/apps/${app.id}`}>
-                  {app.name}
-                </Link>
+                <Link href={`/apps/${app.id}`}>{app.name}</Link>
               </h2>
             </div>
 
@@ -382,11 +425,15 @@ export default function AppCard({ app }: AppCardProps) {
                   <div className="flex items-center gap-1">
                     <span>{formatDate(app.updated_at)}</span>
                   </div>
-                  <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">·</span>
+                  <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">
+                    ·
+                  </span>
                   <div className="flex items-center gap-1">
                     <span>DAU {formatNumber(app.dau)}</span>
                   </div>
-                  <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">·</span>
+                  <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">
+                    ·
+                  </span>
                   <div className="flex items-center gap-1">
                     <Download size={14} className="translate-y-[-1px]" />
                     <span>{formatNumber(app.downloads)}</span>
@@ -406,22 +453,29 @@ export default function AppCard({ app }: AppCardProps) {
                 {/* 体验入口 */}
                 <div className="mt-3">
                   <div className="relative inline-block group/qr">
-                    <button 
+                    <button
                       ref={buttonRef}
                       className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 px-3 py-2 rounded hover:scale-105"
                     >
                       <QrCode size={14} />
                       <span>体验一下</span>
                     </button>
-                    
+
                     {/* 二维码悬浮显示 */}
                     <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover/qr:opacity-100 transition-opacity duration-200 pointer-events-none">
-                      <div 
-                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2 flex items-center justify-center" 
-                        style={{ width: `${buttonWidth}px`, height: `${buttonWidth}px` }}
+                      <div
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2 flex items-center justify-center"
+                        style={{
+                          width: `${buttonWidth}px`,
+                          height: `${buttonWidth}px`,
+                        }}
                       >
-                        <img
-                          src={app.qr_code_url ? `/api/apps/proxy-image?url=${encodeURIComponent(app.qr_code_url)}` : '/images/placeholder-qr.png'}
+                        <Image
+                          src={
+                            app.qr_code_url
+                              ? `/api/apps/proxy-image?url=${encodeURIComponent(app.qr_code_url)}`
+                              : "/images/placeholder-qr.png"
+                          }
                           alt={`${app.name} 二维码`}
                           className="w-20 h-20 object-contain"
                         />
@@ -433,7 +487,9 @@ export default function AppCard({ app }: AppCardProps) {
 
               {/* 右侧区域：DAU趋势图表 */}
               <div className="w-64 flex flex-col">
-                <div className="text-xs text-text-muted mb-4 font-blog">最近7天DAU趋势</div>
+                <div className="text-xs text-text-muted mb-4 font-blog">
+                  最近7天DAU趋势
+                </div>
                 <div className="flex-grow">
                   <HighchartsReact
                     highcharts={Highcharts}
@@ -445,18 +501,18 @@ export default function AppCard({ app }: AppCardProps) {
           </div>
         </div>
       </div>
-      
+
       {/* 卡片分隔线 */}
       <div className="mb-4 border-b border-gray-200 dark:border-gray-700"></div>
 
       {/* 视频播放模态框 */}
       {showVideoModal && (
         <VideoModal
-          videoUrl={app.video_url || ''}
+          videoUrl={app.video_url || ""}
           title={app.name}
           onClose={() => setShowVideoModal(false)}
         />
       )}
     </>
-  )
+  );
 }

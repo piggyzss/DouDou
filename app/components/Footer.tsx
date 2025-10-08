@@ -1,17 +1,21 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
-import { Github, Rss, Linkedin, Mail } from 'lucide-react'
+import { motion } from "framer-motion";
+import { Github, Rss, Linkedin, Mail } from "lucide-react";
 
 const socialLinks = [
-  { name: 'GitHub', icon: Github, href: 'https://github.com/piggyzss' },
-  { name: 'RSS订阅', icon: Rss, href: '/api/rss' },
-  { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/in/yourusername' },
-  { name: 'Email', icon: Mail, href: 'mailto:doudou.lookstar@gmail.com' },
-]
+  { name: "GitHub", icon: Github, href: "https://github.com/piggyzss" },
+  { name: "RSS订阅", icon: Rss, href: "/api/rss" },
+  {
+    name: "LinkedIn",
+    icon: Linkedin,
+    href: "https://linkedin.com/in/yourusername",
+  },
+  { name: "Email", icon: Mail, href: "mailto:doudou.lookstar@gmail.com" },
+];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear()
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-bg-secondary dark:bg-gray-900 mt-20">
@@ -20,7 +24,9 @@ export default function Footer() {
           {/* 个人信息 */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-primary">&lt;shanshan /&gt;</span>
+              <span className="text-xl font-bold text-primary">
+                &lt;shanshan /&gt;
+              </span>
             </div>
             <p className="text-text-secondary text-sm">
               前端开发者 | AI爱好者 | 创意工作者
@@ -32,20 +38,31 @@ export default function Footer() {
 
           {/* 快速链接 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-text-primary">快速链接</h3>
+            <h3 className="text-lg font-semibold text-text-primary">
+              快速链接
+            </h3>
             <ul className="space-y-2">
               <li>
-                <a href="/blog" className="text-text-secondary hover:text-primary transition-colors text-sm">
+                <a
+                  href="/blog"
+                  className="text-text-secondary hover:text-primary transition-colors text-sm"
+                >
                   博客文章
                 </a>
               </li>
               <li>
-                <a href="/apps" className="text-text-secondary hover:text-primary transition-colors text-sm">
+                <a
+                  href="/apps"
+                  className="text-text-secondary hover:text-primary transition-colors text-sm"
+                >
                   开发作品
                 </a>
               </li>
               <li>
-                <a href="/aigc" className="text-text-secondary hover:text-primary transition-colors text-sm">
+                <a
+                  href="/aigc"
+                  className="text-text-secondary hover:text-primary transition-colors text-sm"
+                >
                   AIGC作品
                 </a>
               </li>
@@ -66,7 +83,7 @@ export default function Footer() {
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  {social.name === 'RSS订阅' ? (
+                  {social.name === "RSS订阅" ? (
                     <social.icon size={20} strokeWidth={2.5} />
                   ) : (
                     <social.icon size={20} />
@@ -87,5 +104,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

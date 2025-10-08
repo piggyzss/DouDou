@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     // 获取博客文章数据
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
     // 这里应该从数据库获取最新的博客文章
     // 为了演示，我们先创建一个基本的RSS feed
     const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -25,19 +25,16 @@ export async function GET() {
       <pubDate>${new Date().toUTCString()}</pubDate>
     </item>
   </channel>
-</rss>`
+</rss>`;
 
     return new NextResponse(rssXml, {
       headers: {
-        'Content-Type': 'application/rss+xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        "Content-Type": "application/rss+xml; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
       },
-    })
+    });
   } catch (error) {
-    console.error('RSS生成错误:', error)
-    return NextResponse.json(
-      { error: 'RSS生成失败' },
-      { status: 500 }
-    )
+    
+    return NextResponse.json({ error: "RSS生成失败" }, { status: 500 });
   }
 }

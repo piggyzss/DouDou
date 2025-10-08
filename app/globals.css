@@ -6,23 +6,23 @@
   --primary: #6747ce;
   --primary-light: #8a6fd8;
   --primary-dark: #4f35a0;
-  --secondary: #FADCDA;
-  
+  --secondary: #fadcda;
+
   /* 新增颜色变量 */
   --yellow: #fed336;
   --yellow-bg: #fffbeb;
-  
+
   --green1: #8ccc79;
   --green1-bg: #f4faf2;
-  
+
   --green2: #53b88f;
   --green2-bg: #eef8f4;
-  
+
   --blue: #3388ff;
   --blue-bg: #ebf3ff;
-  
-  --text-primary: #000C2A;
-  --text-secondary: #444A6E;
+
+  --text-primary: #000c2a;
+  --text-secondary: #444a6e;
   --text-muted: #6c757d;
   --text-light: #c6c6c6;
   --bg-primary: #ffffff;
@@ -30,9 +30,8 @@
   --bg-tertiary: #e9ecef;
   --bg-card: #ffffff;
   /* 博客正文字体变量 */
-  --font-body: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  --font-body: "PingFang SC", "YouYuan", "Microsoft Yahei", sans-serif;
 
-  
   /* Terminal 主题变量 - 浅色主题（默认） */
   --terminal-bg: #ffffff;
   --terminal-text: #24292f;
@@ -61,7 +60,7 @@
   --text-secondary: rgba(255, 255, 255, 0.9);
   --text-muted: rgba(255, 255, 255, 0.7);
   --text-light: rgba(255, 255, 255, 0.8);
-  
+
   /* Terminal 主题变量 - 深色主题适配 */
   --terminal-bg: #0d1117;
   --terminal-text: #c9d1d9;
@@ -109,7 +108,9 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   /* 使用fzm-Old.Typewriter字体 */
-  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family:
+    var(--font-typewriter), "PingFang SC", "YouYuan", "Microsoft Yahei",
+    sans-serif;
   font-weight: 400;
   line-height: 1.6;
 }
@@ -125,8 +126,15 @@ a {
 }
 
 /* 标题样式 - 使用ZenKakuGothicNew-Medium字体 */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-zen-kaku), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    var(--font-zen-kaku), "PingFang SC", "YouYuan", "Microsoft Yahei",
+    sans-serif;
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: -0.01em;
@@ -150,12 +158,16 @@ h4 {
 
 /* 统一字体类 */
 .font-heading {
-  font-family: var(--font-zen-kaku), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family:
+    var(--font-zen-kaku), "PingFang SC", "YouYuan", "Microsoft Yahei",
+    sans-serif;
   font-weight: 500;
 }
 
 .font-english {
-  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family:
+    var(--font-typewriter), "PingFang SC", "YouYuan", "Microsoft Yahei",
+    sans-serif;
   font-weight: 400;
 }
 
@@ -165,13 +177,15 @@ h4 {
 }
 
 .font-typewriter {
-  font-family: var(--font-typewriter), 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family:
+    var(--font-typewriter), "PingFang SC", "YouYuan", "Microsoft Yahei",
+    sans-serif;
   font-weight: 400;
 }
 
 /* 博客专用字体类 */
 .font-blog {
-  font-family: 'PingFang SC', 'YouYuan', 'Microsoft Yahei', sans-serif;
+  font-family: "PingFang SC", "YouYuan", "Microsoft Yahei", sans-serif;
   font-weight: 300;
 }
 
@@ -189,19 +203,27 @@ h4 {
 }
 
 .bg-gradient-primary-secondary:hover {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark) 0%,
+    var(--secondary) 100%
+  );
 }
 
 /* 统一边框样式 */
 .border-unified {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .dark .border-unified {
   border-color: #374151;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* 统一卡片样式 */
@@ -209,22 +231,30 @@ h4 {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease-in-out;
 }
 
 .card-unified:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .dark .card-unified {
   background-color: #1f2937;
   border-color: #374151;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .dark .card-unified:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 /* 自定义滚动条样式 */
@@ -266,8 +296,6 @@ h4 {
 .dark .bg-card {
   background-color: var(--bg-card);
 }
-
-
 
 /* 博客Markdown样式优化 */
 .blog-content {
@@ -348,7 +376,7 @@ h4 {
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
 }
 
 .blog-content pre {
@@ -576,8 +604,14 @@ h4 {
 }
 
 /* 全局品牌手型光标（链接、按钮、range、以及显式 cursor-pointer 的元素） */
-a, button, [role="button"], input[type="range"], .cursor-pointer {
-  cursor: url('/assets/icon/hand.svg') 6 2, pointer;
+a,
+button,
+[role="button"],
+input[type="range"],
+.cursor-pointer {
+  cursor:
+    url("/assets/icon/hand.svg") 6 2,
+    pointer;
 }
 
 /* 终端输入框专用样式 */
@@ -654,7 +688,6 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   transform: rotate(5deg);
 }
 
-
 @keyframes borderGlow {
   0% {
     opacity: 0.7;
@@ -669,7 +702,10 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   background-color: var(--terminal-bg);
   color: var(--terminal-text);
   border: 1px solid var(--terminal-border);
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .terminal-container.light {
@@ -721,7 +757,6 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 .text-terminal-cyan {
   color: var(--terminal-cyan);
 }
-
 
 .text-terminal-gray {
   color: var(--terminal-gray);
@@ -781,8 +816,14 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 
 /* 终端光标闪烁动画 */
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 /* 终端链接样式优化 */
@@ -831,12 +872,22 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
 
 /* 终端文本选中时的浅紫色背景 - 基于主色调#6747ce的浅色版本 */
 .terminal-messages-container ::selection {
-  background-color: rgba(103, 71, 206, 0.2) !important; /* 基于#6747ce的20%透明度浅紫色 */
+  background-color: rgba(
+    103,
+    71,
+    206,
+    0.2
+  ) !important; /* 基于#6747ce的20%透明度浅紫色 */
   color: var(--terminal-text) !important;
 }
 
 .terminal-messages-container ::-moz-selection {
-  background-color: rgba(103, 71, 206, 0.2) !important; /* 基于#6747ce的20%透明度浅紫色 */
+  background-color: rgba(
+    103,
+    71,
+    206,
+    0.2
+  ) !important; /* 基于#6747ce的20%透明度浅紫色 */
   color: var(--terminal-text) !important;
 }
 
@@ -907,4 +958,4 @@ a, button, [role="button"], input[type="range"], .cursor-pointer {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
-} 
+}

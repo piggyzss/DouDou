@@ -1,33 +1,46 @@
-'use client'
+"use client";
 
-import { motion, useMotionValue, useTransform } from 'framer-motion'
-import { useState } from 'react'
-import { User, Award, Heart, Github, Linkedin, Rss, Mail, MapPin, Calendar, PawPrint, Carrot } from 'lucide-react'
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { useState } from "react";
+import Image from "next/image";
+import {
+  User,
+  Award,
+  Heart,
+  Github,
+  Linkedin,
+  Rss,
+  Mail,
+  MapPin,
+  Calendar,
+  PawPrint,
+  Carrot,
+} from "lucide-react";
 
 interface ExperienceCard {
-  id: number
-  title: string
-  company: string
-  description: string
-  color: string
-  x: number
-  y: number
-  rotation: number
+  id: number;
+  title: string;
+  company: string;
+  description: string;
+  color: string;
+  x: number;
+  y: number;
+  rotation: number;
 }
 
 export default function About() {
   // 颜色映射函数 - 将CSS变量转换为实际颜色值
   const getCardColor = (colorVar: string) => {
     const colorMap: { [key: string]: string } = {
-      'primary': '#6747ce',
-      'secondary': '#FADCDA', 
-      'blue': '#3388ff',
-      'yellow': '#fed336',
-      'green1': '#8ccc79',
-      'green2': '#53b88f'
-    }
-    return colorMap[colorVar] || colorVar
-  }
+      primary: "#6747ce",
+      secondary: "#FADCDA",
+      blue: "#3388ff",
+      yellow: "#fed336",
+      green1: "#8ccc79",
+      green2: "#53b88f",
+    };
+    return colorMap[colorVar] || colorVar;
+  };
 
   const [cards, setCards] = useState<ExperienceCard[]>([
     {
@@ -38,7 +51,7 @@ export default function About() {
       color: "primary",
       x: 35,
       y: -15,
-      rotation: -8
+      rotation: -8,
     },
     {
       id: 2,
@@ -48,7 +61,7 @@ export default function About() {
       color: "secondary",
       x: 72,
       y: 10,
-      rotation: 12
+      rotation: 12,
     },
     {
       id: 3,
@@ -58,7 +71,7 @@ export default function About() {
       color: "blue",
       x: 5,
       y: 15,
-      rotation: -5
+      rotation: -5,
     },
     {
       id: 4,
@@ -68,7 +81,7 @@ export default function About() {
       color: "yellow",
       x: 52,
       y: 32,
-      rotation: 10
+      rotation: 10,
     },
     {
       id: 5,
@@ -78,7 +91,7 @@ export default function About() {
       color: "green1",
       x: 17,
       y: 60,
-      rotation: -3
+      rotation: -3,
     },
     {
       id: 6,
@@ -88,24 +101,30 @@ export default function About() {
       color: "green2",
       x: 46,
       y: 75,
-      rotation: 7
-    }
-  ])
+      rotation: 7,
+    },
+  ]);
 
   const handleDragEnd = (cardId: number, info: any) => {
-    const container = document.querySelector('.about-section')
-    if (!container) return
+    const container = document.querySelector(".about-section");
+    if (!container) return;
 
-    const rect = container.getBoundingClientRect()
-    const x = ((info.point.x - rect.left) / rect.width) * 100
-    const y = ((info.point.y - rect.top) / rect.height) * 100
+    const rect = container.getBoundingClientRect();
+    const x = ((info.point.x - rect.left) / rect.width) * 100;
+    const y = ((info.point.y - rect.top) / rect.height) * 100;
 
-    setCards(prev => prev.map(card =>
-      card.id === cardId
-        ? { ...card, x: Math.max(5, Math.min(90, x)), y: Math.max(5, Math.min(90, y)) }
-        : card
-    ))
-  }
+    setCards((prev) =>
+      prev.map((card) =>
+        card.id === cardId
+          ? {
+              ...card,
+              x: Math.max(5, Math.min(90, x)),
+              y: Math.max(5, Math.min(90, y)),
+            }
+          : card,
+      ),
+    );
+  };
 
   return (
     <section id="about" className="pt-20 pb-32">
@@ -127,7 +146,7 @@ export default function About() {
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
               className="h-0.5 bg-text-primary flex-1 max-w-32"
-              style={{ transformOrigin: 'right' }}
+              style={{ transformOrigin: "right" }}
             />
 
             {/* 标题 */}
@@ -147,14 +166,13 @@ export default function About() {
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: false }}
               className="h-0.5 bg-text-primary flex-1 max-w-32"
-              style={{ transformOrigin: 'left' }}
+              style={{ transformOrigin: "left" }}
             />
           </div>
         </motion.div>
 
         {/* 主要内容区域 - 左右布局 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-
           {/* 左侧：Links、Skills、Experience */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -165,7 +183,9 @@ export default function About() {
           >
             {/* Links */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Links</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">
+                Links
+              </h3>
               <div className="flex space-x-4">
                 <motion.a
                   href="https://github.com/piggyzss"
@@ -209,9 +229,20 @@ export default function About() {
 
             {/* Tags */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Tags</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">
+                Tags
+              </h3>
               <div className="flex flex-wrap gap-2">
-                {['React', 'TypeScript', 'Vue.js', 'Node.js', 'Python', 'Webpack', 'UI/UX Design', 'AI Coding'].map((skill, index) => (
+                {[
+                  "React",
+                  "TypeScript",
+                  "Vue.js",
+                  "Node.js",
+                  "Python",
+                  "Webpack",
+                  "UI/UX Design",
+                  "AI Coding",
+                ].map((skill, index) => (
                   <span
                     key={skill}
                     className="px-3 py-0.5 border border-gray-300 rounded text-xs blog-body-text hover:border-primary hover:text-primary transition-colors cursor-pointer"
@@ -224,20 +255,36 @@ export default function About() {
 
             {/* Experience */}
             <div>
-              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">Experience</h3>
+              <h3 className="text-xl font-bold text-text-primary mb-4 font-english">
+                Experience
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <Carrot className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0" strokeWidth={1.5} />
+                  <Carrot
+                    className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0"
+                    strokeWidth={1.5}
+                  />
                   <div>
-                    <h4 className="font-semibold text-text-primary">ByteDance</h4>
-                    <p className="text-sm blog-body-text mt-2">负责公司核心产品的前端开发，使用React、TypeScript等技术栈</p>
+                    <h4 className="font-semibold text-text-primary">
+                      ByteDance
+                    </h4>
+                    <p className="text-sm blog-body-text mt-2">
+                      负责公司核心产品的前端开发，使用React、TypeScript等技术栈
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <Carrot className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0" strokeWidth={1.5} />
+                  <Carrot
+                    className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0"
+                    strokeWidth={1.5}
+                  />
                   <div>
-                    <h4 className="font-semibold text-text-primary">Horizon Robotics</h4>
-                    <p className="text-sm blog-body-text mt-2">专注于用户体验设计，创造直观易用的数字产品界面</p>
+                    <h4 className="font-semibold text-text-primary">
+                      Horizon Robotics
+                    </h4>
+                    <p className="text-sm blog-body-text mt-2">
+                      专注于用户体验设计，创造直观易用的数字产品界面
+                    </p>
                   </div>
                 </div>
               </div>
@@ -258,43 +305,43 @@ export default function About() {
                 {/* 装饰性背景圆圈 - 移到后面避免影响头像 */}
                 <div className="absolute inset-2 bg-gradient-to-br from-primary/15 to-secondary/15 rounded-full -z-10"></div>
                 {/* 头像容器 */}
-                <div 
+                <div
                   className="avatar-container w-full h-full relative z-10"
                   style={{
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    border: 'none',
-                    outline: 'none',
-                    boxShadow: 'none',
-                    transition: 'all 0.3s ease',
-                    transform: 'scale(1)',
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden'
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    border: "none",
+                    outline: "none",
+                    boxShadow: "none",
+                    transition: "all 0.3s ease",
+                    transform: "scale(1)",
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)'
+                    e.currentTarget.style.transform = "scale(1.05)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.transform = "scale(1)";
                   }}
                 >
-                  <img
+                  <Image
                     src="/images/avatar.png"
                     alt="shanshan的头像"
                     className="avatar-image"
-                    style={{ 
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      border: 'none !important',
-                      outline: 'none !important',
-                      boxShadow: 'none !important',
-                      margin: '0 !important',
-                      padding: '0 !important',
-                      borderRadius: '0 !important',
-                      display: 'block',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden'
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      border: "none !important",
+                      outline: "none !important",
+                      boxShadow: "none !important",
+                      margin: "0 !important",
+                      padding: "0 !important",
+                      borderRadius: "0 !important",
+                      display: "block",
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
                     }}
                   />
                 </div>
@@ -314,7 +361,7 @@ export default function About() {
                   style={{
                     left: `${card.x}%`,
                     top: `${card.y}%`,
-                    transform: `translate(-50%, -50%) rotate(${card.rotation}deg)`
+                    transform: `translate(-50%, -50%) rotate(${card.rotation}deg)`,
                   }}
                   drag
                   dragMomentum={false}
@@ -325,12 +372,18 @@ export default function About() {
                     className="w-40 h-40 p-4 rounded hover:shadow-lg transition-all duration-300 blog-body-text font-body group"
                     style={{
                       backgroundColor: `${getCardColor(card.color)}95`,
-                      backdropFilter: 'blur(10px)'
+                      backdropFilter: "blur(10px)",
                     }}
                   >
-                    <h4 className="font-semibold text-sm mb-1 group-hover:scale-105 transition-transform duration-300">{card.title}</h4>
-                    <p className="text-xs opacity-90 mb-2 group-hover:opacity-100 transition-opacity duration-300">{card.company}</p>
-                    <p className="text-xs opacity-80 leading-relaxed group-hover:opacity-90 transition-opacity duration-300">{card.description}</p>
+                    <h4 className="font-semibold text-sm mb-1 group-hover:scale-105 transition-transform duration-300">
+                      {card.title}
+                    </h4>
+                    <p className="text-xs opacity-90 mb-2 group-hover:opacity-100 transition-opacity duration-300">
+                      {card.company}
+                    </p>
+                    <p className="text-xs opacity-80 leading-relaxed group-hover:opacity-90 transition-opacity duration-300">
+                      {card.description}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -339,5 +392,5 @@ export default function About() {
         </div>
       </div>
     </section>
-  )
+  );
 }

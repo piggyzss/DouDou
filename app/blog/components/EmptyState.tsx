@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { motion } from 'framer-motion'
-import { PenSquare } from 'lucide-react'
+import { motion } from "framer-motion";
+import { PenSquare } from "lucide-react";
 
 export default function EmptyState() {
   return (
@@ -13,7 +13,9 @@ export default function EmptyState() {
     >
       <PenSquare className="mx-auto text-gray-400 mb-4" size={48} />
       <p className="text-text-secondary">暂无博客文章</p>
-      <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一篇博客文章</p>
+      <p className="text-sm text-text-muted mt-2 blog-body-text">
+        点击上方按钮创建您的第一篇博客文章
+      </p>
     </motion.div>
-  )
+  );
 }

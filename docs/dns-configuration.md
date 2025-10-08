@@ -11,6 +11,7 @@ DNS（Domain Name System）是互联网的"电话簿"，它将人类可读的域
 ## DNS配置原理
 
 ### 1. 域名解析流程
+
 ```
 用户输入域名 → DNS查询 → 返回IP地址 → 连接到服务器
 ```
@@ -18,11 +19,13 @@ DNS（Domain Name System）是互联网的"电话簿"，它将人类可读的域
 ### 2. 关键DNS记录类型
 
 #### A记录
+
 - **作用**：将域名直接指向IP地址
 - **用途**：主域名解析
 - **示例**：`doudoulook.cn` → `76.76.19.61`
 
 #### CNAME记录
+
 - **作用**：将域名指向另一个域名
 - **用途**：子域名解析
 - **示例**：`www.doudoulook.cn` → `cname.vercel-dns.com`
@@ -30,60 +33,72 @@ DNS（Domain Name System）是互联网的"电话簿"，它将人类可读的域
 ## Vercel部署的DNS配置
 
 ### 配置原理
+
 Vercel需要知道你的域名指向他们的服务器，所以需要配置DNS记录。
 
 ### 具体配置
 
 #### 主域名配置（A记录）
+
 ```
 类型: A
 主机记录: @
 记录值: 216.198.79.1
 TTL: 600
 ```
+
 **说明**：`@` 代表主域名，将 `doudoulook.cn` 指向Vercel的IP地址
 
 #### WWW子域名配置（CNAME记录）
+
 ```
 类型: CNAME
 主机记录: www
 记录值: cname.vercel-dns.com
 TTL: 600
 ```
+
 **说明**：将 `www.doudoulook.cn` 指向Vercel的域名
 
 ## 操作步骤
 
 ### 1. 腾讯云DNS配置
+
 1. 登录腾讯云控制台
 2. 进入"DNS解析DNSPod"
 3. 选择域名 `doudoulook.cn`
 4. 添加上述两条DNS记录
 
 ### 2. Vercel域名配置
+
 1. 登录Vercel Dashboard
 2. 进入项目设置
 3. 点击"Domains" → "Add Domain"
 4. 输入域名 `doudoulook.cn`
 
 ### 3. 等待生效
+
 - DNS传播时间：5-60分钟
 - 可通过 `nslookup doudoulook.cn` 检查
 
 ## 常见问题
 
 ### Q: 为什么需要等待？
+
 A: DNS更改需要时间传播到全球各地的DNS服务器
 
 ### Q: TTL是什么意思？
+
 A: Time To Live，DNS记录缓存时间，600秒表示10分钟
 
 ### Q: 为什么需要两条记录？
+
 A: 一条处理主域名，一条处理www子域名，确保两种访问方式都正常
 
 ## 验证方法
 
 ### 命令行检查
+
 ```bash
 # 检查主域名
 nslookup doudoulook.cn
@@ -93,6 +108,7 @@ nslookup www.doudoulook.cn
 ```
 
 ### 浏览器检查
+
 - 访问 `http://doudoulook.cn`
 - 访问 `http://www.doudoulook.cn`
 - 两者都应该显示你的网站
@@ -107,7 +123,7 @@ nslookup www.doudoulook.cn
 
 ```
 域名: doudoulook.cn
-权威DNS服务器: 
+权威DNS服务器:
 - stallion.dnspod.net
 - writer.dnspod.net
 ```
@@ -181,10 +197,13 @@ nslookup doudoulook.cn
 ### 常见疑问解答
 
 #### Q: Vercel需要"连接"到腾讯云吗？
+
 A: **不需要！** Vercel和腾讯云不需要直接连接，它们通过标准的DNS协议协作。
 
 #### Q: Vercel如何知道域名指向它？
+
 A: Vercel通过DNS查询来验证：
+
 ```
 1. 你在Vercel中添加域名 doudoulook.cn
 2. Vercel检查DNS记录：doudoulook.cn 是否指向 76.76.19.61
@@ -195,6 +214,7 @@ A: Vercel通过DNS查询来验证：
 ### 完整的访问流程
 
 #### 用户访问 `doudoulook.cn`：
+
 ```
 1. 浏览器：doudoulook.cn 的IP是什么？
 2. 腾讯云DNS：216.198.79.1
@@ -203,6 +223,7 @@ A: Vercel通过DNS查询来验证：
 ```
 
 #### 用户访问 `www.doudoulook.cn`：
+
 ```
 1. 浏览器：www.doudoulook.cn 的IP是什么？
 2. 腾讯云DNS：cname.vercel-dns.com 的IP是什么？
@@ -219,17 +240,20 @@ CNAME记录: www.doudoulook.cn → cname.vercel-dns.com
 ```
 
 **原因：**
+
 - **A记录**：直接指向IP地址，简单直接
 - **CNAME记录**：指向Vercel的域名，Vercel可以动态管理这个域名指向的IP
 
 ### 类比理解
 
 想象DNS就像电话簿：
+
 - **腾讯云**：电话簿出版商
 - **Vercel**：你的电话号码
 - **用户**：想给你打电话的人
 
 当有人想给你打电话时：
+
 1. 查电话簿（DNS查询）
 2. 找到你的号码（IP地址）
 3. 拨打电话（连接服务器）
@@ -239,11 +263,13 @@ CNAME记录: www.doudoulook.cn → cname.vercel-dns.com
 ### 关键理解
 
 #### Vercel不需要知道腾讯云的存在
+
 - Vercel只需要知道：当有人访问 `doudoulook.cn` 时，请求会到达他们的服务器
 - 他们通过DNS查询来验证域名是否指向他们
 - 不需要任何"连接"或"配置"
 
 #### 腾讯云的作用
+
 - 提供DNS解析服务
 - 告诉全世界：`doudoulook.cn` 指向 `216.198.79.1`
 - 不需要知道Vercel的存在

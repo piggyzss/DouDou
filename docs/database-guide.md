@@ -1,6 +1,7 @@
 # 数据库使用指南
 
 ## 📋 目录
+
 1. [数据库架构](#🏗️-数据库架构)
 2. [环境管理](#🔍-环境管理)
 3. [表结构](#📊-表结构)
@@ -13,6 +14,7 @@
 ## 🏗️ 数据库架构
 
 ### 整体设计
+
 ```
 DouDou 数据库系统
 ├── 🎨 AIGC 内容模块
@@ -28,6 +30,7 @@ DouDou 数据库系统
 ```
 
 ### 设计理念
+
 - **图片**: 集合模式 (1:N) - 批量展示
 - **音乐/视频**: 独立模式 (1:1) - 单独播放
 - **应用**: 产品展示模式 (1:1) - 完整信息展示
@@ -39,20 +42,22 @@ DouDou 数据库系统
 
 ### 支持的环境
 
-| 环境类型 | 连接方式 | 用途 |
-|---------|----------|------|
-| 🏠 **本地数据库** | `DB_HOST=localhost` | 开发测试 |
-| ☁️ **Vercel Postgres** | `DATABASE_URL=postgresql://...vercel-storage.com...` | 生产环境 |
-| ☁️ **Prisma Cloud** | `DATABASE_URL=postgres://...db.prisma.io...` | 开发/测试 |
+| 环境类型               | 连接方式                                             | 用途      |
+| ---------------------- | ---------------------------------------------------- | --------- |
+| 🏠 **本地数据库**      | `DB_HOST=localhost`                                  | 开发测试  |
+| ☁️ **Vercel Postgres** | `DATABASE_URL=postgresql://...vercel-storage.com...` | 生产环境  |
+| ☁️ **Prisma Cloud**    | `DATABASE_URL=postgres://...db.prisma.io...`         | 开发/测试 |
 
 ### 环境识别与切换
 
 #### 🔍 检查当前环境
+
 ```bash
 npm run db:info
 ```
 
 **输出示例**:
+
 ```
 📊 当前数据库连接信息:
 🏷️  环境类型: ☁️ Prisma Cloud Database
@@ -62,6 +67,7 @@ npm run db:info
 ```
 
 #### 🔄 切换环境
+
 编辑 `.env.local` 文件：
 
 ```env
@@ -82,6 +88,7 @@ DB_PASSWORD="your_password"
 ### AIGC 内容表
 
 #### 作品集表
+
 ```sql
 CREATE TABLE artwork_collections (
     id SERIAL PRIMARY KEY,
@@ -93,6 +100,7 @@ CREATE TABLE artwork_collections (
 ```
 
 #### 图片资源表
+
 ```sql
 CREATE TABLE artwork_images (
     id SERIAL PRIMARY KEY,
@@ -105,6 +113,7 @@ CREATE TABLE artwork_images (
 ```
 
 #### 音乐/视频表
+
 ```sql
 CREATE TABLE music_tracks (
     id SERIAL PRIMARY KEY,
@@ -126,6 +135,7 @@ CREATE TABLE videos (
 ```
 
 ### 应用表
+
 ```sql
 CREATE TABLE apps (
     id SERIAL PRIMARY KEY,
@@ -152,6 +162,7 @@ CREATE TABLE apps (
 ### 博客表
 
 #### 文章表
+
 ```sql
 CREATE TABLE blog_posts (
     id SERIAL PRIMARY KEY,
@@ -167,6 +178,7 @@ CREATE TABLE blog_posts (
 ### 点赞系统表
 
 #### 统一点赞表
+
 ```sql
 CREATE TABLE likes (
     id SERIAL PRIMARY KEY,
@@ -183,6 +195,7 @@ CREATE TABLE likes (
 ## 🛠️ 管理工具
 
 ### AIGC 内容管理
+
 ```bash
 npm run db:manage-aigc-image    # 图片作品集管理
 npm run db:manage-aigc-music    # 音乐管理
@@ -191,6 +204,7 @@ npm run db:manage-aigc-master   # 统一管理工具
 ```
 
 **功能包括**:
+
 - 查看所有内容
 - 查看详情信息
 - 删除内容
@@ -199,11 +213,13 @@ npm run db:manage-aigc-master   # 统一管理工具
 - 按标签/状态筛选
 
 ### 应用管理
+
 ```bash
 npm run db:manage-apps          # 应用管理
 ```
 
 **功能包括**:
+
 - 应用管理 (查看/删除/更新)
 - 按状态/类型/平台筛选应用
 - 应用搜索功能
@@ -211,11 +227,13 @@ npm run db:manage-apps          # 应用管理
 - 数据库表结构查看
 
 ### 博客管理
+
 ```bash
 npm run db:manage-blog          # 博客文章管理
 ```
 
 **功能包括**:
+
 - 文章管理 (查看/删除)
 - 标签管理
 - 评论管理
@@ -226,6 +244,7 @@ npm run db:manage-blog          # 博客文章管理
 ## 📋 常用命令command
 
 ### 环境检查
+
 ```bash
 npm run db:info                 # 检查数据库连接
 npm run test:db                 # 测试连接
@@ -233,12 +252,14 @@ npm run preflight               # 启动前检查
 ```
 
 ### 数据库初始化
+
 ```bash
 npm run db:init                 # 初始化 AIGC 表
 npm run db:setup                # 完整数据库设置
 ```
 
 ### 数据修复
+
 ```bash
 npm run preflight:fix-missing-images  # 清理无效图片记录
 ```
@@ -248,7 +269,9 @@ npm run preflight:fix-missing-images  # 清理无效图片记录
 ## ❓ 常见问题 Q&A
 
 ### Q: 如何切换到本地数据库？
+
 **A**: 编辑 `.env.local` 文件：
+
 ```env
 # 注释云数据库URL
 # DATABASE_URL="postgres://..."
@@ -259,49 +282,65 @@ DB_NAME="doudou_db"
 DB_USER="doudou_user"
 DB_PASSWORD="your_password"
 ```
+
 然后重启应用并运行 `npm run db:info` 确认。
 
 ### Q: 如何切换到云数据库？
+
 **A**: 在 `.env.local` 文件中设置：
+
 ```env
 DATABASE_URL="postgres://user:pass@host:5432/db"
 ```
+
 `DATABASE_URL` 优先级最高，会覆盖本地配置。
 
 ### Q: 数据库连接失败怎么办？
+
 **A**: 按顺序检查：
+
 1. 运行 `npm run db:info` 确认当前环境
 2. 检查 `.env.local` 文件是否存在和格式正确
 3. 确认数据库服务是否运行
 4. 验证网络连接
 
 ### Q: 我不知道连接的是哪个数据库？
+
 **A**: 运行 `npm run db:info` 查看详细信息：
+
 - **本地**: 显示 `localhost`
 - **Vercel**: 显示 `vercel-storage.com`
 - **Prisma**: 显示 `db.prisma.io`
 
 ### Q: 表操作提示权限不足？
+
 **A**: 以管理员身份执行：
+
 ```sql
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO doudou_user;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO doudou_user;
 ```
 
 ### Q: 查询速度很慢怎么优化？
-**A**: 
+
+**A**:
+
 1. 检查是否有合适的索引
 2. 使用 `EXPLAIN ANALYZE` 分析查询计划
 3. 优化查询语句，避免全表扫描
 
 ### Q: 修改环境变量后没有生效？
-**A**: 
+
+**A**:
+
 1. 重启开发服务器 (`Ctrl+C` 然后 `npm run dev`)
 2. 运行 `npm run db:info` 确认环境变量已更新
 3. 检查环境变量优先级：`DATABASE_URL` > `POSTGRES_URL` > 单独变量
 
 ### Q: 数据库表不存在？
+
 **A**: 运行初始化命令：
+
 ```bash
 npm run db:init     # 初始化 AIGC 表
 npm run db:setup    # 完整数据库设置
@@ -322,19 +361,22 @@ npm run db:setup    # 完整数据库设置
 ## 💡 快速参考
 
 ### 环境识别速查
+
 - **本地**: `localhost` 或单独环境变量
 - **Vercel**: 包含 `vercel-storage.com`
 - **Prisma**: 包含 `db.prisma.io`
 
 ### 管理工具速查
+
 - **图片**: `npm run db:manage-aigc-image`
-- **音乐**: `npm run db:manage-aigc-music`  
+- **音乐**: `npm run db:manage-aigc-music`
 - **视频**: `npm run db:manage-aigc-video`
 - **应用**: `npm run db:manage-apps`
 - **博客**: `npm run db:manage-blog`
 - **环境**: `npm run db:info`
 
 ### 安全提示
+
 - ⚠️ 生产环境操作前请确认数据库连接
 - ⚠️ 重要操作前建议备份数据
 - ⚠️ 删除操作不可恢复，请谨慎确认

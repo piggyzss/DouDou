@@ -1,58 +1,64 @@
-'use client'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { PenSquare, Calendar, Tag, Eye, Edit, Trash2 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import LikeToggle from '../components/LikeToggle'
+"use client";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { PenSquare, Calendar, Tag, Eye, Edit, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import LikeToggle from "../components/LikeToggle";
 
 // 博客文章图片组件，带有加载后推开动画
-const BlogPostImage = ({ 
-  post, 
-  onImageLoad, 
-  children 
-}: { 
-  post: any, 
-  onImageLoad: (loaded: boolean) => void,
-  children: React.ReactNode
+const BlogPostImage = ({
+  post,
+  onImageLoad,
+  children,
+}: {
+  post: any;
+  onImageLoad: (loaded: boolean) => void;
+  children: React.ReactNode;
 }) => {
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [contentPushed, setContentPushed] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [contentPushed, setContentPushed] = useState(false);
 
   const handleImageLoad = () => {
-    setImageLoaded(true)
-    onImageLoad(true)
+    setImageLoaded(true);
+    onImageLoad(true);
     // 图片开始滑入的同时，文案也开始被推动
     setTimeout(() => {
-      setContentPushed(true)
-    }, 50)
-  }
+      setContentPushed(true);
+    }, 50);
+  };
 
   return (
     <>
       {/* 左侧封面图片 */}
       {post.cover_url ? (
-        <motion.div 
+        <motion.div
           className="w-42 h-full flex-shrink-0 rounded overflow-hidden relative z-10"
           initial={{ x: -200, opacity: 0 }} // 从左侧完全隐藏开始
-          animate={{ 
+          animate={{
             x: imageLoaded ? 0 : -200, // 图片加载后滑入
-            opacity: imageLoaded ? 1 : 0
+            opacity: imageLoaded ? 1 : 0,
           }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <img
-            src={post.cover_url.startsWith('/') ? post.cover_url : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`}
+          <Image
+            src={
+              post.cover_url.startsWith("/")
+                ? post.cover_url
+                : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`
+            }
             alt={post.title}
             className="w-full h-full object-cover"
             onLoad={handleImageLoad}
             onError={() => {
-              setImageLoaded(true)
-              onImageLoad(false)
+              setImageLoaded(true);
+              onImageLoad(false);
             }}
           />
         </motion.div>
       ) : (
-        <motion.div 
+        <motion.div
           className="w-42 h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center rounded relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -63,76 +69,80 @@ const BlogPostImage = ({
       )}
 
       {/* 右侧内容 */}
-      <motion.div 
+      <motion.div
         className="flex-1 pl-6 flex flex-col justify-between"
         initial={{ x: -120, opacity: 0.2 }} // 初始位置向左偏移，与图片推进距离相关
-        animate={{ 
+        animate={{
           x: contentPushed ? 0 : -120, // 被推开到正确位置
-          opacity: contentPushed ? 1 : 0.2
+          opacity: contentPushed ? 1 : 0.2,
         }}
-        transition={{ 
+        transition={{
           duration: 0.8, // 与图片同步
           ease: [0.25, 0.46, 0.45, 0.94], // 使用相同的缓动函数
-          delay: 0.05 // 极小的延迟，创造被推动的感觉
+          delay: 0.05, // 极小的延迟，创造被推动的感觉
         }}
       >
         {children}
       </motion.div>
     </>
-  )
-}
+  );
+};
 
 // 日期格式化函数
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 // 生成摘要
 const generateExcerpt = (content: string, maxLength: number = 150) => {
-  const cleanContent = content.replace(/[#*`>\-\[\]]/g, '').trim()
-  if (cleanContent.length <= maxLength) return cleanContent
-  return cleanContent.slice(0, maxLength) + '...'
-}
+  const cleanContent = content.replace(/[#*`>\-\[\]]/g, "").trim();
+  if (cleanContent.length <= maxLength) return cleanContent;
+  return cleanContent.slice(0, maxLength) + "...";
+};
 
 export default function BlogPage() {
-  const [loading, setLoading] = useState(true)
-  const [result, setResult] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
-  const isDev = process.env.NODE_ENV === 'development'
+  const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const isDev = process.env.NODE_ENV === "development";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/blog/posts?page=1&limit=10')
-        const data = await response.json()
-        
+        const response = await fetch("/api/blog/posts?page=1&limit=10");
+        const data = await response.json();
+
         if (data.success) {
-          setResult(data.data)
+          setResult(data.data);
         } else {
-          setError(data.error || '数据加载失败')
+          setError(data.error || "数据加载失败");
         }
       } catch (err) {
-        console.error('博客页面加载失败:', err)
-        setError('数据加载失败')
+        
+        setError("数据加载失败");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen pt-16">
         <div className="max-w-7xl mx-auto py-12">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-text-primary font-heading">博客文章</h1>
-            <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
+            <h1 className="text-3xl font-bold text-text-primary font-heading">
+              博客文章
+            </h1>
+            <p className="text-text-secondary mt-1 font-blog">
+              分享技术心得和生活感悟
+            </p>
           </div>
 
           {/* 新建博客按钮 - 仅在开发模式下显示 */}
@@ -154,7 +164,7 @@ export default function BlogPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -165,19 +175,25 @@ export default function BlogPage() {
             <h1 className="text-3xl font-bold text-red-600">博客页面错误</h1>
           </div>
           <div className="bg-red-100 p-4 rounded">
-            <p><strong>错误信息:</strong> {error}</p>
+            <p>
+              <strong>错误信息:</strong> {error}
+            </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen pt-16">
       <div className="max-w-7xl mx-auto py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-text-primary font-heading">博客文章</h1>
-          <p className="text-text-secondary mt-1 font-blog">分享技术心得和生活感悟</p>
+          <h1 className="text-3xl font-bold text-text-primary font-heading">
+            博客文章
+          </h1>
+          <p className="text-text-secondary mt-1 font-blog">
+            分享技术心得和生活感悟
+          </p>
         </div>
 
         {/* 新建博客按钮 - 仅在开发模式下显示 */}
@@ -192,7 +208,7 @@ export default function BlogPage() {
             </Link>
           </div>
         )}
-        
+
         <AnimatePresence>
           {result?.posts && result.posts.length > 0 ? (
             <div className="space-y-6">
@@ -206,8 +222,8 @@ export default function BlogPage() {
                 >
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-500 p-4 overflow-hidden">
                     <div className="flex h-56 relative">
-                      <BlogPostImage 
-                        post={post} 
+                      <BlogPostImage
+                        post={post}
                         onImageLoad={(loaded) => {
                           // 图片加载完成的回调
                         }}
@@ -241,16 +257,20 @@ export default function BlogPage() {
                         {/* 标签 */}
                         {post.tags && post.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.slice(0, 3).map((tag: string, tagIndex: number) => (
-                              <span
-                                key={tagIndex}
-                                className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
+                            {post.tags
+                              .slice(0, 3)
+                              .map((tag: string, tagIndex: number) => (
+                                <span
+                                  key={tagIndex}
+                                  className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
                             {post.tags.length > 3 && (
-                              <span className="text-xs text-text-muted font-blog">+{post.tags.length - 3}</span>
+                              <span className="text-xs text-text-muted font-blog">
+                                +{post.tags.length - 3}
+                              </span>
                             )}
                           </div>
                         )}
@@ -258,9 +278,13 @@ export default function BlogPage() {
                         {/* 信息栏：时间、喜欢 - 参考AIGC样式 */}
                         <div className="flex items-center gap-2 text-[11px] text-text-muted mb-4">
                           <div className="flex items-center gap-1">
-                            <time>{formatDate(post.published_at || post.created_at)}</time>
+                            <time>
+                              {formatDate(post.published_at || post.created_at)}
+                            </time>
                           </div>
-                          <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">·</span>
+                          <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">
+                            ·
+                          </span>
                           <div className="flex items-center gap-1">
                             <LikeToggle
                               targetType="blog"
@@ -296,11 +320,13 @@ export default function BlogPage() {
             >
               <PenSquare className="mx-auto text-gray-400 mb-4" size={48} />
               <p className="text-text-secondary">暂无博客</p>
-              <p className="text-sm text-text-muted mt-2 blog-body-text">点击上方按钮创建您的第一篇博客</p>
+              <p className="text-sm text-text-muted mt-2 blog-body-text">
+                点击上方按钮创建您的第一篇博客
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }

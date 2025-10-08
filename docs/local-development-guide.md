@@ -26,7 +26,7 @@ npm list --depth=0
 
 ### 必需的工具
 
-- **Node.js** 18+ 
+- **Node.js** 18+
 - **Python** 3.11+
 - **Git**
 - **终端/命令行工具**
@@ -50,6 +50,7 @@ npm list --depth=0
 ```
 
 这个脚本会自动：
+
 - 创建Python虚拟环境
 - 安装依赖包
 - 配置环境变量
@@ -67,10 +68,6 @@ cd /DouDou
 npm run dev
 ```
 
-
-
-
-
 ---
 
 ## 📝 详细步骤说明
@@ -78,11 +75,13 @@ npm run dev
 ### 1️⃣ Python Agent后端服务启动
 
 #### 步骤1: 进入后端目录
+
 ```bash
 cd agent-backend
 ```
 
 #### 步骤2: 创建Python虚拟环境
+
 ```bash
 # 创建虚拟环境（首次运行）
 python3 -m venv venv
@@ -99,6 +98,7 @@ which python  # 应该显示虚拟环境中的python路径
 ```
 
 #### 步骤3: 安装Python依赖
+
 ```bash
 # 安装所有依赖包
 pip install -r requirements.txt
@@ -108,6 +108,7 @@ pip list
 ```
 
 #### 步骤4: 配置环境变量（可选）
+
 ```bash
 # 创建环境配置文件
 cat > .env << EOF
@@ -129,6 +130,7 @@ EOF
 ```
 
 #### 步骤5: 启动后端服务
+
 ```bash
 # 方法1: 直接启动（推荐开发环境）
 python -m app.main
@@ -141,6 +143,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 #### 步骤6: 验证后端服务
+
 ```bash
 # 在新终端窗口测试健康检查
 curl http://localhost:8000/health
@@ -160,12 +163,14 @@ curl -X POST http://localhost:8000/api/agent/execute \
 ### 2️⃣ Next.js前端服务启动
 
 #### 步骤1: 回到项目根目录
+
 ```bash
 # 在新终端窗口
 cd /DouDou
 ```
 
 #### 步骤2: 配置前端环境变量
+
 ```bash
 # 检查.env.local文件
 cat .env.local
@@ -178,6 +183,7 @@ grep PYTHON_BACKEND_URL .env.local
 ```
 
 #### 步骤3: 安装前端依赖（如果需要）
+
 ```bash
 # 检查依赖是否完整
 npm list
@@ -187,6 +193,7 @@ npm install
 ```
 
 #### 步骤4: 启动前端服务
+
 ```bash
 # 启动开发服务器
 npm run dev
@@ -198,6 +205,7 @@ npm run dev
 ```
 
 #### 步骤5: 验证前端服务
+
 ```bash
 # 访问主页
 open http://localhost:3000
@@ -218,6 +226,7 @@ curl -X GET http://localhost:3000/api/agent/execute
 在浏览器中访问 `http://localhost:3000/agent`，测试以下功能：
 
 #### 1. 终端界面测试
+
 ```bash
 # 在Agent终端界面输入以下命令：
 
@@ -235,6 +244,7 @@ curl -X GET http://localhost:3000/api/agent/execute
 ```
 
 #### 2. 新闻插件测试（如果已实现）
+
 ```bash
 # 获取最新AI资讯
 /latest
@@ -250,6 +260,7 @@ curl -X GET http://localhost:3000/api/agent/execute
 ```
 
 #### 3. 交互功能测试
+
 ```bash
 # 命令历史（使用上下箭头键）
 ↑ ↓
@@ -267,6 +278,7 @@ clear
 ### API直接测试
 
 #### 后端API测试
+
 ```bash
 # 测试各种命令
 curl -X POST http://localhost:8000/api/agent/execute \
@@ -285,6 +297,7 @@ curl http://localhost:8000/api/agent/commands
 ```
 
 #### 前端API包装层测试
+
 ```bash
 # 测试前端代理
 curl -X POST http://localhost:3000/api/agent/execute \
@@ -299,7 +312,9 @@ curl -X POST http://localhost:3000/api/agent/execute \
 ```
 
 ---
+
 @shanshan
+
 ## 🔧 可选服务配置
 
 ### Redis缓存服务
@@ -307,6 +322,7 @@ curl -X POST http://localhost:3000/api/agent/execute \
 如果你想测试完整的缓存功能：
 
 #### macOS安装启动
+
 ```bash
 # 安装Redis
 brew install redis
@@ -323,6 +339,7 @@ brew services list | grep redis
 ```
 
 #### Ubuntu/Debian安装启动
+
 ```bash
 # 安装Redis
 sudo apt update
@@ -340,6 +357,7 @@ sudo systemctl status redis-server
 ```
 
 #### Redis配置验证
+
 ```bash
 # 测试缓存功能
 redis-cli set test "Hello World"
@@ -393,26 +411,26 @@ echo "📦 检查Python后端服务..."
 if ! curl -s http://localhost:8000/health > /dev/null; then
     echo "🐍 启动Python后端服务..."
     cd agent-backend
-    
+
     # 创建虚拟环境
     if [ ! -d "venv" ]; then
         echo "📥 创建Python虚拟环境..."
         python3 -m venv venv
     fi
-    
+
     # 激活虚拟环境
     source venv/bin/activate
-    
+
     # 安装依赖
     echo "📦 安装Python依赖..."
     pip install -r requirements.txt > /dev/null 2>&1
-    
+
     # 启动服务
     echo "🚀 启动Python服务..."
     python -m app.main &
     PYTHON_PID=$!
     cd ..
-    
+
     # 等待服务启动
     echo -e "${YELLOW}⏳ 等待Python服务启动...${NC}"
     for i in {1..30}; do
@@ -422,7 +440,7 @@ if ! curl -s http://localhost:8000/health > /dev/null; then
         fi
         sleep 1
     done
-    
+
     if [ $i -eq 30 ]; then
         echo -e "${RED}❌ Python服务启动超时${NC}"
         exit 1
@@ -497,6 +515,7 @@ npm run dev
 ### 常见问题及解决方案
 
 #### 1. 端口占用问题
+
 ```bash
 # 检查端口占用
 lsof -i :8000  # Python后端端口
@@ -512,6 +531,7 @@ npm run dev -- --port 3001
 ```
 
 #### 2. Python依赖问题
+
 ```bash
 # 清理并重新安装依赖
 pip uninstall -r requirements.txt -y
@@ -526,6 +546,7 @@ pip show fastapi
 ```
 
 #### 3. Node.js依赖问题
+
 ```bash
 # 清理node_modules并重新安装
 rm -rf node_modules package-lock.json
@@ -540,6 +561,7 @@ npm update
 ```
 
 #### 4. 环境变量问题
+
 ```bash
 # 检查环境变量
 echo $PYTHON_BACKEND_URL
@@ -551,6 +573,7 @@ set -a; source .env.local; set +a  # 确保导出
 ```
 
 #### 5. CORS跨域问题
+
 ```bash
 # 检查后端CORS配置
 curl -H "Origin: http://localhost:3000" \
@@ -566,6 +589,7 @@ curl -H "Origin: http://localhost:3000" \
 ### 日志查看和调试
 
 #### Python后端日志
+
 ```bash
 # 查看实时日志（如果配置了日志文件）
 tail -f agent-backend/logs/agent.log
@@ -580,6 +604,7 @@ DEBUG=true python -m app.main
 ```
 
 #### Next.js前端日志
+
 ```bash
 # Next.js日志会直接显示在控制台
 npm run dev
@@ -590,6 +615,7 @@ npm run dev
 ```
 
 #### 进程状态检查
+
 ```bash
 # 查看运行的进程
 ps aux | grep python
@@ -617,28 +643,28 @@ cat > monitor-services.sh << 'EOF'
 
 while true; do
     echo "=== $(date) ==="
-    
+
     # 检查Python后端
     if curl -s http://localhost:8000/health > /dev/null; then
         echo "✅ Python Backend: Running"
     else
         echo "❌ Python Backend: Down"
     fi
-    
+
     # 检查Next.js前端
     if curl -s http://localhost:3000 > /dev/null; then
         echo "✅ Next.js Frontend: Running"
     else
         echo "❌ Next.js Frontend: Down"
     fi
-    
+
     # 检查Redis（如果启用）
     if redis-cli ping > /dev/null 2>&1; then
         echo "✅ Redis: Running"
     else
         echo "⚠️ Redis: Not available"
     fi
-    
+
     echo "---"
     sleep 10
 done

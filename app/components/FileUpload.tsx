@@ -1,90 +1,98 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { useState, useRef } from "react";
+import { Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface FileUploadProps {
-  onUpload?: (url: string) => void
-  folder?: string
-  accept?: string
-  multiple?: boolean
-  className?: string
+  onUpload?: (url: string) => void;
+  folder?: string;
+  accept?: string;
+  multiple?: boolean;
+  className?: string;
 }
 
 export function FileUpload({
   onUpload,
-  folder = 'uploads',
+  folder = "uploads",
   accept,
   multiple = false,
-  className = ''
+  className = "",
 }: FileUploadProps) {
-  const [uploading, setUploading] = useState(false)
-  const [uploadResults, setUploadResults] = useState<Array<{
-    file: File
-    success: boolean
-    url?: string
-    error?: string
-  }>>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false);
+  const [uploadResults, setUploadResults] = useState<
+    Array<{
+      file: File;
+      success: boolean;
+      url?: string;
+      error?: string;
+    }>
+  >([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = async (file: File) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('folder', folder)
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", folder);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        return { success: true, url: result.url }
+        return { success: true, url: result.url };
       } else {
-        return { success: false, error: result.error }
+        return { success: false, error: result.error };
       }
     } catch (error) {
-      return { success: false, error: 'Upload failed' }
+      return { success: false, error: "Upload failed" };
     }
-  }
+  };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    setUploading(true)
-    const results = []
+    setUploading(true);
+    const results = [];
 
     for (const file of Array.from(files)) {
-      const result = await uploadFile(file)
-      results.push({ file, ...result })
+      const result = await uploadFile(file);
+      results.push({ file, ...result });
 
       if (result.success && onUpload) {
-        onUpload(result.url!)
+        onUpload(result.url!);
       }
     }
 
-    setUploadResults(results)
-    setUploading(false)
+    setUploadResults(results);
+    setUploading(false);
 
     // 重置input
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   const removeResult = (index: number) => {
-    setUploadResults(prev => prev.filter((_, i) => i !== index))
-  }
+    setUploadResults((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 文件上传区域 */}
-      <div className={`border-2 border-dashed rounded p-6 transition-colors ${
-        uploading ? 'border-gray-300 bg-gray-50' : 'border-gray-300 hover:border-primary'
-      }`}>
+      <div
+        className={`border-2 border-dashed rounded p-6 transition-colors ${
+          uploading
+            ? "border-gray-300 bg-gray-50"
+            : "border-gray-300 hover:border-primary"
+        }`}
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -102,10 +110,10 @@ export function FileUpload({
         >
           <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
           <p className="text-sm text-gray-600">
-            {uploading ? 'Uploading...' : 'Click to upload files'}
+            {uploading ? "Uploading..." : "Click to upload files"}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            {accept ? `Supported: ${accept}` : 'All file types'}
+            {accept ? `Supported: ${accept}` : "All file types"}
           </p>
         </label>
       </div>
@@ -115,7 +123,10 @@ export function FileUpload({
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-900">Upload Results</h4>
           {uploadResults.map((result, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded"
+            >
               <div className="flex items-center space-x-3 flex-1">
                 {result.success ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -144,5 +155,5 @@ export function FileUpload({
         </div>
       )}
     </div>
-  )
+  );
 }

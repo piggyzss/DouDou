@@ -1,8 +1,14 @@
-"use client"
+"use client";
 
-import React from 'react'
+import React from "react";
 
-export function FilePenLine({ size = 14, className = '' }: { size?: number; className?: string }) {
+export function FilePenLine({
+  size = 14,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -23,5 +29,5 @@ export function FilePenLine({ size = 14, className = '' }: { size?: number; clas
       <path d="M16.5 12.5l-7 7L8 21l1.5-.5 7-7a1.414 1.414 0 0 0-2-2z" />
       <path d="M15 13l2 2" />
     </svg>
-  )
+  );
 }
