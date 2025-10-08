@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";

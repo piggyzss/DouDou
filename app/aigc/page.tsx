@@ -28,7 +28,7 @@ import CreateVideoModal from "./components/CreateVideoModal";
 import AddImageModal from "./components/AddImageModal";
 import ImagePreview from "./components/ImagePreview";
 import FloatingPlayerBar from "./components/FloatingPlayerBar";
-import ImagesSection, { /* ArtworkImage, Artwork */ } from "./sections/ImagesSection";
+import ImagesSection, { ArtworkImage, Artwork } from "./sections/ImagesSection";
 import VideosSection, { VideoTrack } from "./sections/VideosSection";
 import MusicSection, { MusicTrack } from "./sections/MusicSection";
 
@@ -146,7 +146,7 @@ export default function AIGCPage() {
           // 为所有图片生成代理URL
           const artworksWithProxyUrls = convertedArtworks.map((artwork) => {
             if (artwork.images.length > 0) {
-              const proxyImages = artwork.images.map((image) => {
+              const proxyImages = artwork.images.map((image: ArtworkImage) => {
                 // 将COS URL转换为代理URL，同时保留图片的其他信息
                 return {
                   ...image,
@@ -274,7 +274,7 @@ export default function AIGCPage() {
             artwork.id === collectionId
               ? {
                   ...artwork,
-                  images: artwork.images.filter((img) => img.id !== imageId),
+                  images: artwork.images.filter((img: ArtworkImage) => img.id !== imageId),
                 }
               : artwork,
           ),

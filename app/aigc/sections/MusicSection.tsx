@@ -1,7 +1,6 @@
 "use client";
 
 import { Headphones, MessageCircle, Play, Pause, Trash2 } from "lucide-react";
-import Image from "next/image";
 import LikeToggle from "../../components/LikeToggle";
 import ConfirmModal from "../components/ConfirmModal";
 import { useState } from "react";

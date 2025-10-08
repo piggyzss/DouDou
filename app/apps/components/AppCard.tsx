@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import VideoModal from "./VideoModal";
 import HighchartsReact from "highcharts-react-official";
-import Image from "next/image";
 import Highcharts from "highcharts";
 import { App } from "@/lib/models/app";
 

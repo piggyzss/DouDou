@@ -381,7 +381,7 @@ jobs:
     steps:
       - name: 通知部署结果
         uses: 8398a7/action-slack@v3
-        if: always() && secrets.SLACK_WEBHOOK != ''
+        if: always() && ${{ secrets.SLACK_WEBHOOK != '' }}
         with:
           status: ${{ job.status }}
           channel: '#deployments'
