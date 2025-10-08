@@ -49,7 +49,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "获取博客列表失败" }, { status: 500 });
   }
 }
@@ -135,12 +134,9 @@ export async function POST(req: NextRequest) {
       );
 
       if (uploadResult.success) {
-        
       } else {
-        
       }
     } catch (cosError) {
-      
       // 即使COS上传失败，也不影响博客创建
     }
 
@@ -154,7 +150,6 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "创建博客失败" }, { status: 500 });
   }
 }

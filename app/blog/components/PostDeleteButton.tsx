@@ -28,7 +28,6 @@ export default function PostDeleteButton({
       router.push(`/blog?page=${currentPage}`);
       router.refresh();
     } catch (e) {
-      
       alert("删除失败，请查看控制台日志");
     } finally {
       setLoading(false);

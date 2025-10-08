@@ -113,7 +113,8 @@ export default function BlogPage() {
                             {post.title}
                           </h2>
                           <p className="text-text-secondary font-blog line-clamp-2">
-                            {post.excerpt || post.content?.substring(0, 150) + "..."}
+                            {post.excerpt ||
+                              post.content?.substring(0, 150) + "..."}
                           </p>
                         </div>
                         {post.cover_url && (
@@ -134,7 +135,9 @@ export default function BlogPage() {
                       </div>
                       <div className="flex items-center justify-between text-sm text-text-muted">
                         <div className="flex items-center space-x-4">
-                          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(post.created_at).toLocaleDateString()}
+                          </span>
                           {post.tags && post.tags.length > 0 && (
                             <div className="flex space-x-1">
                               {post.tags.slice(0, 3).map((tag: string) => (

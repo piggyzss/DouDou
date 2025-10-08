@@ -30,7 +30,6 @@ export async function GET(
       days,
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "获取统计数据失败" }, { status: 500 });
   }
 }
@@ -69,7 +68,6 @@ export async function POST(
       message: "统计数据更新成功",
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "更新统计数据失败" }, { status: 500 });
   }
 }

@@ -98,7 +98,6 @@ export default function AppsPage() {
       await fetchApps();
       setIsCreateModalOpen(false);
     } catch (err) {
-      
       setError(err instanceof Error ? err.message : "创建应用失败");
     }
   };

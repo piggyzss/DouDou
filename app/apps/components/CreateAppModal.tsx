@@ -28,7 +28,7 @@ export default function CreateAppModal({
   onSubmit,
 }: CreateAppModalProps) {
   if (!isOpen) return null;
-  
+
   const [name, setName] = useState("");
   const [tags, setTags] = useState("");
   const [description, setDescription] = useState("");
@@ -89,7 +89,10 @@ export default function CreateAppModal({
     try {
       const appData: AppData = {
         name: name.trim(),
-        tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag),
+        tags: tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag),
         description: description.trim(),
         type: type as "app" | "tool",
         experienceMethod: experienceMethod as "download" | "qrcode",
@@ -120,17 +123,17 @@ export default function CreateAppModal({
         >
           <X size={20} />
         </button>
-        
+
         <h2 className="text-xl font-bold text-text-primary mb-4 font-heading">
           新建App
         </h2>
-        
+
         {error && (
           <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2 font-body">
@@ -300,7 +303,9 @@ export default function CreateAppModal({
                   ) : (
                     <>
                       <Upload size={24} className="text-gray-400 mb-2" />
-                      <span className="text-sm text-gray-500">点击上传二维码</span>
+                      <span className="text-sm text-gray-500">
+                        点击上传二维码
+                      </span>
                     </>
                   )}
                 </label>

@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    
     return NextResponse.json(
       {
         success: false,

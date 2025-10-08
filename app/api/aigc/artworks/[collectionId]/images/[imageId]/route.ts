@@ -25,10 +25,8 @@ export async function DELETE(
 
       const deleteResult = await deleteFile(objectKey);
       if (!deleteResult) {
-        
       }
     } catch (cosError) {
-      
       // 即使COS删除失败，也继续删除数据库记录
     }
 
@@ -44,7 +42,6 @@ export async function DELETE(
       return NextResponse.json({ error: "图片删除失败" }, { status: 500 });
     }
   } catch (error) {
-    
     return NextResponse.json({ error: "删除图片失败" }, { status: 500 });
   }
 }

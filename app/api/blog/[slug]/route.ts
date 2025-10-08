@@ -41,7 +41,6 @@ export async function GET(
       },
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "获取博客文章失败" }, { status: 500 });
   }
 }
@@ -88,7 +87,6 @@ export async function PUT(
       post: updatedPost,
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "更新博客文章失败" }, { status: 500 });
   }
 }
@@ -121,9 +119,7 @@ export async function DELETE(
           ? u.pathname.slice(1)
           : u.pathname;
         if (key) await deleteFile(key);
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
 
     // 删除内容文件（可忽略失败）
@@ -140,7 +136,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: "博客文章删除成功" });
   } catch (error) {
-    
     return NextResponse.json({ error: "删除博客文章失败" }, { status: 500 });
   }
 }

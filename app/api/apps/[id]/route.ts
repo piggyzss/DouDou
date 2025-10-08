@@ -20,7 +20,6 @@ export async function GET(
 
     return NextResponse.json(app);
   } catch (error) {
-    
     return NextResponse.json({ error: "获取应用失败" }, { status: 500 });
   }
 }
@@ -84,7 +83,6 @@ export async function PUT(
           throw new Error(uploadResult.error || "上传失败");
         }
       } catch (error) {
-        
         return NextResponse.json({ error: "封面上传失败" }, { status: 500 });
       }
     }
@@ -104,7 +102,6 @@ export async function PUT(
           throw new Error(uploadResult.error || "上传失败");
         }
       } catch (error) {
-        
         return NextResponse.json({ error: "视频上传失败" }, { status: 500 });
       }
     }
@@ -125,7 +122,6 @@ export async function PUT(
             throw new Error(uploadResult.error || "上传失败");
           }
         } catch (error) {
-          
           return NextResponse.json(
             { error: "二维码上传失败" },
             { status: 500 },
@@ -156,7 +152,6 @@ export async function PUT(
 
     return NextResponse.json(app);
   } catch (error) {
-    
     return NextResponse.json({ error: "更新应用失败" }, { status: 500 });
   }
 }
@@ -179,7 +174,6 @@ export async function DELETE(
 
     return NextResponse.json({ message: "应用删除成功" });
   } catch (error) {
-    
     return NextResponse.json({ error: "删除应用失败" }, { status: 500 });
   }
 }

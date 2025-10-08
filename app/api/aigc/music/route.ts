@@ -10,7 +10,6 @@ export async function GET(req: NextRequest) {
     const result = await MusicModel.findAll(page, limit);
     return NextResponse.json({ success: true, data: result });
   } catch (e) {
-    
     return NextResponse.json({ error: "获取音乐列表失败" }, { status: 500 });
   }
 }
@@ -75,7 +74,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: created });
   } catch (e) {
-    
     return NextResponse.json({ error: "创建音乐失败" }, { status: 500 });
   }
 }

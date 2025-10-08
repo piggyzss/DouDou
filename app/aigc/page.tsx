@@ -274,19 +274,17 @@ export default function AIGCPage() {
             artwork.id === collectionId
               ? {
                   ...artwork,
-                  images: artwork.images.filter((img: ArtworkImage) => img.id !== imageId),
+                  images: artwork.images.filter(
+                    (img: ArtworkImage) => img.id !== imageId,
+                  ),
                 }
               : artwork,
           ),
         );
-        
       } else {
         const errorData = await response.json();
-        
       }
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   };
 
   // 删除整个作品集
@@ -307,14 +305,10 @@ export default function AIGCPage() {
             setArtworks((prev) =>
               prev.filter((artwork) => artwork.id !== artworkId),
             );
-            
           } else {
             const errorData = await response.json();
-            
           }
-        } catch (error) {
-          
-        }
+        } catch (error) {}
       },
       type: "danger",
     });
@@ -328,13 +322,10 @@ export default function AIGCPage() {
     try {
       const res = await fetch(`/api/aigc/music/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        
         return;
       }
       setMusicTracks((prev) => prev.filter((t) => t.id !== id));
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   };
 
   const handleCreateVideo = async () => {
@@ -419,17 +410,13 @@ export default function AIGCPage() {
 
       if (response.ok) {
         const result = await response.json();
-        
 
         // 重新加载作品集数据以获取最新的图片信息
         await loadArtworks();
       } else {
         const errorData = await response.json();
-        
       }
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   };
 
   // 音乐播放（最小可用实现）

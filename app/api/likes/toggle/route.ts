@@ -110,7 +110,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, liked: userLiked, likesCount });
   } catch (e: any) {
-    
     return NextResponse.json(
       { error: "server error", message: e?.message || String(e) },
       { status: 500 },
@@ -151,7 +150,6 @@ async function updateLikesCount(targetType: string, targetId: number) {
       ]);
     }
   } catch (error) {
-    
     throw error;
   }
 }
@@ -173,7 +171,6 @@ async function getUserLikeStatus(
     );
     return result.rows[0]?.status === "liked";
   } catch (error) {
-    
     return false;
   }
 }
@@ -187,7 +184,6 @@ async function getActualLikesCount(targetType: string, targetId: number) {
     );
     return parseInt(result.rows[0]?.count || "0");
   } catch (error) {
-    
     return 0;
   }
 }

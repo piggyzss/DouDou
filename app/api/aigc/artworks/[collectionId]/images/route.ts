@@ -91,7 +91,6 @@ export async function POST(
       filesReceived: filesCount,
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "添加图片失败" }, { status: 500 });
   }
 }

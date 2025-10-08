@@ -61,7 +61,6 @@ export default function AppCard({ app }: AppCardProps) {
           setDauTrend(new Array(7).fill(0));
         }
       } catch (error) {
-        
         // 如果出错，用0补齐7天数据
         setDauTrend(new Array(7).fill(0));
       }
@@ -79,9 +78,7 @@ export default function AppCard({ app }: AppCardProps) {
           const data = await response.json();
           setLiked(data.liked);
         }
-      } catch (error) {
-        
-      }
+      } catch (error) {}
     };
 
     checkLikeStatus();
@@ -113,9 +110,7 @@ export default function AppCard({ app }: AppCardProps) {
         const data = await response.json();
         setLiked(data.liked);
       }
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   };
 
   // DAU趋势图表配置

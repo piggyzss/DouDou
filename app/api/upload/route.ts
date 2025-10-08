@@ -71,7 +71,6 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -140,7 +139,6 @@ export async function PUT(request: NextRequest) {
       errors: failedResults.map((r) => r.error),
     });
   } catch (error) {
-    
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

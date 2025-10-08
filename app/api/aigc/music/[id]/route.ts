@@ -23,9 +23,7 @@ export async function DELETE(
         const urlObj = new URL(u);
         const objectKey = urlObj.pathname.substring(1);
         await deleteFile(objectKey);
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }
 
     const ok = await MusicModel.delete(idNum);
@@ -33,7 +31,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (e) {
-    
     return NextResponse.json({ error: "server error" }, { status: 500 });
   }
 }

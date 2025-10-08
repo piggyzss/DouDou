@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
     );
     return NextResponse.json({ statuses });
   } catch (e) {
-    
     return NextResponse.json({ statuses: [] });
   }
 }

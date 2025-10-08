@@ -7,7 +7,6 @@ export async function GET(request: NextRequest) {
     const tags = await AppModel.getTags();
     return NextResponse.json(tags);
   } catch (error) {
-    
     return NextResponse.json({ error: "获取标签列表失败" }, { status: 500 });
   }
 }
@@ -30,7 +29,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(tag, { status: 201 });
   } catch (error) {
-    
     return NextResponse.json({ error: "创建标签失败" }, { status: 500 });
   }
 }

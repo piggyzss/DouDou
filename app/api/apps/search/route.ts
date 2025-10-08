@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    
     return NextResponse.json({ error: "搜索应用失败" }, { status: 500 });
   }
 }

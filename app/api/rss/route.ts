@@ -34,7 +34,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "RSS生成失败" }, { status: 500 });
   }
 }

@@ -58,9 +58,7 @@ export default function LikeToggle({
             setCount(status.likesCount || 0);
           }
         }
-      } catch (err) {
-        
-      }
+      } catch (err) {}
     };
 
     fetchRealStatus();
@@ -113,7 +111,6 @@ export default function LikeToggle({
         onChanged?.(json.liked || newLiked, json.likesCount);
       }
     } catch (err) {
-      
       // 回滚状态
       setLiked(oldLiked);
       setCount(oldCount);

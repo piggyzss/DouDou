@@ -87,7 +87,6 @@ export async function GET(req: NextRequest) {
       headers,
     });
   } catch (e) {
-    
     return NextResponse.json({ error: "proxy error" }, { status: 500 });
   }
 }

@@ -116,7 +116,6 @@ export default function Project() {
             setLatestBlog(blogData.data.posts[0]);
           }
         } else {
-          
         }
 
         // 获取最新AIGC作品
@@ -127,7 +126,6 @@ export default function Project() {
             setLatestArtwork(artworkData.data.collections[0]);
           }
         } else {
-          
         }
 
         // 获取最新应用
@@ -138,10 +136,8 @@ export default function Project() {
             setLatestApp(appData.apps[0]);
           }
         } else {
-          
         }
       } catch (error) {
-        
         setError("获取内容失败，请稍后重试");
       } finally {
         setLoading(false);

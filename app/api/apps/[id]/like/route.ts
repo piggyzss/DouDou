@@ -40,7 +40,6 @@ export async function POST(
       });
     }
   } catch (error) {
-    
     return NextResponse.json({ error: "点赞失败" }, { status: 500 });
   }
 }
@@ -69,7 +68,6 @@ export async function GET(
       liked: hasLiked,
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "检查点赞状态失败" }, { status: 500 });
   }
 }

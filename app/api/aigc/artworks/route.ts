@@ -76,7 +76,6 @@ export async function POST(req: NextRequest) {
       uploadedFiles,
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "创建作品集失败" }, { status: 500 });
   }
 }
@@ -108,7 +107,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    
     return NextResponse.json({ error: "获取作品集列表失败" }, { status: 500 });
   }
 }

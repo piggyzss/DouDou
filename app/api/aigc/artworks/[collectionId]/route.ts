@@ -27,10 +27,8 @@ export async function DELETE(
 
         const deleteResult = await deleteFile(objectKey);
         if (!deleteResult) {
-          
         }
       } catch (cosError) {
-        
         // 继续删除其他文件
       }
     }
@@ -48,7 +46,6 @@ export async function DELETE(
       return NextResponse.json({ error: "作品集删除失败" }, { status: 500 });
     }
   } catch (error) {
-    
     return NextResponse.json({ error: "删除作品集失败" }, { status: 500 });
   }
 }
