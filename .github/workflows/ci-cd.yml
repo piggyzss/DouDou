@@ -267,9 +267,9 @@ jobs:
         uses: amondnet/vercel-action@v25
         id: vercel-deploy
         with:
-          vercel-token: PG2AyYGe3VGpVMiFtnZnP0o4
-          vercel-org-id: shanshans-projects-24790134
-          vercel-project-id: prj_BlcQkwwZ6y7T6RwGopTpRrCmFh2q
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./
         
@@ -351,9 +351,9 @@ jobs:
       - name: 部署前端到 Vercel (预览)
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: PG2AyYGe3VGpVMiFtnZnP0o4
-          vercel-org-id: shanshans-projects-24790134
-          vercel-project-id: prj_BlcQkwwZ6y7T6RwGopTpRrCmFh2q
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./
           
