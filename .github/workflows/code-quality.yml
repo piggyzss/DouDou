@@ -324,9 +324,9 @@ jobs:
             // 添加扫描结果
             summary += `| 检查项目 | 状态 |\n`;
             summary += `|---------|------|\n`;
-            summary += `| 代码质量检查 | ${{ needs.code-quality.result == 'success' ? '✅ 通过' : '❌ 失败' }} |\n`;
-            summary += `| 安全漏洞扫描 | ${{ needs.security-scan.result == 'success' ? '✅ 通过' : '❌ 失败' }} |\n`;
-            summary += `| 许可证合规 | ${{ needs.license-check.result == 'success' ? '✅ 通过' : '❌ 失败' }} |\n`;
+            summary += `| 代码质量检查 | ${{ needs.code-quality.result == 'success' && '✅ 通过' || '❌ 失败' }} |\n`;
+            summary += `| 安全漏洞扫描 | ${{ needs.security-scan.result == 'success' && '✅ 通过' || '❌ 失败' }} |\n`;
+            summary += `| 许可证合规 | ${{ needs.license-check.result == 'success' && '✅ 通过' || '❌ 失败' }} |\n`;
             
             summary += '\n📊 详细报告请查看 [Actions 页面](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})';
             
