@@ -1,6 +1,21 @@
 import "@testing-library/jest-dom";
 import "whatwg-fetch";
 
+// Mock Next.js Image component
+jest.mock("next/image", () => {
+  return function Image({ src, alt, width, height, ...props }) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={alt} width={width} height={height} {...props} />;
+  };
+});
+
+// Mock Next.js Link component
+jest.mock("next/link", () => {
+  return function Link({ children, href, ...props }) {
+    return <a href={href} {...props}>{children}</a>;
+  };
+});
+
 // Mock Next.js router
 jest.mock("next/router", () => ({
   useRouter() {

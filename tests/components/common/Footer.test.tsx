@@ -79,7 +79,8 @@ describe("Footer Component", () => {
         link.getAttribute("href")?.includes("github.com") ||
         link.getAttribute("href")?.includes("twitter.com") ||
         link.getAttribute("href")?.includes("linkedin.com") ||
-        link.getAttribute("href")?.includes("mailto:"),
+        link.getAttribute("href")?.includes("mailto:") ||
+        link.getAttribute("href")?.includes("/api/rss"),
     );
 
     expect(socialLinks).toHaveLength(4);
@@ -93,7 +94,7 @@ describe("Footer Component", () => {
       link.getAttribute("href")?.includes("github.com"),
     );
     const twitterLink = allLinks.find((link) =>
-      link.getAttribute("href")?.includes("twitter.com"),
+      link.getAttribute("href")?.includes("/api/rss"),
     );
     const linkedinLink = allLinks.find((link) =>
       link.getAttribute("href")?.includes("linkedin.com"),
@@ -104,17 +105,17 @@ describe("Footer Component", () => {
 
     expect(githubLink).toHaveAttribute(
       "href",
-      "https://github.com/yourusername",
+      "https://github.com/piggyzss",
     );
     expect(twitterLink).toHaveAttribute(
       "href",
-      "https://twitter.com/yourusername",
+      "/api/rss",
     );
     expect(linkedinLink).toHaveAttribute(
       "href",
       "https://linkedin.com/in/yourusername",
     );
-    expect(emailLink).toHaveAttribute("href", "mailto:your.email@example.com");
+    expect(emailLink).toHaveAttribute("href", "mailto:doudou.lookstar@gmail.com");
   });
 
   it("renders navigation links", () => {
