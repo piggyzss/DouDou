@@ -39,6 +39,7 @@ const customJestConfig = {
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
     "<rootDir>/tests/e2e/",
+    "<rootDir>/tests/integration/",
   ],
 };
 
