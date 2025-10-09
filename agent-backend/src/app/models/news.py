@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
 
+
 class NewsItem(BaseModel):
     title: str
     summary: str
@@ -11,16 +12,19 @@ class NewsItem(BaseModel):
     category: Optional[str] = None
     tags: List[str] = []
 
+
 class NewsCategory(BaseModel):
     name: str
     count: int
     description: Optional[str] = None
+
 
 class TrendingTopic(BaseModel):
     keyword: str
     mentions: int
     change: str  # e.g., "↑ 23%"
     description: Optional[str] = None
+
 
 class NewsResponse(BaseModel):
     items: List[NewsItem]

@@ -5,6 +5,7 @@ from typing import List
 
 router = APIRouter()
 
+
 @router.post("/execute", response_model=AgentResponse)
 async def execute_command(request: AgentRequest):
     """执行Agent命令"""
@@ -13,6 +14,7 @@ async def execute_command(request: AgentRequest):
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/plugins")
 async def get_plugins():
@@ -30,20 +32,22 @@ async def get_plugins():
                         "command": cmd.command,
                         "description": cmd.description,
                         "usage": cmd.usage,
-                        "examples": cmd.examples
+                        "examples": cmd.examples,
                     }
                     for cmd in plugin.commands
-                ]
+                ],
             }
             for plugin in plugins
         ]
     }
+
 
 @router.get("/commands")
 async def get_commands():
     """获取所有可用命令"""
     commands = plugin_manager.get_all_commands()
     return {"commands": commands}
+
 
 @router.get("/health")
 async def health_check():
@@ -52,5 +56,5 @@ async def health_check():
         "status": "healthy",
         "timestamp": "2024-01-01T00:00:00Z",
         "plugins_count": len(plugin_manager.get_enabled_plugins()),
-        "commands_count": len(plugin_manager.get_all_commands())
+        "commands_count": len(plugin_manager.get_all_commands()),
     }

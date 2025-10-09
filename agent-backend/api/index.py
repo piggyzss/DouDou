@@ -9,7 +9,7 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description="AI News Agent Backend Service",
     docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None
+    redoc_url="/redoc" if settings.DEBUG else None,
 )
 
 # 配置CORS
@@ -24,6 +24,7 @@ app.add_middleware(
 # 注册路由
 app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
 
+
 @app.get("/")
 async def root():
     """根路径"""
@@ -31,8 +32,9 @@ async def root():
         "name": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "status": "running",
-        "docs": "/docs" if settings.DEBUG else "disabled"
+        "docs": "/docs" if settings.DEBUG else "disabled",
     }
+
 
 @app.get("/health")
 async def health():
