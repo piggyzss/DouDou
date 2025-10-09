@@ -116,9 +116,7 @@ class NewsPlugin(BasePlugin):
             if len(summary_lines) >= 3:
                 # 如果概括内容足够，显示前3行
                 for j in range(min(3, len(summary_lines))):
-                    response_text += f"│    {
-                        summary_lines[j]}{
-                        '.' if j < 2 else ''}\n"
+                    response_text += f"│    {summary_lines[j]}{'.' if j < 2 else ''}\n"
             else:
                 # 如果概括内容不够，重复或扩展
                 response_text += f"│    {item.summary}\n"
@@ -146,12 +144,7 @@ class NewsPlugin(BasePlugin):
         response_text += "┌─ Trending AI Topics ────────────────────────────────────┐\n"
 
         for i, topic in enumerate(trending_topics, 1):
-            response_text += f"│ {
-                str(i).rjust(2)}. {
-                topic.keyword.ljust(20)} {
-                str(
-                    topic.mentions).rjust(4)} mentions {
-                    topic.change} │\n"
+            response_text += f"│ {str(i).rjust(2)}. {topic.keyword.ljust(20)} {str(topic.mentions).rjust(4)} mentions {topic.change} │\n"
 
         response_text += "└─────────────────────────────────────────────────────────┘"
 
