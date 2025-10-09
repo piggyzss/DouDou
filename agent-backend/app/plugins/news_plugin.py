@@ -110,9 +110,7 @@ class NewsPlugin(BasePlugin):
 
         for i, item in enumerate(news_items, 1):
             response_text += f"│ {i}. {item.title}\n"
-            response_text += f"│    Source: {
-                item.source} | {
-                item.publish_time}\n"
+            response_text += f"│    Source: {item.source} | {item.publish_time}\n"
             # 增加概括内容到三行左右
             summary_lines = item.summary.split(". ")
             if len(summary_lines) >= 3:
