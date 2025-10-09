@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from ...models.base import AgentRequest, AgentResponse
 from ...core.plugin_manager import plugin_manager
-from typing import List
 
 router = APIRouter()
 

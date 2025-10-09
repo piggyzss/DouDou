@@ -58,7 +58,9 @@ class PluginManager:
         if not plugin_id:
             return AgentResponse(
                 success=False,
-                error=f"Unknown command: {command}. Type /help for available commands.",
+                error=(
+                    f"Unknown command: {command}. " "Type /help for available commands."
+                ),
                 type="error",
                 plugin="system",
                 command=command,

@@ -44,7 +44,9 @@ class Settings(BaseSettings):
         },
         "venturebeat": {"url": "https://venturebeat.com/ai/", "enabled": True},
         "mit_tech_review": {
-            "url": "https://www.technologyreview.com/topic/artificial-intelligence/",
+            "url": (
+                "https://www.technologyreview.com/" "topic/artificial-intelligence/"
+            ),
             "enabled": True,
         },
     }

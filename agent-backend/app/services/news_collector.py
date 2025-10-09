@@ -2,7 +2,6 @@ from typing import List
 from ..models.news import NewsItem, TrendingTopic
 import asyncio
 from datetime import datetime, timedelta
-import random
 
 
 class NewsCollectorService:

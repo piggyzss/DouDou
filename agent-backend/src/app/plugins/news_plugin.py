@@ -1,9 +1,6 @@
 from typing import List
 from ..models.base import BasePlugin, AgentCommand, AgentRequest, AgentResponse
-from ..models.news import NewsItem, NewsCategory, TrendingTopic
 from ..services.news_collector import NewsCollectorService
-from datetime import datetime
-import json
 
 
 class NewsPlugin(BasePlugin):
@@ -107,25 +104,29 @@ class NewsPlugin(BasePlugin):
             )
 
         # 格式化输出
-        response_text = f"[INFO] Fetching latest AI news...\n"
+        response_text = "[INFO] Fetching latest AI news...\n"
         response_text += f"[SUCCESS] Found {len(news_items)} new articles\n\n"
         response_text += "┌─ Latest AI News ────────────────────────────────────────┐\n"
 
         for i, item in enumerate(news_items, 1):
             response_text += f"│ {i}. {item.title}\n"
-            response_text += f"│    Source: {item.source} | {item.publish_time}\n"
+            response_text += f"│    Source: {
+                item.source} | {
+                item.publish_time}\n"
             # 增加概括内容到三行左右
             summary_lines = item.summary.split(". ")
             if len(summary_lines) >= 3:
                 # 如果概括内容足够，显示前3行
                 for j in range(min(3, len(summary_lines))):
-                    response_text += f"│    {summary_lines[j]}{'.' if j < 2 else ''}\n"
+                    response_text += f"│    {
+                        summary_lines[j]}{
+                        '.' if j < 2 else ''}\n"
             else:
                 # 如果概括内容不够，重复或扩展
                 response_text += f"│    {item.summary}\n"
                 if len(item.summary) < 100:  # 如果概括太短，添加额外信息
-                    response_text += f"│    This development represents a significant advancement in the field.\n"
-                    response_text += f"│    Industry experts are closely monitoring the implications.\n"
+                    response_text += "│    This development represents a significant advancement in the field.\n"
+                    response_text += "│    Industry experts are closely monitoring the implications.\n"
             response_text += f"│    Link: {item.url}\n"
             response_text += "│\n"
 
@@ -147,7 +148,12 @@ class NewsPlugin(BasePlugin):
         response_text += "┌─ Trending AI Topics ────────────────────────────────────┐\n"
 
         for i, topic in enumerate(trending_topics, 1):
-            response_text += f"│ {str(i).rjust(2)}. {topic.keyword.ljust(20)} {str(topic.mentions).rjust(4)} mentions {topic.change} │\n"
+            response_text += f"│ {
+                str(i).rjust(2)}. {
+                topic.keyword.ljust(20)} {
+                str(
+                    topic.mentions).rjust(4)} mentions {
+                    topic.change} │\n"
 
         response_text += "└─────────────────────────────────────────────────────────┘"
 
@@ -164,7 +170,7 @@ class NewsPlugin(BasePlugin):
         topic = params.get("topic", "AI developments")
 
         # 这里可以集成LLM进行深度分析
-        response_text = f"[INFO] Initializing deep analysis mode...\n"
+        response_text = "[INFO] Initializing deep analysis mode...\n"
         response_text += f"[ANALYSIS] Processing recent {topic}...\n"
         response_text += "[INSIGHTS] Key trends identified:\n\n"
         response_text += (
