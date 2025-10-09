@@ -1,19 +1,13 @@
 "use client";
 
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import Image from "next/image";
 import {
-  User,
-  Award,
-  Heart,
   Github,
   Linkedin,
   Rss,
   Mail,
-  MapPin,
-  Calendar,
-  PawPrint,
   Carrot,
 } from "lucide-react";
 

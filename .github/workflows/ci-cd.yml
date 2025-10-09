@@ -40,7 +40,7 @@ jobs:
       
       # ESLint 检查
       - name: 代码规范检查
-        run: npm run lint
+        run: npm run lint -- --max-warnings 100
         
       # TypeScript 编译检查
       - name: TypeScript 类型检查

@@ -27,8 +27,6 @@ export default function CreateAppModal({
   onClose,
   onSubmit,
 }: CreateAppModalProps) {
-  if (!isOpen) return null;
-
   const [name, setName] = useState("");
   const [tags, setTags] = useState("");
   const [description, setDescription] = useState("");
@@ -36,38 +34,40 @@ export default function CreateAppModal({
   const [status, setStatus] = useState("development");
   const [experienceMethod, setExperienceMethod] = useState("download");
   const [downloadUrl, setDownloadUrl] = useState("");
-  const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [experienceVideo, setExperienceVideo] = useState<File | null>(null);
+  // const [coverImage, setCoverImage] = useState<File | null>(null);
+  // const [experienceVideo, setExperienceVideo] = useState<File | null>(null);
   const [qrCodeImage, setQrCodeImage] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string>("");
-  const [videoPreview, setVideoPreview] = useState<string>("");
+  // const [coverPreview, setCoverPreview] = useState<string>("");
+  // const [videoPreview, setVideoPreview] = useState<string>("");
   const [qrPreview, setQrPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCoverImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setCoverPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  if (!isOpen) return null;
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setExperienceVideo(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setVideoPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setCoverImage(file);
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       setCoverPreview(e.target?.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
+
+  // const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setExperienceVideo(file);
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       setVideoPreview(e.target?.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const handleQrCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

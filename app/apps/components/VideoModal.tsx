@@ -4,13 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Play,
-  Pause,
   Settings,
   Volume1,
   Volume2,
   VolumeX,
-  SkipBack,
-  SkipForward,
   Hand,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";

@@ -7,12 +7,6 @@ import Link from "next/link";
 import {
   Play,
   Download,
-  ExternalLink,
-  Heart,
-  Users,
-  TrendingUp,
-  MessageCircle,
-  Calendar,
   QrCode,
 } from "lucide-react";
 import VideoModal from "./VideoModal";

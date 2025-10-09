@@ -1,5 +1,5 @@
 "use client";
-import { Palette, Heart, ImagePlus, Trash2 } from "lucide-react";
+import { Palette, ImagePlus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import LikeToggle from "../../components/LikeToggle";
 
