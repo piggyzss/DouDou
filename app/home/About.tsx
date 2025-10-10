@@ -322,6 +322,8 @@ export default function About() {
                   <Image
                     src="/images/avatar.png"
                     alt="shanshan的头像"
+                    width={400}
+                    height={400}
                     className="avatar-image"
                     style={{
                       width: "100%",
