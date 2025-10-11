@@ -1,0 +1,255 @@
+name: CD Pipeline
+
+on:
+  # 只在CI成功后触发
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # 检查CI状态
+  check-ci:
+    name: 验证CI状态
+    runs-on: ubuntu-latest
+    outputs:
+      ci-passed: ${{ steps.check.outputs.ci-passed }}
+      branch: ${{ steps.check.outputs.branch }}
+    
+    steps:
+      - name: 检查CI结果
+        id: check
+        run: |
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+            echo "✅ CI检查通过，准备部署"
+            echo "ci-passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ CI检查失败，跳过部署"
+            echo "ci-passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
+
+  # 生产环境部署 (main分支)
+  deploy-production:
+    name: 生产环境部署
+    needs: [check-ci]
+    if: needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.branch == 'main'
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: production
+      url: https://doudou.vercel.app
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      # 恢复CI阶段的构建缓存
+      - name: 恢复构建缓存
+        uses: actions/cache@v3
+        with:
+          path: .next
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.event.workflow_run.head_sha }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+      
+      # 如果缓存未命中，重新构建
+      - name: 重新构建 (如需要)
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "构建缓存未找到，重新构建..."
+            npm ci
+            npm run build
+          else
+            echo "使用缓存的构建产物"
+          fi
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: '--max-old-space-size=4096'
+      
+      # 部署前端
+      - name: 部署前端到 Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+        
+      # 部署后端
+      - name: 部署后端到 Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel-backend-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./agent-backend
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          
+      # 部署后验证
+      - name: 等待部署完成
+        run: |
+          echo "⏳ 等待部署服务启动..."
+          sleep 90
+          
+      - name: 前端健康检查
+        run: |
+          echo "🔍 检查前端部署状态..."
+          curl -f "${{ steps.vercel-deploy.outputs.preview-url }}" --max-time 30 || exit 1
+          echo "✅ 前端部署成功: ${{ steps.vercel-deploy.outputs.preview-url }}"
+          
+      - name: 后端健康检查
+        run: |
+          echo "🔍 检查后端部署状态..."
+          if [ -n "${{ steps.vercel-backend-deploy.outputs.preview-url }}" ]; then
+            BACKEND_URL="${{ steps.vercel-backend-deploy.outputs.preview-url }}"
+            echo "后端URL: $BACKEND_URL"
+            
+            # 等待容器完全启动
+            for i in {1..10}; do
+              echo "尝试连接后端服务 (第 $i 次)..."
+              if curl -f "$BACKEND_URL/health" --max-time 30; then
+                echo "✅ 后端健康检查通过"
+                break
+              else
+                echo "⏳ 等待后端服务启动..."
+                sleep 15
+              fi
+            done
+            
+            # 最终健康检查
+            curl -f "$BACKEND_URL/health" --max-time 30 || {
+              echo "❌ 后端健康检查失败"
+              exit 1
+            }
+            echo "✅ 后端部署成功: $BACKEND_URL"
+          else
+            echo "⚠️ 后端部署URL未获取到，跳过健康检查"
+          fi
+
+      # 保存部署信息
+      - name: 保存部署信息
+        run: |
+          echo "FRONTEND_URL=${{ steps.vercel-deploy.outputs.preview-url }}" >> $GITHUB_ENV
+          echo "BACKEND_URL=${{ steps.vercel-backend-deploy.outputs.preview-url }}" >> $GITHUB_ENV
+          echo "DEPLOYMENT_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
+
+  # 开发环境部署 (develop分支)
+  deploy-development:
+    name: 开发环境部署
+    needs: [check-ci]
+    if: needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.branch == 'develop'
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: development
+      url: https://doudou-dev.vercel.app
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      # 开发环境部署 (预览模式)
+      - name: 部署前端到 Vercel (预览)
+        uses: amondnet/vercel-action@v25
+        id: vercel-dev-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./
+          
+      - name: 部署后端到 Vercel (开发环境)
+        uses: amondnet/vercel-action@v25
+        id: vercel-backend-dev-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_BACKEND_DEV_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ./agent-backend
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+
+      # 基础健康检查 (开发环境较宽松)
+      - name: 开发环境健康检查
+        run: |
+          echo "🔍 开发环境基础检查..."
+          if [ -n "${{ steps.vercel-dev-deploy.outputs.preview-url }}" ]; then
+            curl -f "${{ steps.vercel-dev-deploy.outputs.preview-url }}" --max-time 30 || echo "⚠️ 前端检查失败"
+          fi
+          echo "✅ 开发环境部署完成"
+
+  # 部署通知
+  notify:
+    name: 部署通知
+    needs: [deploy-production, deploy-development]
+    if: always() && (needs.deploy-production.result != 'skipped' || needs.deploy-development.result != 'skipped')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 确定部署环境
+        id: env
+        run: |
+          if [[ "${{ needs.deploy-production.result }}" != "skipped" ]]; then
+            echo "environment=Production" >> $GITHUB_OUTPUT
+            echo "status=${{ needs.deploy-production.result }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.deploy-development.result }}" != "skipped" ]]; then
+            echo "environment=Development" >> $GITHUB_OUTPUT
+            echo "status=${{ needs.deploy-development.result }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Slack 通知
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ steps.env.outputs.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            🚀 **DouDou 项目部署完成**
+            
+            **环境**: ${{ steps.env.outputs.environment }}
+            **分支**: ${{ github.event.workflow_run.head_branch }}
+            **提交**: ${{ github.event.workflow_run.head_sha }}
+            **状态**: ${{ steps.env.outputs.status == 'success' && '✅ 成功' || '❌ 失败' }}
+            **部署时间**: ${{ env.DEPLOYMENT_TIME }}
+            
+            **前端**: ${{ env.FRONTEND_URL }}
+            **后端**: ${{ env.BACKEND_URL }}
+            
+            [查看详情](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,0 +1,204 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # 前端质量检查
+  frontend-ci:
+    name: 前端CI检查
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: 安装依赖
+        run: |
+          npm ci
+          npm run preflight
+      
+      # 代码质量检查
+      - name: ESLint 检查
+        run: npm run lint -- --max-warnings 100
+        
+      - name: TypeScript 类型检查
+        run: npx tsc --noEmit
+      
+      # 测试套件
+      - name: 运行测试
+        run: |
+          npm run test:ci
+          npm run test:coverage
+      
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage-${{ matrix.node-version }}
+          fail_ci_if_error: false
+      
+      # 构建验证
+      - name: 构建验证
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: '--max-old-space-size=4096'
+      
+      # 缓存构建产物 (为CD准备)
+      - name: 缓存构建产物
+        uses: actions/cache@v3
+        if: matrix.node-version == '20' && github.ref == 'refs/heads/main'
+        with:
+          path: .next
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+
+  # 后端质量检查
+  backend-ci:
+    name: 后端CI检查
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    
+    defaults:
+      run:
+        working-directory: ./agent-backend
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 设置 Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'agent-backend/requirements.txt'
+      
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio black flake8 mypy
+      
+      # 代码质量检查
+      - name: 代码格式检查
+        run: |
+          black --check --diff .
+          flake8 .
+      
+      - name: 类型检查
+        run: mypy . || true
+      
+      # 测试套件
+      - name: 运行测试
+        run: pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term
+      
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./agent-backend/coverage.xml
+          flags: backend
+          name: backend-coverage-${{ matrix.python-version }}
+          fail_ci_if_error: false
+      
+      # Docker构建验证
+      - name: Docker构建验证
+        if: matrix.python-version == '3.11'
+        run: |
+          echo "🐳 验证Docker构建..."
+          docker build -t doudou-backend:ci-test .
+          echo "✅ Docker构建验证通过"
+
+  # 安全扫描
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: 'agent-backend/requirements.txt'
+      
+      - name: 安装依赖
+        run: |
+          npm ci
+          cd agent-backend
+          pip install -r requirements.txt
+          pip install safety pip-audit
+      
+      - name: 前端安全审计
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+        
+      - name: 后端安全审计
+        run: |
+          cd agent-backend
+          safety check
+          pip-audit
+        continue-on-error: true
+        
+      - name: CodeQL 分析
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript, python
+          queries: security-and-quality
+        continue-on-error: true
+
+  # CI状态汇总
+  ci-status:
+    name: CI状态检查
+    needs: [frontend-ci, backend-ci, security-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: 检查CI状态
+        run: |
+          echo "前端CI: ${{ needs.frontend-ci.result }}"
+          echo "后端CI: ${{ needs.backend-ci.result }}"
+          echo "安全扫描: ${{ needs.security-scan.result }}"
+          
+          if [[ "${{ needs.frontend-ci.result }}" == "failure" || "${{ needs.backend-ci.result }}" == "failure" ]]; then
+            echo "❌ CI检查失败"
+            exit 1
+          fi
+          
+          echo "✅ 所有CI检查通过"
+      
+      - name: 设置CI状态
+        run: |
+          echo "CI_PASSED=true" >> $GITHUB_ENV
+          echo "BUILD_SHA=${{ github.sha }}" >> $GITHUB_ENV
