@@ -49,7 +49,7 @@ jobs:
           npm run test:coverage
       
       - name: 上传覆盖率报告
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           file: ./coverage/lcov.info
           flags: frontend
@@ -115,7 +115,7 @@ jobs:
         run: pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term
       
       - name: 上传覆盖率报告
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           file: ./agent-backend/coverage.xml
           flags: backend
