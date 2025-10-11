@@ -212,44 +212,43 @@ jobs:
           fi
           echo "✅ 开发环境部署完成"
 
-  # 部署通知
-  notify:
-    name: 部署通知
+  # 部署状态记录
+  deployment-summary:
+    name: 部署状态汇总
     needs: [deploy-production, deploy-development]
     if: always() && (needs.deploy-production.result != 'skipped' || needs.deploy-development.result != 'skipped')
     runs-on: ubuntu-latest
     
     steps:
-      - name: 确定部署环境
-        id: env
+      - name: 记录部署结果
         run: |
+          echo "🏁 部署完成汇总"
+          echo "=================="
+          
           if [[ "${{ needs.deploy-production.result }}" != "skipped" ]]; then
-            echo "environment=Production" >> $GITHUB_OUTPUT
-            echo "status=${{ needs.deploy-production.result }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ needs.deploy-development.result }}" != "skipped" ]]; then
-            echo "environment=Development" >> $GITHUB_OUTPUT
-            echo "status=${{ needs.deploy-development.result }}" >> $GITHUB_OUTPUT
+            echo "🏢 生产环境部署: ${{ needs.deploy-production.result }}"
+            echo "📅 分支: ${{ github.event.workflow_run.head_branch }}"
+            echo "💻 提交: ${{ github.event.workflow_run.head_sha }}"
+            
+            if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+              echo "✅ 生产环境部署成功！"
+              echo "🌐 前端地址: https://doudou.vercel.app (预期)"
+              echo "🔧 后端地址: https://doudou-backend.vercel.app (预期)"
+            else
+              echo "❌ 生产环境部署失败，请检查配置"
+            fi
           fi
-      
-      - name: Slack 通知
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: ${{ steps.env.outputs.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-          message: |
-            🚀 **DouDou 项目部署完成**
+          
+          if [[ "${{ needs.deploy-development.result }}" != "skipped" ]]; then
+            echo "🧪 开发环境部署: ${{ needs.deploy-development.result }}"
+            echo "📅 分支: ${{ github.event.workflow_run.head_branch }}"
             
-            **环境**: ${{ steps.env.outputs.environment }}
-            **分支**: ${{ github.event.workflow_run.head_branch }}
-            **提交**: ${{ github.event.workflow_run.head_sha }}
-            **状态**: ${{ steps.env.outputs.status == 'success' && '✅ 成功' || '❌ 失败' }}
-            **部署时间**: ${{ env.DEPLOYMENT_TIME }}
-            
-            **前端**: ${{ env.FRONTEND_URL }}
-            **后端**: ${{ env.BACKEND_URL }}
-            
-            [查看详情](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+            if [[ "${{ needs.deploy-development.result }}" == "success" ]]; then
+              echo "✅ 开发环境部署成功！"
+            else
+              echo "❌ 开发环境部署失败，请检查配置"
+            fi
+          fi
+          
+          echo "=================="
+          echo "📊 查看详细日志: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
