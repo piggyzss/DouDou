@@ -234,7 +234,8 @@ export default function VideosSection({
                 <Image
                   src={video.coverUrl}
                   alt={video.title}
-                  className="w-full h-full object-cover transform transition-transform duration-150 ease-out group-hover:scale-[1.03] group-hover:animate-[breatheScale_800ms_ease-in-out_infinite] group-hover:brightness-[1.03]"
+                  fill
+                  className="object-cover transform transition-transform duration-150 ease-out group-hover:scale-[1.03] group-hover:animate-[breatheScale_800ms_ease-in-out_infinite] group-hover:brightness-[1.03]"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

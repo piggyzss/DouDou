@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
+import { App } from "@/lib/models/app";
 
-interface AppData {
+interface EditAppData {
   name: string;
   tags: string[];
   description: string;
@@ -17,17 +18,19 @@ interface AppData {
   githubUrl?: string;
 }
 
-interface CreateAppModalProps {
+interface EditAppModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: AppData) => void;
+  onSubmit: (data: EditAppData) => void;
+  app: App | null;
 }
 
-export default function CreateAppModal({
+export default function EditAppModal({
   isOpen,
   onClose,
   onSubmit,
-}: CreateAppModalProps) {
+  app,
+}: EditAppModalProps) {
   const [name, setName] = useState("");
   const [tags, setTags] = useState("");
   const [description, setDescription] = useState("");
@@ -36,40 +39,27 @@ export default function CreateAppModal({
   const [experienceMethod, setExperienceMethod] = useState("download");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
-  // const [coverImage, setCoverImage] = useState<File | null>(null);
-  // const [experienceVideo, setExperienceVideo] = useState<File | null>(null);
   const [qrCodeImage, setQrCodeImage] = useState<File | null>(null);
-  // const [coverPreview, setCoverPreview] = useState<string>("");
-  // const [videoPreview, setVideoPreview] = useState<string>("");
   const [qrPreview, setQrPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // 当app数据变化时，更新表单数据
+  useEffect(() => {
+    if (app) {
+      setName(app.name);
+      setTags(app.tags.join(", "));
+      setDescription(app.description);
+      setType(app.type);
+      setStatus(app.status);
+      setExperienceMethod(app.experience_method);
+      setDownloadUrl(app.download_url || "");
+      setGithubUrl(app.github_url || "");
+      setQrPreview(app.qr_code_url || "");
+    }
+  }, [app]);
+
   if (!isOpen) return null;
-
-  // const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setCoverImage(file);
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       setCoverPreview(e.target?.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
-
-  // const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setExperienceVideo(file);
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       setVideoPreview(e.target?.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
 
   const handleQrCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,7 +79,7 @@ export default function CreateAppModal({
     setError("");
 
     try {
-      const appData: AppData = {
+      const appData: EditAppData = {
         name: name.trim(),
         tags: tags
           .split(",")
@@ -106,41 +96,42 @@ export default function CreateAppModal({
       onSubmit(appData);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "创建App失败");
+      setError(err instanceof Error ? err.message : "更新App失败");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-        >
-          <X size={20} />
-        </button>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-text-primary font-heading">
+            编辑App
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-        <h2 className="text-xl font-bold text-text-primary mb-4 font-heading">
-          新建App
-        </h2>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {error && (
+            <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-md text-sm">
+              {error}
+            </div>
+          )}
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2 font-body">
-              App名称
+              名称
             </label>
             <input
               type="text"
@@ -148,9 +139,10 @@ export default function CreateAppModal({
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-body text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700 text-text-primary dark:text-white"
               placeholder="请输入App名称"
+              disabled={true}
               required
-              disabled={isSubmitting}
             />
+            <p className="text-xs text-gray-500 mt-1">应用名称不可修改</p>
           </div>
 
           <div>
@@ -354,28 +346,21 @@ export default function CreateAppModal({
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-text-primary dark:text-white bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               disabled={isSubmitting}
             >
               取消
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !name.trim()}
-              className="flex-1 px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  创建中...
-                </>
-              ) : (
-                "完成"
-              )}
+              {isSubmitting ? "更新中..." : "更新App"}
             </button>
           </div>
         </form>

@@ -1,7 +1,9 @@
 "use client";
+import { useState } from "react";
 import { Palette, ImagePlus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import LikeToggle from "../../components/LikeToggle";
+import ConfirmModal from "../components/ConfirmModal";
 
 export interface ArtworkImage {
   id: number;
@@ -49,6 +51,13 @@ export default function ImagesSection({
   formatNumber,
   isDev = false,
 }: ImagesSectionProps) {
+  const [confirm, setConfirm] = useState<{
+    open: boolean;
+    type: 'artwork' | 'image';
+    id: string;
+    title: string;
+    artworkId?: string;
+  } | null>(null);
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -92,7 +101,12 @@ export default function ImagesSection({
                     <ImagePlus size={14} />
                   </button>
                   <button
-                    onClick={() => onDeleteArtwork(artwork.id)}
+                    onClick={() => setConfirm({
+                      open: true,
+                      type: 'artwork',
+                      id: artwork.id,
+                      title: artwork.title
+                    })}
                     className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                     title="删除作品集"
                   >
@@ -163,7 +177,13 @@ export default function ImagesSection({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDeleteImage(artwork.id, image.id);
+                        setConfirm({
+                          open: true,
+                          type: 'image',
+                          id: image.id.toString(),
+                          title: image.original_name || '图片',
+                          artworkId: artwork.id
+                        });
                       }}
                       className="absolute bottom-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-lg opacity-0 group-hover/image:opacity-100 transition-opacity"
                       title="删除图片"
@@ -180,6 +200,28 @@ export default function ImagesSection({
           <div className="mt-3 mb-4 border-b border-gray-200 dark:border-gray-700"></div>
         </div>
       ))}
+
+      {confirm?.open && (
+        <ConfirmModal
+          isOpen={confirm.open}
+          onClose={() => setConfirm(null)}
+          onConfirm={() => {
+            if (confirm.type === 'artwork' && onDeleteArtwork) {
+              onDeleteArtwork(confirm.id);
+            } else if (confirm.type === 'image' && onDeleteImage && confirm.artworkId) {
+              onDeleteImage(confirm.artworkId, parseInt(confirm.id));
+            }
+            setConfirm(null);
+          }}
+          title={confirm.type === 'artwork' ? "删除作品集" : "删除图片"}
+          message={
+            confirm.type === 'artwork' 
+              ? `确定要删除作品集 "${confirm.title}" 吗？这将删除所有相关的图片，此操作不可撤销。`
+              : `确定要删除图片 "${confirm.title}" 吗？此操作不可撤销。`
+          }
+          type="danger"
+        />
+      )}
     </div>
   );
 }

@@ -8,6 +8,10 @@ import {
   Play,
   Download,
   QrCode,
+  Edit,
+  Trash2,
+  Github,
+  Copy,
 } from "lucide-react";
 import VideoModal from "./VideoModal";
 import HighchartsReact from "highcharts-react-official";
@@ -16,6 +20,9 @@ import { App } from "@/lib/models/app";
 
 interface AppCardProps {
   app: App;
+  onEdit?: (app: App) => void;
+  onDelete?: (app: App) => void;
+  isDev?: boolean;
 }
 
 // 日期格式化函数
@@ -27,11 +34,12 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function AppCard({ app }: AppCardProps) {
+export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCardProps) {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [dauTrend, setDauTrend] = useState<number[]>([]);
   const [liked, setLiked] = useState(false);
   const [buttonWidth, setButtonWidth] = useState(0);
+  const [copySuccess, setCopySuccess] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // 获取DAU趋势数据
@@ -105,6 +113,22 @@ export default function AppCard({ app }: AppCardProps) {
         setLiked(data.liked);
       }
     } catch (error) {}
+  };
+
+  // 处理复制GitHub地址
+  const handleCopyGithubUrl = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (app.github_url) {
+      try {
+        await navigator.clipboard.writeText(app.github_url);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error('复制失败:', error);
+      }
+    }
   };
 
   // DAU趋势图表配置
@@ -355,6 +379,8 @@ export default function AppCard({ app }: AppCardProps) {
                   : "/images/placeholder-app.png"
               }
               alt={app.name}
+              width={192}
+              height={256}
               className="w-full h-full object-cover transition-transform duration-300 group-hover/cover:scale-105"
             />
 
@@ -388,10 +414,36 @@ export default function AppCard({ app }: AppCardProps) {
           {/* 右侧内容 */}
           <div className="flex-1 pl-6 flex flex-col">
             {/* 标题和操作按钮 */}
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 group/title">
               <h2 className="text-xl font-bold text-text-primary font-heading group-hover:text-primary transition-colors line-clamp-2 flex-1">
                 <Link href={`/apps/${app.id}`}>{app.name}</Link>
               </h2>
+              
+              {/* 编辑和删除按钮 */}
+              <div className="flex items-center gap-2 opacity-0 group-hover/title:opacity-100 transition-opacity duration-200">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onEdit?.(app);
+                  }}
+                  className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  title="编辑应用"
+                >
+                  <Edit size={14} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDelete?.(app);
+                  }}
+                  className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                  title="删除应用"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
 
             {/* 标签 */}
@@ -439,7 +491,8 @@ export default function AppCard({ app }: AppCardProps) {
                 </div>
 
                 {/* 体验入口 */}
-                <div className="mt-3">
+                <div className="mt-3 flex gap-3">
+                  {/* 体验一下按钮 */}
                   <div className="relative inline-block group/qr">
                     <button
                       ref={buttonRef}
@@ -465,11 +518,39 @@ export default function AppCard({ app }: AppCardProps) {
                               : "/images/placeholder-qr.png"
                           }
                           alt={`${app.name} 二维码`}
+                          width={80}
+                          height={80}
                           className="w-20 h-20 object-contain"
                         />
                       </div>
                     </div>
                   </div>
+
+                  {/* 代码仓库按钮 */}
+                  {app.github_url && (
+                    <div className="relative inline-block group/github">
+                      <button
+                        className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/20 dark:hover:bg-gray-800/30 px-3 py-2 rounded hover:scale-105"
+                      >
+                        <Github size={14} />
+                        <span>代码仓库</span>
+                      </button>
+
+                      {/* GitHub地址悬浮显示 */}
+                      <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover/github:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-3 flex items-center gap-2 min-w-max">
+                          <span className="text-sm text-text-primary font-blog">{app.github_url}</span>
+                          <button
+                            onClick={handleCopyGithubUrl}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                            title="复制地址"
+                          >
+                            <Copy size={14} className={copySuccess ? "text-green-500" : "text-text-secondary"} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -88,7 +88,8 @@ export default function MusicSection({
                 <Image
                   src={track.coverUrl}
                   alt={track.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

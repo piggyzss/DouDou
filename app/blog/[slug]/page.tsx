@@ -65,7 +65,7 @@ export default async function BlogDetailPage({ params }: Params) {
         <ClientFadeIn>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-8">
             <article className="min-w-0">
-              <h1 className="text-4xl font-bold text-text-primary font-heading">
+              <h1 className="text-3xl font-bold text-text-primary font-heading">
                 {post.title}
               </h1>
               <ClientLikesHeader
@@ -95,7 +95,7 @@ export default async function BlogDetailPage({ params }: Params) {
               {/* 编辑按钮已移至列表页 hover 区域 */}
 
               <div
-                className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-base font-body text-text-primary"
+                className="blog-content prose prose-slate max-w-none dark:prose-invert mt-6 text-base font-body text-text-secondary"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
               <ClientCodeBlock />

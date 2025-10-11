@@ -2,27 +2,136 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PenSquare } from "lucide-react";
+import { PenSquare, Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { BlogModel } from "@/lib/models/blog";
+import LikeToggle from "../components/LikeToggle";
+
+// 博客文章图片组件，带有加载后推开动画
+const BlogPostImage = ({
+  post,
+  onImageLoad,
+  children,
+}: {
+  post: any;
+  onImageLoad: (loaded: boolean) => void;
+  children: React.ReactNode;
+}) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [contentPushed, setContentPushed] = useState(false);
+  
+  // 组件挂载时启动动画，无论是否有图片
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setImageLoaded(true);
+      setContentPushed(true);
+      onImageLoad(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [onImageLoad]);
+  
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    onImageLoad(true);
+    // 图片开始滑入的同时，文案也开始被推动
+    setTimeout(() => {
+      setContentPushed(true);
+    }, 50);
+  };
+
+  return (
+    <>
+      {/* 左侧封面图片 */}
+      {post.cover_url ? (
+        <motion.div
+          className="w-48 h-full flex-shrink-0 rounded overflow-hidden relative z-10"
+          initial={{ x: -200, opacity: 0 }} // 从左侧完全隐藏开始
+          animate={{
+            x: 0, // 直接滑入
+            opacity: 1,
+          }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+        >
+          <Image
+            src={
+              post.cover_url.startsWith("/")
+                ? post.cover_url
+                : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`
+            }
+            alt={post.title}
+            fill
+            className="object-cover"
+            onLoad={handleImageLoad}
+            onError={() => {
+              setImageLoaded(true);
+              onImageLoad(false);
+            }}
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          className="w-48 h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center rounded relative z-10"
+          initial={{ x: -200, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+        >
+          <PenSquare className="text-gray-400" size={48} />
+        </motion.div>
+      )}
+      {/* 右侧内容 */}
+      <motion.div
+        className="flex-1 pl-6 flex flex-col justify-between"
+        initial={{ x: -120, opacity: 0.2 }} // 初始位置向左偏移，与图片推进距离相关
+        animate={{
+          x: 0, // 被推开到正确位置
+          opacity: 1,
+        }}
+        transition={{
+          duration: 0.8, // 与图片同步
+          ease: [0.25, 0.46, 0.45, 0.94], // 使用相同的缓动函数
+          delay: 0.4, // 稍后启动，创造被推动的感觉
+        }}
+      >
+        {children}
+      </motion.div>
+    </>
+  );
+};
+
+// 日期格式化函数
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// 生成摘要
+const generateExcerpt = (content: string, maxLength: number = 150) => {
+  const cleanContent = content.replace(/[#*`>\-\[\]]/g, "").trim();
+  if (cleanContent.length <= maxLength) return cleanContent;
+  return cleanContent.slice(0, maxLength) + "...";
+};
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const isDev = process.env.NODE_ENV === "development";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/blog/posts");
-        if (!response.ok) {
-          throw new Error("Failed to fetch posts");
-        }
+        const response = await fetch("/api/blog/posts?page=1&limit=10");
         const data = await response.json();
-        setPosts(data.posts || []);
+        if (data.success) {
+          setResult(data.data);
+        } else {
+          setError(data.error || "数据加载失败");
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "加载博客失败");
+        setError("数据加载失败");
       } finally {
         setLoading(false);
       }
@@ -45,6 +154,7 @@ export default function BlogPage() {
           </div>
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="ml-3 text-text-secondary">Loading...</span>
           </div>
         </div>
       </div>
@@ -81,11 +191,11 @@ export default function BlogPage() {
         </div>
 
         {/* 新建博客按钮 - 仅在开发模式下显示 */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mb-8">
+        {isDev && (
+          <div className="mb-6">
             <Link
               href="/blog/new"
-              className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors font-blog"
+              className="inline-flex items-center px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog"
             >
               <PenSquare size={16} className="mr-2" />
               新建博客
@@ -94,69 +204,99 @@ export default function BlogPage() {
         )}
 
         <AnimatePresence>
-          {posts.length > 0 ? (
-            <div className="grid gap-8">
-              {posts.map((post, index) => (
+          {result?.posts && result.posts.length > 0 ? (
+            <div className="space-y-6">
+              {result.posts.map((post: any, index: number) => (
                 <motion.article
                   key={post.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
+                  className="group relative"
                 >
-                  <Link href={`/blog/${post.slug}`} className="block">
-                    <div className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h2 className="text-xl font-bold text-text-primary font-heading mb-2 hover:text-primary transition-colors">
-                            {post.title}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-500 p-4 overflow-hidden">
+                    <div className="flex h-56 relative">
+                      <BlogPostImage
+                        post={post}
+                        onImageLoad={(loaded) => {
+                          // 图片加载完成的回调
+                        }}
+                      >
+                        {/* 标题和操作按钮 */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <h2 className="text-xl font-bold text-text-primary font-heading group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                            <Link href={`/blog/${post.slug}`}>
+                              {post.title}
+                            </Link>
                           </h2>
-                          <p className="text-text-secondary font-blog line-clamp-2">
-                            {post.excerpt ||
-                              post.content?.substring(0, 150) + "..."}
-                          </p>
-                        </div>
-                        {post.cover_url && (
-                          <div className="ml-4 flex-shrink-0">
-                            <Image
-                              src={
-                                post.cover_url.startsWith("/")
-                                  ? post.cover_url
-                                  : `/api/aigc/proxy-image?url=${encodeURIComponent(post.cover_url)}`
-                              }
-                              alt={post.title}
-                              width={120}
-                              height={80}
-                              className="w-30 h-20 object-cover rounded border border-gray-100 dark:border-gray-700"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between text-sm text-text-muted">
-                        <div className="flex items-center space-x-4">
-                          <span>
-                            {new Date(post.created_at).toLocaleDateString()}
-                          </span>
-                          {post.tags && post.tags.length > 0 && (
-                            <div className="flex space-x-1">
-                              {post.tags.slice(0, 3).map((tag: string) => (
-                                <span
-                                  key={tag}
-                                  className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
+                          {isDev && (
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                              <Link
+                                href={`/blog/${post.slug}/edit`}
+                                className="p-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors pointer-events-auto"
+                                title="编辑博客"
+                              >
+                                <Edit size={14} />
+                              </Link>
                             </div>
                           )}
                         </div>
-                        <span className="text-primary hover:text-primary-dark transition-colors">
-                          阅读更多 →
-                        </span>
-                      </div>
+
+                        {/* 标签 */}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {post.tags
+                              .slice(0, 3)
+                              .map((tag: string, tagIndex: number) => (
+                                <span
+                                  key={tagIndex}
+                                  className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            {post.tags.length > 3 && (
+                              <span className="text-xs text-text-muted font-blog">
+                                +{post.tags.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 信息栏：时间、喜欢 - 参考AIGC样式 */}
+                        <div className="flex items-center gap-2 text-[11px] text-text-muted mb-4">
+                          <div className="flex items-center gap-1">
+                            <time>
+                              {formatDate(post.published_at || post.created_at)}
+                            </time>
+                          </div>
+                          <span className="mx-0.5 inline-flex items-center justify-center text-[11px] leading-none text-text-muted translate-y-[2px] select-none">
+                            ·
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <LikeToggle
+                              targetType="blog"
+                              targetId={post.id}
+                              initialCount={post.likes_count || 0}
+                              size={14}
+                              showCount={true}
+                              className="text-[11px]"
+                              countClassName="text-[11px] leading-none text-text-muted"
+                              unlikedColorClass="text-text-muted"
+                              likedColorClass="text-red-500"
+                            />
+                          </div>
+                        </div>
+
+                        {/* 文章摘要 */}
+                        {post.excerpt && (
+                          <p className="text-text-secondary text-sm font-blog line-clamp-2 flex-grow">
+                            {generateExcerpt(post.excerpt)}
+                          </p>
+                        )}
+                      </BlogPostImage>
                     </div>
-                  </Link>
+                  </div>
                 </motion.article>
               ))}
             </div>
@@ -168,7 +308,7 @@ export default function BlogPage() {
             >
               <PenSquare className="mx-auto text-gray-400 mb-4" size={48} />
               <p className="text-text-secondary">暂无博客</p>
-              <p className="text-sm text-text-muted mt-2">
+              <p className="text-sm text-text-muted mt-2 blog-body-text">
                 点击上方按钮创建您的第一篇博客
               </p>
             </motion.div>

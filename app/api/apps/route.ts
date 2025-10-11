@@ -37,13 +37,14 @@ export async function POST(request: NextRequest) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const tagsString = formData.get("tags") as string;
-    const type = formData.get("type") as "app" | "miniprogram" | "game";
+    const type = formData.get("type") as "app" | "miniprogram" | "game" | "plugin";
     const platform = formData.get("platform") as "web" | "mobile" | "wechat";
     const status = formData.get("status") as "development" | "beta" | "online";
     const experienceMethod = formData.get("experience_method") as
       | "download"
       | "qrcode";
     const downloadUrl = formData.get("download_url") as string;
+    const githubUrl = formData.get("github_url") as string;
     const experienceUrl = formData.get("experience_url") as string;
 
     // 验证必填字段
@@ -168,6 +169,7 @@ export async function POST(request: NextRequest) {
       qr_code_url: qrCodeUrl || undefined,
       cover_image_url: coverImageUrl || undefined,
       video_url: videoUrl || undefined,
+      github_url: githubUrl || undefined,
     };
 
     const app = await AppModel.create(appData);

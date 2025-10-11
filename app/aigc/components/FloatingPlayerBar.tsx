@@ -108,7 +108,8 @@ export default function FloatingPlayerBar({
                 <Image
                   src={coverUrl}
                   alt={title}
-                  className="w-full h-full rounded object-cover"
+                  fill
+                  className="rounded object-cover"
                 />
                 {isPlaying && (
                   <div className="absolute inset-0 flex items-center justify-center">

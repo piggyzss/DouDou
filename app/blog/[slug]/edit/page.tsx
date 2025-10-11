@@ -188,6 +188,8 @@ export default function EditBlogPage() {
                       : `/api/aigc/proxy-image?url=${encodeURIComponent(coverPreview)}`
                   }
                   alt="封面预览"
+                  width={192}
+                  height={128}
                   className="w-48 h-32 object-cover rounded-md border border-gray-200 dark:border-gray-700"
                 />
               </div>

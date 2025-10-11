@@ -20,6 +20,9 @@ export interface App {
   cover_image_url?: string;
   video_url?: string;
 
+  // 代码仓库
+  github_url?: string;
+
   // 统计数据
   dau: number;
   downloads: number;
@@ -45,6 +48,7 @@ export interface CreateAppData {
   qr_code_url?: string;
   cover_image_url?: string;
   video_url?: string;
+  github_url?: string;
 }
 
 // 更新应用数据
@@ -52,7 +56,7 @@ export interface UpdateAppData {
   name?: string;
   description?: string;
   tags?: string[];
-  type?: "app" | "miniprogram" | "game";
+  type?: "app" | "miniprogram" | "game" | "plugin";
   platform?: "web" | "mobile" | "wechat";
   status?: "development" | "beta" | "online";
   experience_method?: "download" | "qrcode";
@@ -60,6 +64,7 @@ export interface UpdateAppData {
   qr_code_url?: string;
   cover_image_url?: string;
   video_url?: string;
+  github_url?: string;
 }
 
 // 应用统计数据
@@ -104,8 +109,8 @@ export class AppModel {
   static async create(data: CreateAppData): Promise<App> {
     const slug = generateSlug(data.name);
     const result = await query(
-      `INSERT INTO apps (name, slug, description, tags, type, platform, status, experience_method, download_url, qr_code_url, cover_image_url, video_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO apps (name, slug, description, tags, type, platform, status, experience_method, download_url, qr_code_url, cover_image_url, video_url, github_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING *`,
       [
         data.name,
@@ -120,6 +125,7 @@ export class AppModel {
         data.qr_code_url,
         data.cover_image_url,
         data.video_url,
+        data.github_url,
       ],
     );
     return result.rows[0];
@@ -273,6 +279,12 @@ export class AppModel {
     if (data.video_url !== undefined) {
       fields.push(`video_url = $${paramIndex}`);
       values.push(data.video_url);
+      paramIndex++;
+    }
+
+    if (data.github_url !== undefined) {
+      fields.push(`github_url = $${paramIndex}`);
+      values.push(data.github_url);
       paramIndex++;
     }
 

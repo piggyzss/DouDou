@@ -48,6 +48,7 @@ export async function PUT(
       | "download"
       | "qrcode";
     const downloadUrl = formData.get("download_url") as string;
+    const githubUrl = formData.get("github_url") as string;
 
     // 处理标签
     const tags = tagsString
@@ -141,6 +142,7 @@ export async function PUT(
     if (status) updateData.status = status;
     if (experienceMethod) updateData.experience_method = experienceMethod;
     if (downloadUrl) updateData.download_url = downloadUrl;
+    if (githubUrl) updateData.github_url = githubUrl;
     if (coverImageUrl) updateData.cover_image_url = coverImageUrl;
     if (videoUrl) updateData.video_url = videoUrl;
     if (qrCodeUrl) updateData.qr_code_url = qrCodeUrl;

@@ -6,6 +6,8 @@ import { SquareCode, CircleOff, RotateCcw } from "lucide-react";
 import AppCard from "./components/AppCard";
 import FilterBar from "./components/FilterBar";
 import CreateAppModal from "./components/CreateAppModal";
+import EditAppModal from "./components/EditAppModal";
+import ConfirmModal from "../components/ConfirmModal";
 import { App } from "@/lib/models/app";
 
 export default function AppsPage() {
@@ -13,6 +15,12 @@ export default function AppsPage() {
   const [filteredApps, setFilteredApps] = useState<App[]>([]);
   const [selectedType, setSelectedType] = useState("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingApp, setEditingApp] = useState<App | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean;
+    app: App | null;
+  }>({ open: false, app: null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isDev = process.env.NODE_ENV === "development";
@@ -85,6 +93,10 @@ export default function AppsPage() {
         formData.append("qr_code_image", appData.qrCodeImage);
       }
 
+      if (appData.githubUrl) {
+        formData.append("github_url", appData.githubUrl);
+      }
+
       const response = await fetch("/api/apps", {
         method: "POST",
         body: formData,
@@ -99,6 +111,78 @@ export default function AppsPage() {
       setIsCreateModalOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "创建应用失败");
+    }
+  };
+
+  const handleEditApp = (app: App) => {
+    setEditingApp(app);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateApp = async (appData: any) => {
+    if (!editingApp) return;
+
+    try {
+      const formData = new FormData();
+
+      // 添加基本字段
+      formData.append("description", appData.description);
+      formData.append("tags", appData.tags.join(","));
+      formData.append("type", appData.type);
+      formData.append("status", appData.status);
+      formData.append("experience_method", appData.experienceMethod);
+
+      if (appData.downloadUrl) {
+        formData.append("download_url", appData.downloadUrl);
+      }
+
+      if (appData.qrCodeImage) {
+        formData.append("qr_code_image", appData.qrCodeImage);
+      }
+
+      if (appData.githubUrl) {
+        formData.append("github_url", appData.githubUrl);
+      }
+
+      const response = await fetch(`/api/apps/${editingApp.id}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("更新应用失败");
+      }
+
+      // 重新获取应用列表
+      await fetchApps();
+      setIsEditModalOpen(false);
+      setEditingApp(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "更新应用失败");
+    }
+  };
+
+  const handleDeleteApp = (app: App) => {
+    setDeleteConfirm({ open: true, app });
+  };
+
+  const confirmDeleteApp = async () => {
+    if (!deleteConfirm.app) return;
+
+    try {
+      const response = await fetch(`/api/apps/${deleteConfirm.app.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("删除应用失败");
+      }
+
+      // 重新获取应用列表
+      await fetchApps();
+      setDeleteConfirm({ open: false, app: null });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "删除应用失败");
     }
   };
 
@@ -181,7 +265,11 @@ export default function AppsPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group relative"
               >
-                <AppCard app={app} />
+                <AppCard 
+                  app={app} 
+                  onEdit={handleEditApp}
+                  onDelete={handleDeleteApp}
+                />
               </motion.article>
             ))}
           </motion.div>
@@ -210,6 +298,31 @@ export default function AppsPage() {
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
             onSubmit={handleCreateApp}
+          />
+        )}
+
+        {/* 编辑App弹窗 */}
+        {isEditModalOpen && editingApp && (
+          <EditAppModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setEditingApp(null);
+            }}
+            onSubmit={handleUpdateApp}
+            app={editingApp}
+          />
+        )}
+
+        {/* 删除确认弹窗 */}
+        {deleteConfirm.open && deleteConfirm.app && (
+          <ConfirmModal
+            isOpen={deleteConfirm.open}
+            onClose={() => setDeleteConfirm({ open: false, app: null })}
+            onConfirm={confirmDeleteApp}
+            title="删除应用"
+            message={`确定要删除应用 "${deleteConfirm.app.name}" 吗？此操作不可撤销。`}
+            type="danger"
           />
         )}
       </div>
