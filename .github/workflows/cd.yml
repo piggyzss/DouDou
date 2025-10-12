@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
   actions: read
+  metadata: read
 
 env:
   NODE_VERSION: '20'
@@ -46,24 +47,7 @@ jobs:
     if: needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.branch == 'main'
     runs-on: ubuntu-latest
     
-    # 临时移除environment以测试repository secrets
-    # environment:
-    #   name: production
-    #   url: https://doudou.vercel.app
-    
     steps:
-      - name: 🔍 调试Environment Secrets
-        run: |
-          echo "=== Environment Secrets 调试 ==="
-          echo "当前环境: production"
-          echo "VERCEL_TOKEN 存在: ${{ secrets.VERCEL_TOKEN != '' }}"
-          echo "VERCEL_ORG_ID 存在: ${{ secrets.VERCEL_ORG_ID != '' }}"
-          echo "VERCEL_PROJECT_ID 存在: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
-          echo "VERCEL_BACKEND_PROJECT_ID 存在: ${{ secrets.VERCEL_BACKEND_PROJECT_ID != '' }}"
-          echo "=== 权限信息 ==="
-          echo "Event: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-        
       - name: 检出代码
         uses: actions/checkout@v4
         with:
@@ -179,10 +163,6 @@ jobs:
     needs: [check-ci]
     if: needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.branch == 'develop'
     runs-on: ubuntu-latest
-    
-    environment:
-      name: development
-      url: https://doudou-dev.vercel.app
     
     steps:
       - name: 检出代码
