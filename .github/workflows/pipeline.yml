@@ -134,25 +134,25 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
           NODE_OPTIONS: '--max-old-space-size=4096'
       
-      # 部署前端到 Vercel (自动创建项目)
+      # 部署前端到 Vercel
       - name: 部署前端到 Vercel
         uses: amondnet/vercel-action@v25
         id: vercel-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          # 移除project-id，让Vercel自动创建并连接GitHub项目
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./
         
-      # 部署后端到 Vercel (自动创建项目)
+      # 部署后端到 Vercel
       - name: 部署后端到 Vercel
         uses: amondnet/vercel-action@v25
         id: vercel-backend-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          # 移除project-id，让Vercel自动创建后端项目
+          vercel-project-id: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./agent-backend
           scope: ${{ secrets.VERCEL_ORG_ID }}
