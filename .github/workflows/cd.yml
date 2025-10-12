@@ -1,13 +1,10 @@
 name: CD Pipeline
 
 on:
-  # 只在CI成功后触发
-  workflow_run:
-    workflows: ["CI Pipeline"]
-    types: [completed]
+  push:
     branches: [main, develop]
   
-  # 添加手动触发用于测试
+  # 保留手动触发用于测试
   workflow_dispatch:
     inputs:
       ci_passed:
@@ -29,51 +26,50 @@ env:
   PYTHON_VERSION: '3.11'
 
 jobs:
-  # 检查CI状态
-  check-ci:
-    name: 验证CI状态
+  # 运行CI测试
+  run-ci:
+    name: 运行CI测试
     runs-on: ubuntu-latest
     outputs:
-      ci-passed: ${{ steps.check.outputs.ci-passed }}
-      branch: ${{ steps.check.outputs.branch }}
+      ci-passed: ${{ steps.ci-result.outputs.ci-passed }}
+      branch: ${{ steps.ci-result.outputs.branch }}
     
     steps:
-      - name: 检查CI结果
-        id: check
+      - name: 检出代码
+        uses: actions/checkout@v4
+        
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: 安装依赖
         run: |
-          # 检查触发方式
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "🔧 手动触发模式"
-            echo "CI通过状态: ${{ github.event.inputs.ci_passed }}"
-            if [[ "${{ github.event.inputs.ci_passed }}" == "true" ]]; then
-              echo "✅ 手动指定CI通过，准备部署"
-              echo "ci-passed=true" >> $GITHUB_OUTPUT
-            else
-              echo "❌ 手动指定CI失败，跳过部署"
-              echo "ci-passed=false" >> $GITHUB_OUTPUT
-              exit 1
-            fi
-            echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "🤖 自动触发模式"
-            echo "Workflow run结论: ${{ github.event.workflow_run.conclusion }}"
-            echo "Workflow run状态: ${{ github.event.workflow_run.status }}"
-            if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
-              echo "✅ CI检查通过，准备部署"
-              echo "ci-passed=true" >> $GITHUB_OUTPUT
-            else
-              echo "❌ CI检查失败，跳过部署"
-              echo "ci-passed=false" >> $GITHUB_OUTPUT
-              exit 1
-            fi
-            echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
-          fi
+          npm ci
+          npm run preflight
+      
+      - name: 运行CI测试
+        run: |
+          npm run lint
+          npm run test:ci
+          npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          
+      - name: 设置CI结果
+        id: ci-result
+        run: |
+          echo "✅ CI测试通过，准备部署"
+          echo "ci-passed=true" >> $GITHUB_OUTPUT
+          echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
-  # 生产环境部署 (main分支)
+  # 生产环境部署 (main分支，CI通过后)
   deploy-production:
     name: 生产环境部署
-    needs: [check-ci]
-    if: needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.branch == 'main'
+    needs: [run-ci]
+    if: needs.run-ci.outputs.ci-passed == 'true' && needs.run-ci.outputs.branch == 'main'
     runs-on: ubuntu-latest
     
     steps:
@@ -92,8 +88,6 @@ jobs:
           
       - name: 检出代码
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -106,7 +100,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .next
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.event.workflow_run.head_sha }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-
             ${{ runner.os }}-nextjs-
@@ -199,18 +193,16 @@ jobs:
           echo "BACKEND_URL=${{ steps.vercel-backend-deploy.outputs.preview-url }}" >> $GITHUB_ENV
           echo "DEPLOYMENT_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
 
-  # 开发环境部署 (develop分支)
+  # 开发环境部署 (develop分支，CI通过后)
   deploy-development:
     name: 开发环境部署
-    needs: [check-ci]
-    if: needs.check-ci.outputs.ci-passed == 'true' && needs.check-ci.outputs.branch == 'develop'
+    needs: [run-ci]
+    if: needs.run-ci.outputs.ci-passed == 'true' && needs.run-ci.outputs.branch == 'develop'
     runs-on: ubuntu-latest
     
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -252,11 +244,11 @@ jobs:
           fi
           echo "✅ 开发环境部署完成"
 
-  # 部署状态记录
+  # 部署状态汇总
   deployment-summary:
     name: 部署状态汇总
-    needs: [deploy-production, deploy-development]
-    if: always() && (needs.deploy-production.result != 'skipped' || needs.deploy-development.result != 'skipped')
+    needs: [run-ci, deploy-production, deploy-development]
+    if: always() && needs.run-ci.result == 'success' && (needs.deploy-production.result != 'skipped' || needs.deploy-development.result != 'skipped')
     runs-on: ubuntu-latest
     
     steps:
