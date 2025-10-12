@@ -23,7 +23,6 @@ on:
 permissions:
   contents: read
   actions: read
-  metadata: read
 
 env:
   NODE_VERSION: '20'
