@@ -6,6 +6,18 @@ on:
     workflows: ["CI Pipeline"]
     types: [completed]
     branches: [main, develop]
+  
+  # 添加手动触发用于测试
+  workflow_dispatch:
+    inputs:
+      ci_passed:
+        description: 'CI是否通过'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+        - 'true'
+        - 'false'
 
 # 明确的权限配置
 permissions:
@@ -30,15 +42,33 @@ jobs:
       - name: 检查CI结果
         id: check
         run: |
-          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
-            echo "✅ CI检查通过，准备部署"
-            echo "ci-passed=true" >> $GITHUB_OUTPUT
+          # 检查触发方式
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "🔧 手动触发模式"
+            echo "CI通过状态: ${{ github.event.inputs.ci_passed }}"
+            if [[ "${{ github.event.inputs.ci_passed }}" == "true" ]]; then
+              echo "✅ 手动指定CI通过，准备部署"
+              echo "ci-passed=true" >> $GITHUB_OUTPUT
+            else
+              echo "❌ 手动指定CI失败，跳过部署"
+              echo "ci-passed=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           else
-            echo "❌ CI检查失败，跳过部署"
-            echo "ci-passed=false" >> $GITHUB_OUTPUT
-            exit 1
+            echo "🤖 自动触发模式"
+            echo "Workflow run结论: ${{ github.event.workflow_run.conclusion }}"
+            echo "Workflow run状态: ${{ github.event.workflow_run.status }}"
+            if [[ "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+              echo "✅ CI检查通过，准备部署"
+              echo "ci-passed=true" >> $GITHUB_OUTPUT
+            else
+              echo "❌ CI检查失败，跳过部署"
+              echo "ci-passed=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
           fi
-          echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
 
   # 生产环境部署 (main分支)
   deploy-production:
@@ -51,7 +81,7 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -168,7 +198,7 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: 设置 Node.js
         uses: actions/setup-node@v4
