@@ -142,8 +142,9 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          vercel-args: '--prod --debug'
           working-directory: ./
+        continue-on-error: true  # 暂时允许失败，先看具体错误
         
       # 部署后端
       - name: 部署后端到 Vercel
