@@ -83,14 +83,17 @@ jobs:
           echo "Repository Owner: ${{ github.repository_owner }}"
           echo "=== Secrets访问测试 ==="
           echo "VERCEL_TOKEN 存在: ${{ secrets.VERCEL_TOKEN != '' }}"
-          echo "VERCEL_ORG_ID 存在: ${{ secrets.VERCEL_ORG_ID != '' }}"
+          echo "VERCEL_ORG_ID (前端) 存在: ${{ secrets.VERCEL_ORG_ID != '' }}"
+          echo "VERCEL_BACKEND_ORG_ID (后端) 存在: ${{ secrets.VERCEL_BACKEND_ORG_ID != '' }}"
           echo "VERCEL_PROJECT_ID 存在: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
           echo "VERCEL_BACKEND_PROJECT_ID 存在: ${{ secrets.VERCEL_BACKEND_PROJECT_ID != '' }}"
           echo "GITHUB_TOKEN 存在: ${{ secrets.GITHUB_TOKEN != '' }}"
           echo "=== Secrets长度测试 ==="
           echo "VERCEL_TOKEN 长度: ${#VERCEL_TOKEN}"
-          echo "VERCEL_ORG_ID 长度: ${#VERCEL_ORG_ID}"
-          echo "VERCEL_PROJECT_ID 长度: ${#VERCEL_PROJECT_ID}"
+          echo "前端组织ID 长度: ${#VERCEL_ORG_ID}"
+          echo "后端组织ID 长度: ${#VERCEL_BACKEND_ORG_ID}"
+          echo "前端项目ID 长度: ${#VERCEL_PROJECT_ID}"
+          echo "后端项目ID 长度: ${#VERCEL_BACKEND_PROJECT_ID}"
           echo "=== 权限和上下文 ==="
           echo "Current user: $(whoami)"
           echo "Environment: $GITHUB_ACTIONS"
@@ -98,6 +101,7 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_BACKEND_ORG_ID: ${{ secrets.VERCEL_BACKEND_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_BACKEND_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
           
@@ -145,20 +149,20 @@ jobs:
           vercel-args: '--prod'
           working-directory: ./
         
-      # 部署后端到 Vercel
+      # 部署后端到 Vercel (使用后端专用组织ID)
       - name: 部署后端到 Vercel
         uses: amondnet/vercel-action@v25
         id: vercel-backend-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-org-id: ${{ secrets.VERCEL_BACKEND_ORG_ID }}  # 后端专用组织ID
           vercel-project-id: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./agent-backend
-          scope: ${{ secrets.VERCEL_ORG_ID }}
+          scope: ${{ secrets.VERCEL_BACKEND_ORG_ID }}          # 使用后端组织ID作为scope
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_BACKEND_ORG_ID }}   # 后端环境变量也使用后端组织ID
           
       # 部署后验证
       - name: 等待部署完成
