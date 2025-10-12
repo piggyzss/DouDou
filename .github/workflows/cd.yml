@@ -77,6 +77,19 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: 🔍 调试Secrets访问情况
+        run: |
+          echo "=== 基本环境信息 ==="
+          echo "触发事件: ${{ github.event_name }}"
+          echo "仓库: ${{ github.repository }}"
+          echo "分支: ${{ github.ref }}"
+          echo "=== Secrets访问测试 ==="
+          echo "VERCEL_TOKEN 存在: ${{ secrets.VERCEL_TOKEN != '' }}"
+          echo "VERCEL_ORG_ID 存在: ${{ secrets.VERCEL_ORG_ID != '' }}"
+          echo "VERCEL_PROJECT_ID 存在: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
+          echo "VERCEL_BACKEND_PROJECT_ID 存在: ${{ secrets.VERCEL_BACKEND_PROJECT_ID != '' }}"
+          echo "GITHUB_TOKEN 存在: ${{ secrets.GITHUB_TOKEN != '' }}"
+          
       - name: 检出代码
         uses: actions/checkout@v4
         with:
