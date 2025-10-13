@@ -177,6 +177,13 @@ config.local.json
 # **/*.spec.js
 # **/*.spec.ts
 
+# Code quality reports (should not be committed)
+flake8-report.json
+*.flake8-report
+coverage-report.json
+lighthouse-report.json
+security-report.json
+
 # Storybook build outputs
 storybook-static
 
