@@ -140,7 +140,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
-          vercel-args: '--prod'
+          vercel-args: '--prod --yes'
           working-directory: ./
         
       # 部署后端到 Vercel (完全自动检测)
@@ -150,7 +150,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
-          vercel-args: '--prod'
+          vercel-args: '--prod --yes'
           working-directory: ./agent-backend
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -227,6 +227,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
+          vercel-args: '--yes'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./
           
@@ -236,6 +237,7 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
+          vercel-args: '--yes'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./agent-backend
         env:
