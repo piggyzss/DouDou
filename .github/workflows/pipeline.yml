@@ -140,8 +140,11 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
-          vercel-args: '--prod -y'
+          vercel-args: '--prod'
           working-directory: ./
+        env:
+          CI: 1  # 强制非交互式模式
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         
       # 部署后端到 Vercel (完全自动检测)
       - name: 部署后端到 Vercel
@@ -150,9 +153,10 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
-          vercel-args: '--prod -y'
+          vercel-args: '--prod'
           working-directory: ./agent-backend
         env:
+          CI: 1  # 强制非交互式模式
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           
       # 部署后验证
@@ -227,9 +231,11 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
-          vercel-args: '-y'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./
+        env:
+          CI: 1  # 强制非交互式模式
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           
       - name: 部署后端到 Vercel (开发环境，完全自动检测)
         uses: amondnet/vercel-action@v25
@@ -237,10 +243,10 @@ jobs:
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
-          vercel-args: '-y'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./agent-backend
         env:
+          CI: 1  # 强制非交互式模式
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       # 基础健康检查 (开发环境较宽松)
