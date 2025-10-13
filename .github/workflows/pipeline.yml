@@ -84,7 +84,7 @@ jobs:
       
       # 恢复CI阶段的构建缓存
       - name: 恢复构建缓存
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .next
           key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
