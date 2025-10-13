@@ -73,33 +73,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 🔍 详细Secrets诊断
-        run: |
-          echo "=== 基本环境信息 ==="
-          echo "触发事件: ${{ github.event_name }}"
-          echo "仓库: ${{ github.repository }}"
-          echo "分支: ${{ github.ref }}"
-          echo "Actor: ${{ github.actor }}"
-          echo "Repository Owner: ${{ github.repository_owner }}"
-          echo "=== Secrets访问测试 ==="
-          echo "VERCEL_TOKEN 存在: ${{ secrets.VERCEL_TOKEN != '' }}"
-          echo "VERCEL_ORG_ID 存在: ${{ secrets.VERCEL_ORG_ID != '' }}"
-          echo "VERCEL_PROJECT_ID 存在: ${{ secrets.VERCEL_PROJECT_ID != '' }}"
-          echo "VERCEL_BACKEND_PROJECT_ID 存在: ${{ secrets.VERCEL_BACKEND_PROJECT_ID != '' }}"
-          echo "GITHUB_TOKEN 存在: ${{ secrets.GITHUB_TOKEN != '' }}"
-          echo "=== Secrets长度测试 ==="
-          echo "VERCEL_TOKEN 长度: ${#VERCEL_TOKEN}"
-          echo "VERCEL_ORG_ID 长度: ${#VERCEL_ORG_ID}"
-          echo "VERCEL_PROJECT_ID 长度: ${#VERCEL_PROJECT_ID}"
-          echo "=== 权限和上下文 ==="
-          echo "Current user: $(whoami)"
-          echo "Environment: $GITHUB_ACTIONS"
-          echo "Run ID: $GITHUB_RUN_ID"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          
       - name: 检出代码
         uses: actions/checkout@v4
         
