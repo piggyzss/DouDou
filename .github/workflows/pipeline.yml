@@ -133,31 +133,27 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
           NODE_OPTIONS: '--max-old-space-size=4096'
       
-      # 部署前端到 Vercel (自动检测项目)
+      # 部署前端到 Vercel (完全自动检测)
       - name: 部署前端到 Vercel
         uses: amondnet/vercel-action@v25
         id: vercel-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          # 移除 vercel-project-id，让Vercel通过Git连接自动检测项目
+          # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
           vercel-args: '--prod'
           working-directory: ./
         
-      # 部署后端到 Vercel (自动检测项目)
+      # 部署后端到 Vercel (完全自动检测)
       - name: 部署后端到 Vercel
         uses: amondnet/vercel-action@v25
         id: vercel-backend-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          # 移除 vercel-project-id，让Vercel通过Git连接自动检测项目
+          # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
           vercel-args: '--prod'
           working-directory: ./agent-backend
-          scope: ${{ secrets.VERCEL_ORG_ID }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           
       # 部署后验证
       - name: 等待部署完成
@@ -224,30 +220,26 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       
-      # 开发环境部署 (预览模式，自动检测项目)
+      # 开发环境部署 (预览模式，完全自动检测)
       - name: 部署前端到 Vercel (预览)
         uses: amondnet/vercel-action@v25
         id: vercel-dev-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          # 移除 vercel-project-id，让Vercel通过Git连接自动检测项目
+          # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./
           
-      - name: 部署后端到 Vercel (开发环境，自动检测项目)
+      - name: 部署后端到 Vercel (开发环境，完全自动检测)
         uses: amondnet/vercel-action@v25
         id: vercel-backend-dev-deploy
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          # 移除 vercel-project-id，让Vercel通过Git连接自动检测项目
+          # 完全移除 vercel-org-id 和 vercel-project-id，让Vercel完全自动检测
           github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: ./agent-backend
-          scope: ${{ secrets.VERCEL_ORG_ID }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
       # 基础健康检查 (开发环境较宽松)
       - name: 开发环境健康检查
