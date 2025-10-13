@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run vercel-build-simple",
+  "buildCommand": "npm run vercel-build-no-lint",
   "framework": "nextjs",
   "functions": {
     "app/api/**/*.ts": {
