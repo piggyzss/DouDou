@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Upload, X } from "lucide-react";
+import { Upload } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
+import BaseModal from "../../components/BaseModal";
 
 interface AppData {
   name: string;
@@ -20,7 +20,7 @@ interface AppData {
 interface CreateAppModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: AppData) => void;
+  onSubmit: (appData: AppData) => void;
 }
 
 export default function CreateAppModal({
@@ -113,31 +113,19 @@ export default function CreateAppModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-        >
-          <X size={20} />
-        </button>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="新建App"
+      maxWidth="max-w-md"
+    >
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
+          {error}
+        </div>
+      )}
 
-        <h2 className="text-xl font-bold text-text-primary mb-4 font-heading">
-          新建App
-        </h2>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2 font-body">
               App名称
@@ -379,7 +367,6 @@ export default function CreateAppModal({
             </button>
           </div>
         </form>
-      </motion.div>
-    </div>
+    </BaseModal>
   );
 }

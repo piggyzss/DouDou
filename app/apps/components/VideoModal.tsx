@@ -1,14 +1,14 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  X,
-  Play,
-  Settings,
-  Volume1,
-  Volume2,
-  VolumeX,
-  Hand,
+    Hand,
+    Play,
+    Settings,
+    Volume1,
+    Volume2,
+    VolumeX,
+    X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -118,7 +118,7 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <motion.div
           className="absolute inset-0 bg-black/60"
           initial={{ opacity: 0 }}
@@ -127,14 +127,14 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
           onClick={handleBackdropClick}
         />
         <motion.div
-          className="relative w-[92%] md:w-[960px] bg-transparent rounded hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden"
+          className="relative w-full max-w-4xl bg-transparent rounded hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden max-h-[90vh] flex flex-col"
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
           {/* 固定画布高度；背景改为纯白，无透明层/模糊层 */}
-          <div className="relative h-[60vh] bg-white overflow-hidden">
+          <div className="relative flex-1 bg-white overflow-hidden">
             {/* 关闭按钮：画布内右上角 */}
             <button
               onClick={onClose}
@@ -185,7 +185,7 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
             )}
           </div>
           {/* 进度条（占满一行） */}
-          <div className="bg-white dark:bg-gray-900">
+          <div className="bg-white dark:bg-gray-900 flex-shrink-0">
             <div className="px-3 pt-3">
               <div
                 className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer"

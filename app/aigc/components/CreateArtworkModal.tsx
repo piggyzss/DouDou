@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import BaseModal from "../../components/BaseModal";
 
 interface Props {
   isOpen: boolean;
@@ -93,30 +93,19 @@ export default function CreateArtworkModal({
     }
   };
 
-  if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-        >
-          <X size={20} />
-        </button>
-        <h2 className="text-xl font-bold text-text-primary mb-4 font-heading">
-          新建作品集
-        </h2>
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="新建作品集"
+      maxWidth="max-w-md"
+    >
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2 font-body">
               作品集名称
@@ -228,7 +217,6 @@ export default function CreateArtworkModal({
             </button>
           </div>
         </form>
-      </motion.div>
-    </div>
+    </BaseModal>
   );
 }

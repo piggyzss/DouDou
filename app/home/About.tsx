@@ -1,20 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
-import Image from "next/image";
 import {
+  Carrot,
   Github,
   Linkedin,
-  Rss,
   Mail,
-  Carrot,
+  Rss,
 } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 interface ExperienceCard {
   id: number;
   title: string;
-  company: string;
   description: string;
   color: string;
   x: number;
@@ -36,12 +35,25 @@ export default function About() {
     return colorMap[colorVar] || colorVar;
   };
 
+  // Experience 数据
+  const experienceData = [
+    {
+      id: 1,
+      company: "ByteDance",
+      description: "负责数据BI产品前端开发工作，主导用户分析和开放平台等多个核心模块从零到一设计与开发，推动产品能力体系化升级。"
+    },
+    {
+      id: 2,
+      company: "Horizon Robotics",
+      description: "负责数据标注平台前端开发工作，专注于用户体验设计，创造直观易用的数字产品界面"
+    }
+  ];
+
   const [cards, setCards] = useState<ExperienceCard[]>([
     {
       id: 1,
-      title: "前端开发工程师",
-      company: "某科技公司",
-      description: "负责公司核心产品的前端开发，使用React、TypeScript等技术栈",
+      title: "关于我",
+      description: "性格迷糊\n盲目乐观\n擅长寻找好吃的\n以及写bug",
       color: "primary",
       x: 35,
       y: -15,
@@ -49,9 +61,8 @@ export default function About() {
     },
     {
       id: 2,
-      title: "UI/UX设计师",
-      company: "设计工作室",
-      description: "专注于用户体验设计，创造直观易用的数字产品界面",
+      title: "关于坚持",
+      description: "有着奇怪的坚持力\n总能在各种坑里想办法让自己不被打倒且变得更强",
       color: "secondary",
       x: 72,
       y: 10,
@@ -59,9 +70,8 @@ export default function About() {
     },
     {
       id: 3,
-      title: "全栈开发者",
-      company: "创业公司",
-      description: "从零开始构建产品，涵盖前端、后端、数据库等全栈技术",
+      title: "关于爱好",
+      description: "比起看漫画\n更喜欢自己画各种有意思的东西\n有时喜欢哼歌\n有时写一点字",
       color: "blue",
       x: 5,
       y: 15,
@@ -69,9 +79,8 @@ export default function About() {
     },
     {
       id: 4,
-      title: "技术顾问",
-      company: "咨询公司",
-      description: "为客户提供技术解决方案，优化业务流程和系统架构",
+      title: "关于AI",
+      description: "最近发现AI好有意思\n感觉像是交到了一个无所不能的超人朋友\n开始尝试用它写写代码\n或者写写诗",
       color: "yellow",
       x: 52,
       y: 32,
@@ -79,9 +88,8 @@ export default function About() {
     },
     {
       id: 5,
-      title: "产品经理",
-      company: "互联网公司",
-      description: "负责产品规划和管理，协调开发团队实现产品目标",
+      title: "关于其它",
+      description: "会按照颜色严格分类app\n会偶尔爆发J属性的超级P人\n可爱又迷人的反派角色",
       color: "green1",
       x: 17,
       y: 60,
@@ -89,8 +97,7 @@ export default function About() {
     },
     {
       id: 6,
-      title: "软件工程师",
-      company: "传统企业",
+      title: "关于生活",
       description: "参与企业级软件开发，积累丰富的项目经验",
       color: "green2",
       x: 46,
@@ -236,7 +243,7 @@ export default function About() {
                   "Webpack",
                   "UI/UX Design",
                   "AI Coding",
-                ].map((skill, index) => (
+                ].map((skill) => (
                   <span
                     key={skill}
                     className="px-3 py-0.5 border border-gray-300 rounded text-xs blog-body-text hover:border-primary hover:text-primary transition-colors cursor-pointer"
@@ -253,34 +260,22 @@ export default function About() {
                 Experience
               </h3>
               <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Carrot
-                    className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0"
-                    strokeWidth={1.5}
-                  />
-                  <div>
-                    <h4 className="font-semibold text-text-primary">
-                      ByteDance
-                    </h4>
-                    <p className="text-sm blog-body-text mt-2">
-                      负责公司核心产品的前端开发，使用React、TypeScript等技术栈
-                    </p>
+                {experienceData.map((experience) => (
+                  <div key={experience.id} className="flex items-start space-x-3">
+                    <Carrot
+                      className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0"
+                      strokeWidth={1.5}
+                    />
+                    <div>
+                      <h4 className="font-semibold text-text-primary">
+                        {experience.company}
+                      </h4>
+                      <p className="text-sm blog-body-text mt-2">
+                        {experience.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <Carrot
-                    className="w-5 h-5 text-text-secondary mt-1 flex-shrink-0"
-                    strokeWidth={1.5}
-                  />
-                  <div>
-                    <h4 className="font-semibold text-text-primary">
-                      Horizon Robotics
-                    </h4>
-                    <p className="text-sm blog-body-text mt-2">
-                      专注于用户体验设计，创造直观易用的数字产品界面
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -374,10 +369,7 @@ export default function About() {
                     <h4 className="font-semibold text-sm mb-1 group-hover:scale-105 transition-transform duration-300">
                       {card.title}
                     </h4>
-                    <p className="text-xs opacity-90 mb-2 group-hover:opacity-100 transition-opacity duration-300">
-                      {card.company}
-                    </p>
-                    <p className="text-xs opacity-80 leading-relaxed group-hover:opacity-90 transition-opacity duration-300">
+                    <p className="text-xs opacity-80 leading-relaxed group-hover:opacity-90 transition-opacity duration-300 whitespace-pre-line">
                       {card.description}
                     </p>
                   </div>

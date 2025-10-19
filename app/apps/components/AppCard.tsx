@@ -1,28 +1,27 @@
 "use client";
 
+import { App } from "@/lib/models/app";
 import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
+import {
+    Copy,
+    Download,
+    Edit,
+    Github,
+    Play,
+    QrCode,
+    Trash2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Play,
-  Download,
-  QrCode,
-  Edit,
-  Trash2,
-  Github,
-  Copy,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import VideoModal from "./VideoModal";
-import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts";
-import { App } from "@/lib/models/app";
 
 interface AppCardProps {
   app: App;
-  onEdit?: (app: App) => void;
-  onDelete?: (app: App) => void;
-  isDev?: boolean;
+  onEdit?: (app: App) => void; // eslint-disable-line no-unused-vars
+  onDelete?: (app: App) => void; // eslint-disable-line no-unused-vars
 }
 
 // 日期格式化函数
@@ -34,10 +33,9 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day}`;
 };
 
-export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCardProps) {
+export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [dauTrend, setDauTrend] = useState<number[]>([]);
-  const [liked, setLiked] = useState(false);
   const [buttonWidth, setButtonWidth] = useState(0);
   const [copySuccess, setCopySuccess] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -71,20 +69,6 @@ export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCar
     fetchStats();
   }, [app.id, app.dau]);
 
-  // 检查点赞状态
-  useEffect(() => {
-    const checkLikeStatus = async () => {
-      try {
-        const response = await fetch(`/api/apps/${app.id}/like`);
-        if (response.ok) {
-          const data = await response.json();
-          setLiked(data.liked);
-        }
-      } catch (error) {}
-    };
-
-    checkLikeStatus();
-  }, [app.id]);
 
   // 获取按钮宽度
   useEffect(() => {
@@ -102,18 +86,6 @@ export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCar
     };
   }, []);
 
-  // 处理点赞
-  const handleLike = async () => {
-    try {
-      const response = await fetch(`/api/apps/${app.id}/like`, {
-        method: "POST",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLiked(data.liked);
-      }
-    } catch (error) {}
-  };
 
   // 处理复制GitHub地址
   const handleCopyGithubUrl = async (e: React.MouseEvent) => {
@@ -126,7 +98,7 @@ export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCar
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch (error) {
-        console.error('复制失败:', error);
+        // 复制失败，静默处理
       }
     }
   };
@@ -283,7 +255,7 @@ export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCar
           color: "#374151",
           fontSize: "12px",
         },
-        formatter: function (this: any): string {
+        formatter: function (this: any): string { // eslint-disable-line no-unused-vars
           const pointIndex = this.point.index;
           const fullDate = fullDates[pointIndex];
           return `<div style="padding: 8px;">
@@ -537,7 +509,9 @@ export default function AppCard({ app, onEdit, onDelete, isDev = false }: AppCar
                       </button>
 
                       {/* GitHub地址悬浮显示 */}
-                      <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover/github:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                      <div className="absolute bottom-full left-0 mb-1 opacity-0 group-hover/github:opacity-100 transition-opacity duration-200 z-50">
+                        {/* 连接线 - 让鼠标可以平滑移动 */}
+                        <div className="h-1 w-full"></div>
                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-3 flex items-center gap-2 min-w-max">
                           <span className="text-sm text-text-primary font-blog">{app.github_url}</span>
                           <button

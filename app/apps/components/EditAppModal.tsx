@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Upload, X } from "lucide-react";
-import Image from "next/image";
 import { App } from "@/lib/models/app";
+import { Upload } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import BaseModal from "../../components/BaseModal";
 
 interface EditAppData {
   name: string;
@@ -103,26 +103,13 @@ export default function EditAppModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-text-primary font-heading">
-            编辑App
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="编辑App"
+      maxWidth="max-w-2xl"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-md text-sm">
               {error}
@@ -364,7 +351,6 @@ export default function EditAppModal({
             </button>
           </div>
         </form>
-      </motion.div>
-    </div>
+    </BaseModal>
   );
 }

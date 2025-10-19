@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import BaseModal from "../../components/BaseModal";
 
 interface Props {
   isOpen: boolean;
@@ -87,24 +87,13 @@ export default function AddImageModal({
       setIsSubmitting(false);
     }
   };
-  if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-gray-800 rounded p-6 w-full max-w-md mx-4 relative max-h-[90vh] overflow-y-auto"
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-        >
-          <X size={20} />
-        </button>
-        <h2 className="text-xl font-bold text-text-primary mb-2 font-heading">
-          添加图片
-        </h2>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="添加图片"
+      maxWidth="max-w-md"
+    >
         <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md space-y-1">
           <div className="text-sm font-body text-text-secondary">
             <span className="text-text-primary">作品集名称：</span>
@@ -215,7 +204,6 @@ export default function AddImageModal({
             )}
           </button>
         </div>
-      </motion.div>
-    </div>
+    </BaseModal>
   );
 }

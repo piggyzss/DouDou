@@ -1,48 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { PenSquare, Edit, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Edit, PenSquare } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import LikeToggle from "../components/LikeToggle";
 
-// 博客文章图片组件，带有加载后推开动画
-const BlogPostImage = ({
-  post,
-  onImageLoad,
-  children,
-}: {
+// eslint-disable-next-line no-unused-vars
+type OnImageLoad = (value: boolean) => void;
+
+interface BlogPostImageProps {
   post: any;
-  onImageLoad: (loaded: boolean) => void;
+  onImageLoad: OnImageLoad;
   children: React.ReactNode;
-}) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [contentPushed, setContentPushed] = useState(false);
+}
+
+// 博客文章图片组件，带有加载后推开动画
+const BlogPostImage = ({ post, onImageLoad, children }: BlogPostImageProps) => {
+  // 移除未使用的本地状态，直接通过回调通知外层
   
   // 组件挂载时启动动画，无论是否有图片
   useEffect(() => {
     const timer = setTimeout(() => {
-      setImageLoaded(true);
-      setContentPushed(true);
       onImageLoad(true);
     }, 100);
     return () => clearTimeout(timer);
   }, [onImageLoad]);
   
   const handleImageLoad = () => {
-    setImageLoaded(true);
     onImageLoad(true);
-    // 图片开始滑入的同时，文案也开始被推动
-    setTimeout(() => {
-      setContentPushed(true);
-    }, 50);
   };
 
   return (
     <>
-      {/* 左侧封面图片 */}
-      {post.cover_url ? (
+      {/* 左侧封面图片（仅在有封面时显示） */}
+      {post.cover_url && (
         <motion.div
           className="w-48 h-full flex-shrink-0 rounded overflow-hidden relative z-10"
           initial={{ x: -200, opacity: 0 }} // 从左侧完全隐藏开始
@@ -63,33 +56,23 @@ const BlogPostImage = ({
             className="object-cover"
             onLoad={handleImageLoad}
             onError={() => {
-              setImageLoaded(true);
               onImageLoad(false);
             }}
           />
         </motion.div>
-      ) : (
-        <motion.div
-          className="w-48 h-full flex-shrink-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center rounded relative z-10"
-          initial={{ x: -200, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        >
-          <PenSquare className="text-gray-400" size={48} />
-        </motion.div>
       )}
       {/* 右侧内容 */}
       <motion.div
-        className="flex-1 pl-6 flex flex-col justify-between"
-        initial={{ x: -120, opacity: 0.2 }} // 初始位置向左偏移，与图片推进距离相关
+        className={`flex-1 ${post.cover_url ? "pl-6 " : ""}flex flex-col justify-between`}
+        initial={{ x: post.cover_url ? -120 : 0, opacity: post.cover_url ? 0.2 : 0 }}
         animate={{
-          x: 0, // 被推开到正确位置
+          x: 0,
           opacity: 1,
         }}
         transition={{
-          duration: 0.8, // 与图片同步
-          ease: [0.25, 0.46, 0.45, 0.94], // 使用相同的缓动函数
-          delay: 0.4, // 稍后启动，创造被推动的感觉
+          duration: 0.8,
+          ease: [0.25, 0.46, 0.45, 0.94],
+          delay: post.cover_url ? 0.4 : 0.2,
         }}
       >
         {children}
@@ -218,7 +201,7 @@ export default function BlogPage() {
                     <div className="flex h-56 relative">
                       <BlogPostImage
                         post={post}
-                        onImageLoad={(loaded) => {
+                        onImageLoad={() => {
                           // 图片加载完成的回调
                         }}
                       >
