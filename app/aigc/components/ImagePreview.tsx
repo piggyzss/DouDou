@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 
 interface Props {
@@ -44,64 +44,67 @@ export default function ImagePreview({
             transition={{ duration: 0.3 }}
             className="relative max-w-4xl max-h-[90vh] mx-8"
           >
-            {/* 上下留白（通过父容器 max-h 以及内容 padding 控制） */}
-            <div className="py-6">
-              <div className="relative inline-block">
-                {/* 左上角计数器（图片内） */}
-                {typeof currentIndex === "number" &&
-                  typeof total === "number" && (
-                    <div className="absolute top-2 left-2 text-white text-sm bg-black/50 px-2 py-0.5 rounded z-10">
-                      {currentIndex + 1} / {total}
-                    </div>
-                  )}
-                {/* 关闭按钮（图片内右上角） */}
+            {/* 图片容器 - 确保控件定位在图片内 */}
+            <div className="relative inline-block overflow-hidden rounded shadow-2xl">
+              {/* 图片 */}
+              <Image
+                src={imageUrl}
+                alt="预览图片"
+                width={800}
+                height={600}
+                className="max-w-full max-h-[80vh] object-contain block"
+              />
+              
+              {/* 左上角计数器（图片内，响应式内边距） */}
+              {typeof currentIndex === "number" &&
+                typeof total === "number" && (
+                  <div className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-xs sm:text-sm bg-black/70 px-2 py-1 sm:px-3 sm:py-1.5 rounded backdrop-blur-sm z-10 font-medium">
+                    {currentIndex + 1} / {total}
+                  </div>
+                )}
+              
+              {/* 关闭按钮（图片内右上角，响应式内边距） */}
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ delay: 0.1, duration: 0.2 }}
+                onClick={onClose}
+                className="absolute top-2 right-2 sm:top-3 sm:right-3 text-white hover:text-gray-300 transition-all duration-200 z-10 p-2 sm:p-2.5 bg-black/70 rounded-full hover:bg-black/80 hover:scale-110 backdrop-blur-sm"
+                title="关闭预览"
+              >
+                <X size={18} className="sm:w-5 sm:h-5" />
+              </motion.button>
+              
+              {/* 左切换按钮（响应式内边距和尺寸） */}
+              {hasPrev && (
                 <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ delay: 0.1, duration: 0.2 }}
-                  onClick={onClose}
-                  className="absolute top-2 right-2 text-white hover:text-gray-300 transition-colors z-10 p-2 bg-black/60 rounded-full hover:bg-black/80"
-                  title="关闭预览"
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -12 }}
+                  transition={{ delay: 0.2, duration: 0.2 }}
+                  onClick={onPrev}
+                  className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-black/70 text-white p-2 sm:p-3 rounded-full hover:bg-black/80 transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+                  title="上一张"
                 >
-                  <X size={22} />
+                  <ChevronLeft size={18} className="sm:w-6 sm:h-6" />
                 </motion.button>
-                {/* 左右切换（与计数/关闭统一 8px 边距） */}
-                {hasPrev && (
-                  <motion.button
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -12 }}
-                    transition={{ delay: 0.2, duration: 0.2 }}
-                    onClick={onPrev}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2.5 rounded-full hover:bg-black/80 transition-all hover:scale-110"
-                    title="上一张"
-                  >
-                    <ChevronLeft size={24} />
-                  </motion.button>
-                )}
-                {hasNext && (
-                  <motion.button
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 12 }}
-                    transition={{ delay: 0.2, duration: 0.2 }}
-                    onClick={onNext}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2.5 rounded-full hover:bg-black/80 transition-all hover:scale-110"
-                    title="下一张"
-                  >
-                    <ChevronRight size={24} />
-                  </motion.button>
-                )}
-
-                <Image
-                  src={imageUrl}
-                  alt="预览图片"
-                  width={800}
-                  height={600}
-                  className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl"
-                />
-              </div>
+              )}
+              
+              {/* 右切换按钮（响应式内边距和尺寸） */}
+              {hasNext && (
+                <motion.button
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 12 }}
+                  transition={{ delay: 0.2, duration: 0.2 }}
+                  onClick={onNext}
+                  className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-black/70 text-white p-2 sm:p-3 rounded-full hover:bg-black/80 transition-all duration-200 hover:scale-110 backdrop-blur-sm"
+                  title="下一张"
+                >
+                  <ChevronRight size={18} className="sm:w-6 sm:h-6" />
+                </motion.button>
+              )}
             </div>
           </motion.div>
         </motion.div>

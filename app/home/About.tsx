@@ -40,12 +40,12 @@ export default function About() {
     {
       id: 1,
       company: "ByteDance",
-      description: "负责数据BI产品前端开发工作，主导用户分析和开放平台等多个核心模块从零到一设计与开发，推动产品能力体系化升级。"
+      description: "负责数据BI产品前端开发工作，主导用户画像分析和开放平台等多个核心模块从零到一设计与开发，拓宽BI产品能力边界，推动产品能力体系化升级。"
     },
     {
       id: 2,
       company: "Horizon Robotics",
-      description: "负责数据标注平台前端开发工作，专注于用户体验设计，创造直观易用的数字产品界面"
+      description: "负责数据标注平台前端开发工作，专注于用户体验，创造强交互、高性能的数据标注平台，为模型训练提供高质量高效率的标注数据"
     }
   ];
 
@@ -237,11 +237,11 @@ export default function About() {
                 {[
                   "React",
                   "TypeScript",
-                  "Vue.js",
                   "Node.js",
                   "Python",
                   "Webpack",
-                  "UI/UX Design",
+                  "Vite",
+                  "CI/CD",
                   "AI Coding",
                 ].map((skill) => (
                   <span
