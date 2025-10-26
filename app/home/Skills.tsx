@@ -1,10 +1,10 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useTheme } from "../providers";
-import { useState, useEffect } from "react";
 
 export default function Skills() {
   const { theme } = useTheme();
@@ -133,12 +133,12 @@ export default function Skills() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
-              className="relative max-w-6xl max-h-[90vh] mx-8"
+              className="relative w-[95vw] max-w-7xl max-h-[95vh] mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               {/* 上下留白 */}
-              <div className="py-6">
-                <div className="relative inline-block">
+              <div className="py-4">
+                <div className="relative inline-block w-full">
                   {/* 关闭按钮（右上角） */}
                   <motion.button
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -152,15 +152,21 @@ export default function Skills() {
                     <X size={22} />
                   </motion.button>
 
-                  <Image
-                    src={
-                      theme === "dark"
-                        ? "/assets/images/skill_dark.svg"
-                        : "/assets/images/skill.svg"
-                    }
-                    alt="技能展示"
-                    className="max-w-full max-h-[80vh] object-contain rounded shadow-2xl"
-                  />
+                  {/* 图片容器，添加背景色 */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-2xl">
+                    <Image
+                      src={
+                        theme === "dark"
+                          ? "/assets/images/skill_dark.svg"
+                          : "/assets/images/skill.svg"
+                      }
+                      alt="技能展示"
+                      width={1200}
+                      height={600}
+                      className="w-full h-auto object-contain rounded"
+                      style={{ maxHeight: "85vh" }}
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>

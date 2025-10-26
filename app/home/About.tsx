@@ -61,8 +61,8 @@ export default function About() {
     },
     {
       id: 2,
-      title: "关于坚持",
-      description: "有着奇怪的坚持力\n总能在各种坑里想办法让自己不被打倒且变得更强",
+      title: "关于生活",
+      description: "人生都太短暂\n去疯\n去爱\n去浪费",
       color: "secondary",
       x: 72,
       y: 10,
@@ -97,8 +97,8 @@ export default function About() {
     },
     {
       id: 6,
-      title: "关于生活",
-      description: "参与企业级软件开发，积累丰富的项目经验",
+      title: "关于坚持",
+      description: "有着奇怪的坚持力\n总能在各种坑里想办法让自己不被打倒且变得更强",
       color: "green2",
       x: 46,
       y: 75,

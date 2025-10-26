@@ -377,25 +377,25 @@ export default function AIGCPage() {
     });
   };
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!selectedImage) return;
-
-    if (e.key === "ArrowLeft") {
-      navigateImage("prev");
-    } else if (e.key === "ArrowRight") {
-      navigateImage("next");
-    } else if (e.key === "Escape") {
-      setSelectedImage(null);
-    }
-  };
-
   // 添加键盘事件监听
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return;
+
+      if (e.key === "ArrowLeft") {
+        navigateImage("prev");
+      } else if (e.key === "ArrowRight") {
+        navigateImage("next");
+      } else if (e.key === "Escape") {
+        setSelectedImage(null);
+      }
+    };
+
     if (selectedImage) {
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }
-  }, [selectedImage, handleKeyDown]);
+  }, [selectedImage, artworks]); // 依赖于selectedImage和artworks
 
   const handleAddImages = async (artworkId: string, newImages: string[]) => {
     try {
