@@ -1,16 +1,20 @@
 "use client";
 
+import { App } from "@/lib/models/app";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { SquareCode, CircleOff, RotateCcw } from "lucide-react";
+import { CircleOff, RotateCcw, SquareCode } from "lucide-react";
+import { useEffect, useState } from "react";
+import ConfirmModal from "../components/ConfirmModal";
+import { useMobileEventFix } from "../hooks/useMobileEventFix";
 import AppCard from "./components/AppCard";
-import FilterBar from "./components/FilterBar";
 import CreateAppModal from "./components/CreateAppModal";
 import EditAppModal from "./components/EditAppModal";
-import ConfirmModal from "../components/ConfirmModal";
-import { App } from "@/lib/models/app";
+import FilterBar from "./components/FilterBar";
 
 export default function AppsPage() {
+  // 使用移动端事件修复Hook
+  useMobileEventFix();
+  
   const [apps, setApps] = useState<App[]>([]);
   const [filteredApps, setFilteredApps] = useState<App[]>([]);
   const [selectedType, setSelectedType] = useState("all");
@@ -187,7 +191,7 @@ export default function AppsPage() {
   };
 
   return (
-    <div className="min-h-screen pt-16">
+    <div className="min-h-screen pt-16 page-content mobile-safe-area">
       <div className="max-w-7xl mx-auto py-12">
         {/* 页面标题 - 类似博客页面样式 */}
         <div className="mb-8">

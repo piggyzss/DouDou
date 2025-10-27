@@ -5,13 +5,13 @@ import { motion } from "framer-motion";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import {
-    Copy,
-    Download,
-    Edit,
-    Github,
-    Play,
-    QrCode,
-    Trash2,
+  Copy,
+  Download,
+  Edit,
+  Github,
+  Play,
+  QrCode,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

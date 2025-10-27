@@ -2,6 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 移动端事件穿透修复 */
+@layer base {
+
+  /* 确保页面内容在导航之上 */
+  .page-content {
+    position: relative;
+    z-index: 10;
+  }
+
+  /* 防止移动端事件穿透到导航 */
+  .nav-dropdown {
+    position: relative;
+    z-index: 30;
+  }
+
+  /* 移动端按钮优化 */
+  @media (max-width: 768px) {
+
+    button,
+    [role="button"] {
+      position: relative;
+      z-index: 20;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 防止移动端事件穿透 */
+    .mobile-safe-area {
+      position: relative;
+      z-index: 15;
+      pointer-events: auto;
+    }
+
+    /* 确保导航在移动端正确显示 */
+    .nav-mobile {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      width: 100%;
+    }
+
+    /* 移动端导航下拉菜单控制 */
+    .nav-dropdown {
+      position: relative;
+      z-index: 30;
+    }
+
+    .nav-dropdown:not(.open) {
+      pointer-events: none;
+    }
+
+    .nav-dropdown.open {
+      pointer-events: auto !important;
+    }
+
+    /* 确保展开状态下的导航链接正常工作 */
+    .nav-dropdown.open a {
+      pointer-events: auto !important;
+      touch-action: manipulation;
+    }
+
+    /* 确保页面内容在移动端有正确的触摸区域 */
+    .page-content {
+      position: relative;
+      z-index: 10;
+      touch-action: manipulation;
+    }
+
+    /* 确保导航菜单按钮正常工作 */
+    .nav-menu-button {
+      position: relative;
+      z-index: 60;
+      pointer-events: auto !important;
+      touch-action: manipulation;
+    }
+  }
+}
+
+
 :root {
   --primary: #6747ce;
   --primary-light: #8a6fd8;
@@ -203,11 +284,9 @@ h4 {
 }
 
 .bg-gradient-primary-secondary:hover {
-  background: linear-gradient(
-    135deg,
-    var(--primary-dark) 0%,
-    var(--secondary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--primary-dark) 0%,
+      var(--secondary) 100%);
 }
 
 /* 统一边框样式 */
@@ -669,6 +748,7 @@ input[type="range"],
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -692,6 +772,7 @@ input[type="range"],
   0% {
     opacity: 0.7;
   }
+
   100% {
     opacity: 1;
   }
@@ -816,10 +897,12 @@ input[type="range"],
 
 /* 终端光标闪烁动画 */
 @keyframes blink {
+
   0%,
   50% {
     opacity: 1;
   }
+
   51%,
   100% {
     opacity: 0;
@@ -872,22 +955,20 @@ input[type="range"],
 
 /* 终端文本选中时的浅紫色背景 - 基于主色调#6747ce的浅色版本 */
 .terminal-messages-container ::selection {
-  background-color: rgba(
-    103,
-    71,
-    206,
-    0.2
-  ) !important; /* 基于#6747ce的20%透明度浅紫色 */
+  background-color: rgba(103,
+      71,
+      206,
+      0.2) !important;
+  /* 基于#6747ce的20%透明度浅紫色 */
   color: var(--terminal-text) !important;
 }
 
 .terminal-messages-container ::-moz-selection {
-  background-color: rgba(
-    103,
-    71,
-    206,
-    0.2
-  ) !important; /* 基于#6747ce的20%透明度浅紫色 */
+  background-color: rgba(103,
+      71,
+      206,
+      0.2) !important;
+  /* 基于#6747ce的20%透明度浅紫色 */
   color: var(--terminal-text) !important;
 }
 

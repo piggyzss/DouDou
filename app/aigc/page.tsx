@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  // Plus,
-  Palette,
   Film,
-  Music4,
   // Heart,
   // MessageCircle,
   // X,
@@ -19,18 +15,23 @@ import {
   // Trash2,
   // Upload,
   ImagePlus,
+  Music4,
+  // Plus,
+  Palette,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 // import LikeToggle from "../components/LikeToggle";
+import { useMobileEventFix } from "../hooks/useMobileEventFix";
+import AddImageModal from "./components/AddImageModal";
 import ConfirmModal from "./components/ConfirmModal";
 import CreateArtworkModal from "./components/CreateArtworkModal";
 import CreateMusicModal from "./components/CreateMusicModal";
 import CreateVideoModal from "./components/CreateVideoModal";
-import AddImageModal from "./components/AddImageModal";
-import ImagePreview from "./components/ImagePreview";
 import FloatingPlayerBar from "./components/FloatingPlayerBar";
-import ImagesSection, { ArtworkImage, Artwork } from "./sections/ImagesSection";
-import VideosSection, { VideoTrack } from "./sections/VideosSection";
+import ImagePreview from "./components/ImagePreview";
+import ImagesSection, { Artwork, ArtworkImage } from "./sections/ImagesSection";
 import MusicSection, { MusicTrack } from "./sections/MusicSection";
+import VideosSection, { VideoTrack } from "./sections/VideosSection";
 
 // 统一的日期格式化函数
 const formatDate = (dateString: string) => {
@@ -81,6 +82,9 @@ const formatDate = (dateString: string) => {
 // }
 
 export default function AIGCPage() {
+  // 使用移动端事件修复Hook
+  useMobileEventFix();
+  
   const [activeTab, setActiveTab] = useState<"images" | "videos" | "music">(
     "images",
   );
@@ -519,7 +523,7 @@ export default function AIGCPage() {
   }, [musicTracks, currentTrackId, togglePlayTrack]);
 
   return (
-    <div className="aigc-root min-h-screen pt-16">
+    <div className="aigc-root min-h-screen pt-16 page-content mobile-safe-area">
       <div className="max-w-7xl mx-auto py-12">
         {/* 页面标题 */}
         <div className="mb-8">

@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Menu,
-  X,
-  Sun,
-  Moon,
-  Search,
-  Carrot,
-  PenSquare,
-  Code,
-  Palette,
   Bot,
+  Carrot,
+  Code,
+  Menu,
+  Moon,
+  Palette,
+  PenSquare,
+  Search,
+  Sun,
+  X,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useTheme } from "../providers";
 
 const navItems = [
@@ -48,7 +48,7 @@ export default function Navigation() {
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 nav-mobile ${
         scrolled
           ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-lg"
           : "bg-transparent"
@@ -57,7 +57,7 @@ export default function Navigation() {
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="w-1/2 mx-auto">
+      <div className="w-full md:w-1/2 md:mx-auto">
         <div className="flex justify-between items-center h-14">
           {/* 左侧导航 */}
           <div className="hidden md:flex items-center space-x-2">
@@ -121,7 +121,7 @@ export default function Navigation() {
               </div>
             </form>
 
-            {/* 主题切换按钮 */}
+            {/* 主题切换按钮 - 在移动端也显示 */}
             <motion.button
               onClick={toggleTheme}
               className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -134,7 +134,8 @@ export default function Navigation() {
             {/* 移动端菜单按钮 */}
             <motion.button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="md:hidden p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors nav-menu-button"
+              aria-label="Toggle navigation menu"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -145,7 +146,7 @@ export default function Navigation() {
 
         {/* 移动端导航 */}
         <motion.div
-          className="md:hidden"
+          className={`md:hidden nav-dropdown ${isOpen ? 'open' : ''}`}
           initial={false}
           animate={isOpen ? "open" : "closed"}
           variants={{
@@ -153,8 +154,12 @@ export default function Navigation() {
             closed: { opacity: 0, height: 0 },
           }}
           transition={{ duration: 0.3 }}
+          style={{ 
+            pointerEvents: isOpen ? 'auto' : 'none',
+            overflow: 'hidden'
+          }}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 mt-2">
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 mt-2 nav-dropdown">
             {/* 移动端搜索栏 */}
             <form onSubmit={handleSearch} className="px-3 py-2">
               <div className="relative">
