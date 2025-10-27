@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowBigLeftDash } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function BackToTop() {
   const [isVisible, setIsVisible] = useState(false);
@@ -45,7 +45,7 @@ export default function BackToTop() {
             ease: "easeInOut",
           }}
           onClick={scrollToTop}
-          className="fixed bottom-8 right-48 z-50 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary group"
+          className="hidden md:block fixed bottom-8 right-48 z-50 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary group"
           aria-label="回到顶部"
         >
           <ArrowBigLeftDash

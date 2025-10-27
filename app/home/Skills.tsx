@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, ZoomIn, ZoomOut } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useTheme } from "../providers";
@@ -9,6 +9,7 @@ import { useTheme } from "../providers";
 export default function Skills() {
   const { theme } = useTheme();
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   const handleImageClick = () => {
     setIsImagePreviewOpen(true);
@@ -16,6 +17,11 @@ export default function Skills() {
 
   const handleClosePreview = () => {
     setIsImagePreviewOpen(false);
+    setIsZoomed(false); // 关闭时重置缩放状态
+  };
+
+  const handleZoomToggle = () => {
+    setIsZoomed(!isZoomed);
   };
 
   // 添加ESC键关闭功能
@@ -93,11 +99,12 @@ export default function Skills() {
           className="flex justify-center items-center"
         >
           <div className="relative w-full max-w-4xl">
+            {/* 桌面端：正常显示 */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className="cursor-pointer"
+              className="cursor-pointer hidden md:block"
               onClick={handleImageClick}
             >
               <Image
@@ -113,6 +120,40 @@ export default function Skills() {
                 priority
               />
             </motion.div>
+
+            {/* 移动端：可滑动查看 */}
+            <div className="md:hidden">
+              <div className="relative overflow-hidden">
+                <div className="overflow-x-auto scrollbar-hide scroll-smooth">
+                  <div className="flex justify-center min-w-full">
+                    <motion.div
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ duration: 0.2 }}
+                      className="cursor-pointer flex-shrink-0"
+                      onClick={handleImageClick}
+                    >
+                      <Image
+                        src={
+                          theme === "dark"
+                            ? "/assets/images/skill_dark.svg"
+                            : "/assets/images/skill.svg"
+                        }
+                        alt="技能展示"
+                        width={1200}
+                        height={600}
+                        className="w-auto h-80 object-cover transition-all duration-300"
+                        priority
+                      />
+                    </motion.div>
+                  </div>
+                </div>
+                
+                {/* 滑动提示 */}
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
+                  左右滑动查看完整图片
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -139,6 +180,19 @@ export default function Skills() {
               {/* 上下留白 */}
               <div className="py-4">
                 <div className="relative inline-block w-full">
+                  {/* 缩放按钮（右上角左侧） */}
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ delay: 0.1, duration: 0.2 }}
+                    onClick={handleZoomToggle}
+                    className="absolute top-2 right-12 text-white hover:text-gray-300 transition-colors z-10 p-2 bg-black/60 rounded-full hover:bg-black/80"
+                    title={isZoomed ? "缩小" : "放大"}
+                  >
+                    {isZoomed ? <ZoomOut size={22} /> : <ZoomIn size={22} />}
+                  </motion.button>
+
                   {/* 关闭按钮（右上角） */}
                   <motion.button
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -154,18 +208,24 @@ export default function Skills() {
 
                   {/* 图片容器，添加背景色 */}
                   <div className="bg-white dark:bg-gray-900 rounded-lg p-4 shadow-2xl">
-                    <Image
-                      src={
-                        theme === "dark"
-                          ? "/assets/images/skill_dark.svg"
-                          : "/assets/images/skill.svg"
-                      }
-                      alt="技能展示"
-                      width={1200}
-                      height={600}
-                      className="w-full h-auto object-contain rounded"
-                      style={{ maxHeight: "85vh" }}
-                    />
+                    <motion.div
+                      animate={{ scale: isZoomed ? 1.5 : 1 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="origin-center"
+                    >
+                      <Image
+                        src={
+                          theme === "dark"
+                            ? "/assets/images/skill_dark.svg"
+                            : "/assets/images/skill.svg"
+                        }
+                        alt="技能展示"
+                        width={1200}
+                        height={600}
+                        className="w-full h-auto object-contain rounded"
+                        style={{ maxHeight: "85vh" }}
+                      />
+                    </motion.div>
                   </div>
                 </div>
               </div>

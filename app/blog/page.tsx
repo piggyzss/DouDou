@@ -34,10 +34,10 @@ const BlogPostImage = ({ post, onImageLoad, children }: BlogPostImageProps) => {
 
   return (
     <>
-      {/* 左侧封面图片（仅在有封面时显示） */}
+      {/* 左侧封面图片（仅在有封面时显示，移动端隐藏） */}
       {post.cover_url && (
         <motion.div
-          className="w-48 h-full flex-shrink-0 rounded overflow-hidden relative z-10"
+          className="hidden md:block w-48 h-full flex-shrink-0 rounded overflow-hidden relative z-10"
           initial={{ x: -200, opacity: 0 }} // 从左侧完全隐藏开始
           animate={{
             x: 0, // 直接滑入
@@ -63,7 +63,7 @@ const BlogPostImage = ({ post, onImageLoad, children }: BlogPostImageProps) => {
       )}
       {/* 右侧内容 */}
       <motion.div
-        className={`flex-1 ${post.cover_url ? "pl-6 " : ""}flex flex-col justify-between`}
+        className={`flex-1 ${post.cover_url ? "md:pl-6 " : ""}flex flex-col justify-between`}
         initial={{ x: post.cover_url ? -120 : 0, opacity: post.cover_url ? 0.2 : 0 }}
         animate={{
           x: 0,

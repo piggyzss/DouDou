@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Github, Rss, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, Rss } from "lucide-react";
 
 const socialLinks = [
   { name: "GitHub", icon: Github, href: "https://github.com/piggyzss" },
@@ -28,12 +28,17 @@ export default function Footer() {
                 &lt;shanshan /&gt;
               </span>
             </div>
-            <p className="text-text-secondary text-sm">
-              前端开发者 | AI爱好者 | 创意工作者
-            </p>
-            <p className="text-text-muted text-xs font-blog">
-              用代码创造美好，用AI探索未来，让创意与技术完美融合
-            </p>
+            <div className="space-y-2">
+              <p className="text-text-secondary text-sm font-blog">
+                前端开发者
+              </p>
+              <p className="text-text-secondary text-sm font-blog">
+                AI爱好者
+              </p>
+              <p className="text-text-secondary text-sm font-blog">
+                创意工作者
+              </p>
+            </div>
           </div>
 
           {/* 快速链接 */}
@@ -45,7 +50,7 @@ export default function Footer() {
               <li>
                 <a
                   href="/blog"
-                  className="text-text-secondary hover:text-primary transition-colors text-sm"
+                  className="text-text-secondary hover:text-primary transition-colors text-sm font-blog"
                 >
                   博客文章
                 </a>
@@ -53,7 +58,7 @@ export default function Footer() {
               <li>
                 <a
                   href="/apps"
-                  className="text-text-secondary hover:text-primary transition-colors text-sm"
+                  className="text-text-secondary hover:text-primary transition-colors text-sm font-blog"
                 >
                   开发作品
                 </a>
@@ -61,7 +66,7 @@ export default function Footer() {
               <li>
                 <a
                   href="/aigc"
-                  className="text-text-secondary hover:text-primary transition-colors text-sm"
+                  className="text-text-secondary hover:text-primary transition-colors text-sm font-blog"
                 >
                   AIGC作品
                 </a>
@@ -79,14 +84,14 @@ export default function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
+                  className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white transition-all duration-300"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   {social.name === "RSS订阅" ? (
-                    <social.icon size={20} strokeWidth={2.5} />
+                    <social.icon size={16} strokeWidth={1.5} />
                   ) : (
-                    <social.icon size={20} />
+                    <social.icon size={16} strokeWidth={1.5} />
                   )}
                 </motion.a>
               ))}

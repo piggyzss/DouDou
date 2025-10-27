@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import Footer from "./components/Footer";
+import Navigation from "./components/Navigation";
+import { typewriterFont, zenKakuGothic } from "./fonts";
 import "./globals.css";
 import { ThemeProvider } from "./providers";
-import Navigation from "./components/Navigation";
-import Footer from "./components/Footer";
-import { typewriterFont, zenKakuGothic } from "./fonts";
 
 export const metadata: Metadata = {
   title: "shanshan的个人网站",
@@ -36,7 +36,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <div className="min-h-screen">
-            <div className="w-1/2 mx-auto flex flex-col min-h-screen">
+            <div className="w-full px-4 md:w-1/2 md:mx-auto md:px-0 flex flex-col min-h-screen">
               <Navigation />
               <main className="flex-1">{children}</main>
               <Footer />

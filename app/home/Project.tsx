@@ -1,16 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  Calendar,
-  Terminal,
-  Code,
-  FileText,
-  Palette,
-  ChevronRight,
+    ChevronRight,
+    Code,
+    Palette,
+    Terminal
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface BlogPost {
@@ -339,7 +336,7 @@ export default function Project() {
                       </span>
                     </div>
                     <div
-                      className={`leading-relaxed text-xs font-thin line-clamp-6 ${
+                      className={`leading-relaxed text-xs font-blog line-clamp-6 ${
                         isDarkMode ? "text-gray-300" : "text-gray-600"
                       }`}
                     >
@@ -567,7 +564,7 @@ export default function Project() {
                       </span>
                     </div>
                     <div
-                      className={`leading-relaxed text-xs font-thin ${
+                      className={`leading-relaxed text-xs font-blog ${
                         isDarkMode ? "text-gray-300" : "text-gray-600"
                       }`}
                     >

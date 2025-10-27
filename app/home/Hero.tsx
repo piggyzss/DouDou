@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Update from "./Update";
 import { Terminal } from "lucide-react";
+import Update from "./Update";
 
 export default function Hero() {
   return (
@@ -52,7 +52,7 @@ export default function Hero() {
           {/* 主标题 */}
           <div className="space-y-4">
             <motion.h1
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-6xl font-bold font-heading leading-tight whitespace-nowrap"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl font-bold font-heading leading-tight"
               style={{}}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -62,7 +62,7 @@ export default function Hero() {
                 className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-english"
                 style={{
                   fontWeight: 800,
-                  fontSize: "58px",
+                  fontSize: "clamp(2.5rem, 8vw, 3.625rem)",
                   letterSpacing: "-1.5px",
                 }}
               >
@@ -75,7 +75,7 @@ export default function Hero() {
               style={{
                 fontFamily: "Epilogue, sans-serif",
                 fontWeight: 800,
-                fontSize: "38px",
+                fontSize: "clamp(1.5rem, 5vw, 2.375rem)",
                 letterSpacing: "-1.5px",
               }}
               initial={{ opacity: 0, y: 20 }}

@@ -57,8 +57,8 @@ export default function Navigation() {
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="w-full md:w-1/2 md:mx-auto">
-        <div className="flex justify-between items-center h-14">
+      <div className="w-full px-4 md:w-1/2 md:mx-auto md:px-0">
+        <div className="flex items-center h-12">
           {/* 左侧导航 */}
           <div className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => {
@@ -81,7 +81,7 @@ export default function Navigation() {
                       className="icon-hover-rotate text-current flex-shrink-0"
                       strokeWidth={1.5}
                     />
-                    <span className="font-medium leading-none">
+                    <span className="font-blog leading-none">
                       {item.name}
                     </span>
                     {pathname === item.href && (
@@ -103,7 +103,7 @@ export default function Navigation() {
           </div>
 
           {/* 右侧搜索和主题切换 */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 ml-auto">
             {/* 搜索栏 */}
             <form onSubmit={handleSearch} className="hidden sm:block">
               <div className="relative">
@@ -112,7 +112,7 @@ export default function Navigation() {
                   placeholder="Search Keys..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 px-4 py-2 pl-10 text-sm bg-bg-secondary dark:bg-gray-800 border-none outline-none rounded-full placeholder-text-light text-text-secondary focus:placeholder-text-light focus:ring-0 focus:bg-bg-tertiary dark:focus:bg-gray-700 transition-all duration-500 ease-in-out"
+                  className="w-64 px-4 py-2 pl-10 text-sm font-blog bg-bg-secondary dark:bg-gray-800 border-none outline-none rounded-full placeholder-text-light text-text-secondary focus:placeholder-text-light focus:ring-0 focus:bg-bg-tertiary dark:focus:bg-gray-700 transition-all duration-500 ease-in-out"
                 />
                 <Search
                   size={16}
@@ -159,16 +159,16 @@ export default function Navigation() {
             overflow: 'hidden'
           }}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 mt-2 nav-dropdown">
+          <div className="px-4 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded hover:shadow-lg transition-all duration-300 mt-2 nav-dropdown">
             {/* 移动端搜索栏 */}
-            <form onSubmit={handleSearch} className="px-3 py-2">
+            <form onSubmit={handleSearch} className="px-0 py-2">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Search Keys..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 text-sm bg-bg-secondary dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full outline-none placeholder-text-light text-text-secondary focus:placeholder-text-light focus:border-transparent focus:ring-0 focus:bg-bg-tertiary dark:focus:bg-gray-700 transition-all duration-500 ease-in-out"
+                  className="w-full px-4 py-2 pl-10 text-sm font-blog bg-bg-secondary dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full outline-none placeholder-text-light text-text-secondary focus:placeholder-text-light focus:border-transparent focus:ring-0 focus:bg-bg-tertiary dark:focus:bg-gray-700 transition-all duration-500 ease-in-out"
                 />
                 <Search
                   size={16}
@@ -198,7 +198,7 @@ export default function Navigation() {
                       className="icon-hover-rotate text-current flex-shrink-0"
                       strokeWidth={1.5}
                     />
-                    <span className="font-medium leading-none">
+                    <span className="font-blog leading-none">
                       {item.name}
                     </span>
                   </Link>
