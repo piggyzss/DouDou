@@ -6,22 +6,9 @@ import { AgentRequest, AgentResponse } from "@/lib/agent/types";
 
 // 格式化结构化响应的辅助函数
 const formatStructuredResponse = (data: any, command: string): string => {
-  if (command === "/help") {
-    const plugins = agentPluginManager.getAllPlugins();
-    let helpText = "Available commands:\n";
-
-    plugins.forEach((plugin) => {
-      if (plugin.enabled) {
-        helpText += `\n=== ${plugin.name} ===\n`;
-        plugin.commands.forEach((cmd) => {
-          helpText += `${cmd.command.padEnd(20)} # ${cmd.description}\n`;
-        });
-      }
-    });
-
-    return helpText;
-  }
-
+  // /help 命令的响应已经由后端格式化，直接返回
+  // 其他结构化数据也由后端处理
+  
   // 默认格式化
   if (typeof data === "string") {
     return data;
@@ -107,7 +94,7 @@ export function useAgent() {
     try {
       // 使用插件管理器处理命令
       const request: AgentRequest = {
-        command: trimmedCommand.toLowerCase(),
+        command: trimmedCommand, // 不再转小写，保留原始输入
         params: {},
         sessionId: "default",
       };

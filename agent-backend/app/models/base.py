@@ -12,10 +12,15 @@ class AgentCommand(BaseModel):
 
 
 class AgentRequest(BaseModel):
-    command: str
-    params: Dict[str, Any] = {}
+    """Agent 请求模型 - 支持命令和自然语言输入"""
+    input: str  # 用户输入（命令或自然语言）
     session_id: str = "default"
     user_id: str = ""
+    context: Dict[str, Any] = {}  # 上下文信息
+    
+    # 保留向后兼容（废弃）
+    command: str = ""  # 废弃，使用 input 代替
+    params: Dict[str, Any] = {}
 
 
 class AgentResponse(BaseModel):

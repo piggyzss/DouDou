@@ -1,116 +1,20 @@
-import { AgentPlugin, AgentRequest, AgentResponse } from "./types";
+import { AgentRequest, AgentResponse } from "./types";
 
+/**
+ * Agent Plugin Manager - 简化版
+ * 
+ * 职责：
+ * - 作为前端与后端 Agent API 的接口层
+ * - 所有插件管理、命令验证、意图解析都由后端处理
+ */
 export class AgentPluginManager {
-  private plugins: Map<string, AgentPlugin> = new Map();
-  private commandMap: Map<string, string> = new Map();
-
-  constructor() {
-    this.initializePlugins();
-  }
-
-  private initializePlugins() {
-    // 注册AI资讯插件
-    this.registerPlugin({
-      name: "AI资讯",
-      id: "news",
-      description: "获取最新的AI和科技资讯",
-      icon: "Newspaper",
-      enabled: true,
-      commands: [
-        {
-          command: "/latest",
-          description: "获取最新AI资讯",
-          usage: "/latest [count]",
-          examples: ["/latest", "/latest 5"],
-        },
-        {
-          command: "/trending",
-          description: "获取热门趋势",
-          usage: "/trending [category]",
-          examples: ["/trending", "/trending ai"],
-        },
-        {
-          command: "/categories",
-          description: "显示资讯分类",
-          usage: "/categories",
-          examples: ["/categories"],
-        },
-        {
-          command: "/deepdive",
-          description: "深度分析特定主题",
-          usage: "/deepdive <topic>",
-          examples: ["/deepdive GPT-4", "/deepdive 机器学习"],
-        },
-        {
-          command: "/help",
-          description: "显示帮助信息",
-          usage: "/help [command]",
-          examples: ["/help", "/help /latest"],
-        },
-      ],
-    });
-  }
-
-  registerPlugin(plugin: AgentPlugin) {
-    this.plugins.set(plugin.id, plugin);
-
-    // 注册命令映射
-    plugin.commands.forEach((cmd) => {
-      this.commandMap.set(cmd.command, plugin.id);
-    });
-  }
-
-  getPlugin(pluginId: string): AgentPlugin | undefined {
-    return this.plugins.get(pluginId);
-  }
-
-  getAllPlugins(): AgentPlugin[] {
-    return Array.from(this.plugins.values());
-  }
-
-  getEnabledPlugins(): AgentPlugin[] {
-    return Array.from(this.plugins.values()).filter((plugin) => plugin.enabled);
-  }
-
-  getPluginForCommand(command: string): string | undefined {
-    return this.commandMap.get(command);
-  }
-
-  getAllCommands(): string[] {
-    return Array.from(this.commandMap.keys());
-  }
-
-  validateCommand(command: string): boolean {
-    return this.commandMap.has(command);
-  }
-
+  /**
+   * 执行命令或自然语言查询
+   * 
+   * @param request - 包含 command（用户输入）和其他参数
+   * @returns Agent 响应
+   */
   async executeCommand(request: AgentRequest): Promise<AgentResponse> {
-    const pluginId = this.getPluginForCommand(request.command);
-
-    if (!pluginId) {
-      return {
-        success: false,
-        error: `Unknown command: ${request.command}. Type /help for available commands.`,
-        type: "error",
-        plugin: "system",
-        command: request.command,
-        timestamp: Date.now(),
-      };
-    }
-
-    const plugin = this.getPlugin(pluginId);
-    if (!plugin || !plugin.enabled) {
-      return {
-        success: false,
-        error: `Plugin ${pluginId} is not available.`,
-        type: "error",
-        plugin: pluginId,
-        command: request.command,
-        timestamp: Date.now(),
-      };
-    }
-
-    // 转发到后端API处理
     try {
       const response = await fetch("/api/agent/execute", {
         method: "POST",
@@ -118,10 +22,9 @@ export class AgentPluginManager {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          plugin: pluginId,
-          command: request.command,
-          params: request.params || {},
-          sessionId: request.sessionId || "default",
+          input: request.command, // 用户输入（命令或自然语言）
+          session_id: request.sessionId || "default",
+          context: request.params || {},
         }),
       });
 
@@ -130,12 +33,25 @@ export class AgentPluginManager {
       }
 
       const result = await response.json();
+
+      // 处理错误响应
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || "Unknown error",
+          type: "error",
+          plugin: result.plugin || "system",
+          command: request.command,
+          timestamp: Date.now(),
+        };
+      }
+
       return {
         success: true,
         data: result.data,
         type: result.type || "text",
-        plugin: pluginId,
-        command: request.command,
+        plugin: result.plugin || "unknown",
+        command: result.command || request.command,
         timestamp: Date.now(),
       };
     } catch (error) {
@@ -144,7 +60,7 @@ export class AgentPluginManager {
         error:
           error instanceof Error ? error.message : "Unknown error occurred",
         type: "error",
-        plugin: pluginId,
+        plugin: "system",
         command: request.command,
         timestamp: Date.now(),
       };

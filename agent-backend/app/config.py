@@ -33,8 +33,26 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 3600  # 1小时
     NEWS_CACHE_TTL: int = 1800  # 30分钟
 
-    # API Keys
+    # LLM 配置
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
+    
+    # LLM 提供商选择: "openai" | "google" | "none"
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "none")
+    
+    # Gemini 配置
+    GEMINI_MODEL_FLASH: str = "gemini-1.5-flash"
+    GEMINI_MODEL_PRO: str = "gemini-1.5-pro"
+    
+    # OpenAI 配置
+    OPENAI_MODEL: str = "gpt-3.5-turbo"
+    OPENAI_MAX_TOKENS: int = 1000
+    OPENAI_TEMPERATURE: float = 0.7
+    
+    # Agent 配置
+    ENABLE_INTENT_ANALYSIS: bool = os.getenv("ENABLE_INTENT_ANALYSIS", "false").lower() == "true"
+    ENABLE_CONTENT_ANALYSIS: bool = os.getenv("ENABLE_CONTENT_ANALYSIS", "false").lower() == "true"
+    MAX_ARTICLES_PER_QUERY: int = 50
 
     # 新闻源配置
     NEWS_SOURCES: dict = {
