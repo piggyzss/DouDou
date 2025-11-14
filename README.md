@@ -53,8 +53,11 @@ DouDou/
 **推荐方式：Docker混合模式**
 
 ```bash
-# 一键启动开发环境
-./scripts/docker/start-dev-docker.sh
+# 一键启动全栈开发环境（推荐）
+./scripts/startup/full-stack.sh start
+
+# 或仅启动后端
+./agent-backend/docker/start-dev-docker.sh
 
 # 访问地址：
 # - 前端: http://localhost:3000

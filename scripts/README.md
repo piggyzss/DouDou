@@ -38,15 +38,14 @@
 - `verify-deployment.ts` - 部署验证脚本
 - `vercel-build.sh` - Vercel构建脚本
 
-### 🐳 docker/
+### 🚀 startup/
 
-Docker相关脚本和配置文件，用于容器化开发环境管理。
+全栈开发环境启动脚本。
 
 **主要文件：**
 
-- `docker-compose.dev.yml` - 开发环境Docker Compose配置
-- `start-dev-docker.sh` - 一键启动Docker混合开发环境
-- `stop-dev-docker.sh` - 停止Docker开发环境
+- `full-stack.sh` - 全栈一键启动脚本（前端+后端，推荐）
+- `README.md` - 启动脚本使用文档
 
 ### 💻 development/
 
@@ -120,14 +119,27 @@ chmod +x scripts/deployment/vercel-build.sh
 
 ## 🔧 常用命令
 
-### Docker开发环境（推荐）
+### 全栈开发环境（推荐）
 
 ```bash
-# 一键启动Docker混合开发环境
-./scripts/docker/start-dev-docker.sh
+# 一键启动全栈开发环境
+./scripts/startup/full-stack.sh start
 
-# 停止Docker开发环境
-./scripts/docker/stop-dev-docker.sh
+# 查看服务状态
+./scripts/startup/full-stack.sh status
+
+# 停止全栈环境
+./scripts/startup/full-stack.sh stop
+```
+
+### 后端独立开发
+
+```bash
+# 启动后端Docker开发环境
+./agent-backend/docker/start-dev-docker.sh
+
+# 停止后端环境
+./agent-backend/docker/stop-dev-docker.sh
 ```
 
 ### 数据库初始化

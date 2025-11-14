@@ -72,8 +72,11 @@ agent-backend/
 **优势**: 解决Python依赖问题，保持前端调试便利性
 
 ```bash
-# 一键启动开发环境（项目根目录）
-./scripts/docker/start-dev-docker.sh
+# 一键启动全栈开发环境（推荐）
+./scripts/startup/full-stack.sh start
+
+# 或仅启动后端开发环境
+./agent-backend/docker/start-dev-docker.sh
 
 # 服务地址：
 # - 后端: http://localhost:8000
@@ -205,27 +208,35 @@ class MyPlugin(BasePlugin):
 
 - `Dockerfile.dev` - 开发专用镜像（支持热重载）
 - `docker-compose.dev.yml` - 完整开发环境编排
-- `scripts/docker/start-dev-docker.sh` - 一键启动脚本
+- `docker/start-dev-docker.sh` - 后端启动脚本
+- `docker/stop-dev-docker.sh` - 停止脚本
+- `docker/backend.sh` - 后端容器管理脚本
+
+**全栈启动脚本：**
+- `scripts/startup/full-stack.sh` - 全栈一键启动脚本（推荐）
 
 ## 🛠️ 开发指南
 
 ### 常用命令
 
 ```bash
-# 启动开发环境
-./scripts/docker/start-dev-docker.sh
+# 启动全栈开发环境（前端+后端，推荐）
+./scripts/startup/full-stack.sh start
+
+# 或仅启动后端开发环境
+./agent-backend/docker/start-dev-docker.sh
 
 # 停止开发环境
-./scripts/docker/stop-dev-docker.sh
+./agent-backend/docker/stop-dev-docker.sh
 
 # 查看后端日志
-docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend
+cd agent-backend/docker && ./backend.sh logs
 
 # 查看服务状态
-docker-compose -f scripts/docker/docker-compose.dev.yml ps
+cd agent-backend/docker && ./backend.sh ps
 
 # 重启后端服务
-docker-compose -f scripts/docker/docker-compose.dev.yml restart agent-backend
+cd agent-backend/docker && ./backend.sh restart
 ```
 
 ### 测试验证
@@ -248,10 +259,10 @@ curl -X POST http://localhost:8000/api/agent/execute \
 
 **常见问题：**
 
-- **容器启动失败**: `docker-compose -f scripts/docker/docker-compose.dev.yml logs agent-backend`
+- **容器启动失败**: `cd agent-backend/docker && ./backend.sh logs`
 - **端口占用**: `lsof -i :8000` 查看端口使用
 - **CORS错误**: 检查环境变量 `ALLOWED_ORIGINS`
-- **热重载不工作**: 检查代码挂载 `docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend ls -la /app`
+- **热重载不工作**: `cd agent-backend/docker && ./backend.sh shell` 然后 `ls -la /app`
 
 **生产环境部署请参考**: [部署指南](../docs/deployment-guide.md)
 

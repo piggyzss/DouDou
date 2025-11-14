@@ -75,10 +75,13 @@
 ### 方式1: Docker混合模式（推荐开发环境）
 
 ```bash
-# 混合开发环境 - 最佳实践
-./scripts/docker/start-dev-docker.sh
+# 全栈开发环境 - 最佳实践（推荐）
+./scripts/startup/full-stack.sh start
 # → Python后端: Docker容器（自动热重载）
 # → Next.js前端: 本地运行（保持调试功能）
+
+# 或使用混合开发环境
+./agent-backend/docker/start-dev-docker.sh
 ```
 
 **特点**:
@@ -594,8 +597,11 @@ CMD ["gunicorn", "app.main:app", \
 ### 快速开始
 
 ```bash
-# 1. 一键启动混合开发环境
-./scripts/docker/start-dev-docker.sh
+# 1. 一键启动全栈开发环境（推荐）
+./scripts/startup/full-stack.sh start
+
+# 或启动混合开发环境
+./agent-backend/docker/start-dev-docker.sh
 
 # 2. 服务访问地址
 # - 前端应用: http://localhost:3000
@@ -604,18 +610,20 @@ CMD ["gunicorn", "app.main:app", \
 # - API文档: http://localhost:8000/docs
 
 # 3. 停止开发环境
-./scripts/docker/stop-dev-docker.sh
+./scripts/startup/full-stack.sh stop
+# 或
+./agent-backend/docker/stop-dev-docker.sh
 ```
 
 ### 开发工作流
 
 **日常开发流程：**
 
-1. 启动开发环境: `./scripts/docker/start-dev-docker.sh`
+1. 启动开发环境: `./scripts/startup/full-stack.sh start`
 2. 前端代码开发: 在Cursor中编辑，支持断点调试
 3. 后端代码开发: 编辑Python文件，容器自动重启
 4. 实时测试: 访问Agent页面测试功能
-5. 查看日志: `docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend`
+5. 查看日志: `cd agent-backend/docker && ./backend.sh logs`
 
 **开发体验对比：**
 

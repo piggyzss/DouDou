@@ -58,6 +58,9 @@
 ```bash
 npm run dev              # Start development server with preflight checks
 npm run dev:skip-preflight  # Start dev server without checks
+npm run dev:fullstack    # Start full-stack environment (frontend + backend)
+npm run dev:fullstack:stop  # Stop full-stack environment
+npm run dev:fullstack:status # Check full-stack environment status
 npm run preflight        # Run preflight checks (database, environment)
 ```
 

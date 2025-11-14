@@ -41,15 +41,18 @@
 - **使用场景**: 本地开发Agent功能
 - **命令**: `./scripts/development/start-agent-backend.sh`
 
-**注意**: Docker相关脚本已移至 `scripts/docker/` 目录，详见 [Docker脚本文档](../docker/README.md)
+**注意**: 全栈启动脚本位于 `scripts/startup/` 目录，后端Docker脚本位于 `agent-backend/docker/` 目录
 
 ## 🚀 开发工作流
 
 ### Docker混合模式开发 ⭐ **推荐**
 
 ```bash
-# 1. 一键启动Docker开发环境
-./scripts/docker/start-dev-docker.sh
+# 1. 一键启动全栈开发环境（推荐）
+./scripts/startup/full-stack.sh start
+
+# 或仅启动后端Docker开发环境
+./agent-backend/docker/start-dev-docker.sh
 
 # 服务将自动启动：
 # - Python Agent后端: http://localhost:8000

@@ -6,7 +6,7 @@ set -e
 
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# 项目根目录 (脚本在 scripts/docker/ 下，所以根目录是 ../../)
+# 项目根目录 (脚本在 agent-backend/docker/ 下，所以根目录是 ../../)
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # 切换到项目根目录
@@ -108,8 +108,10 @@ setup_env() {
 start_backend() {
     print_msg "🐳 启动Python Agent后端容器..."
     
-    # 构建并启动后端容器
-    docker-compose -f scripts/docker/docker-compose.dev.yml up -d agent-backend
+    # 使用 agent-backend/docker 目录下的配置
+    cd "$PROJECT_ROOT/agent-backend/docker"
+    ./backend.sh start
+    cd "$PROJECT_ROOT"
     
     # 等待服务启动
     print_info "⏳ 等待后端服务启动..."
@@ -124,7 +126,7 @@ start_backend() {
         
         if [ $attempt -eq $max_attempts ]; then
             print_error "后端服务启动超时"
-            print_info "查看日志: docker-compose -f scripts/docker/docker-compose.dev.yml logs agent-backend"
+            print_info "查看日志: cd agent-backend/docker && ./backend.sh logs"
             exit 1
         fi
         
@@ -133,19 +135,7 @@ start_backend() {
     done
 }
 
-# 启动Redis（可选）
-start_redis() {
-    print_msg "📦 启动Redis缓存服务..."
-    docker-compose -f scripts/docker/docker-compose.dev.yml up -d redis
-    
-    # 等待Redis启动
-    sleep 3
-    if docker-compose -f scripts/docker/docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; then
-        print_msg "✅ Redis服务启动成功"
-    else
-        print_warn "Redis服务启动可能有问题，但不影响基本功能"
-    fi
-}
+# Redis 由 backend.sh 管理，这里不需要单独启动函数
 
 # 检查Node.js环境
 check_nodejs() {
@@ -227,9 +217,9 @@ show_info() {
     echo -e "  📦 Redis:      ${BLUE}localhost:6379${NC}"
     echo
     echo -e "${GREEN}🛠️ 开发工具:${NC}"
-    echo -e "  查看后端日志: ${YELLOW}docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend${NC}"
-    echo -e "  查看所有服务: ${YELLOW}docker-compose -f scripts/docker/docker-compose.dev.yml ps${NC}"
-    echo -e "  停止所有服务: ${YELLOW}./scripts/docker/stop-dev-docker.sh${NC} 或 ${YELLOW}docker-compose -f scripts/docker/docker-compose.dev.yml down${NC}"
+    echo -e "  查看后端日志: ${YELLOW}cd agent-backend/docker && ./backend.sh logs${NC}"
+    echo -e "  查看所有服务: ${YELLOW}cd agent-backend/docker && ./backend.sh ps${NC}"
+    echo -e "  停止所有服务: ${YELLOW}./agent-backend/docker/stop-dev-docker.sh${NC}"
     echo
     echo -e "${GREEN}🧪 测试命令:${NC}"
     echo -e "  后端健康检查: ${YELLOW}curl http://localhost:8000/health${NC}"
@@ -259,7 +249,6 @@ main() {
     setup_env
     install_frontend_deps
     start_backend
-    start_redis
     start_frontend
     show_info
     

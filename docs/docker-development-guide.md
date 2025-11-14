@@ -40,8 +40,11 @@
 ### 一键启动开发环境
 
 ```bash
-# 1. 启动混合开发环境
-./scripts/docker/start-dev-docker.sh
+# 1. 启动全栈开发环境（推荐）
+./scripts/startup/full-stack.sh start
+
+# 或启动混合开发环境
+./agent-backend/docker/start-dev-docker.sh
 
 # 2. 等待启动完成，访问服务
 # - 前端: http://localhost:3000
@@ -52,8 +55,11 @@
 ### 停止开发环境
 
 ```bash
-# 停止Docker容器
-./scripts/docker/stop-dev-docker.sh
+# 停止全栈环境
+./scripts/startup/full-stack.sh stop
+
+# 或停止Docker容器
+./agent-backend/docker/stop-dev-docker.sh
 
 # 手动停止前端服务（在前端终端中按 Ctrl+C）
 ```
@@ -65,9 +71,14 @@
 ```
 DouDou/
 ├── scripts/
+│   └── startup/
+│       ├── full-stack.sh           # 全栈启动脚本（推荐）
+│       └── README.md               # 启动脚本文档
+├── agent-backend/
 │   └── docker/
-│       ├── start-dev-docker.sh     # 一键启动脚本
+│       ├── start-dev-docker.sh     # 后端启动脚本
 │       ├── stop-dev-docker.sh      # 停止脚本
+│       ├── backend.sh              # 后端容器管理
 │       └── docker-compose.dev.yml  # 开发环境Docker编排
 ├── agent-backend/
 │   ├── Dockerfile.dev               # 开发专用镜像
@@ -133,7 +144,11 @@ redis:
 1. **启动开发环境**
 
    ```bash
-   ./scripts/docker/start-dev-docker.sh
+   # 启动全栈环境（推荐）
+   ./scripts/startup/full-stack.sh start
+   
+   # 或仅启动后端
+   ./agent-backend/docker/start-dev-docker.sh
    ```
 
 2. **代码开发**
@@ -155,10 +170,10 @@ redis:
 
    ```bash
    # 查看后端日志
-   docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend
+   cd agent-backend/docker && ./backend.sh logs
 
    # 查看所有服务状态
-   docker-compose -f scripts/docker/docker-compose.dev.yml ps
+   cd agent-backend/docker && ./backend.sh ps
    ```
 
 ### 代码热重载机制
@@ -211,7 +226,7 @@ async def execute_command(request: AgentRequest):
 
 ```bash
 # 1. 检查所有服务状态
-docker-compose -f scripts/docker/docker-compose.dev.yml ps
+cd agent-backend/docker && ./backend.sh ps
 
 # 2. 测试后端健康
 curl http://localhost:8000/health
@@ -284,10 +299,11 @@ kill -9 $(lsof -ti:8000)
 
 ```bash
 # 检查volumes挂载
-docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend ls -la /app
+cd agent-backend/docker && ./backend.sh shell
+ls -la /app
 
 # 重启服务
-docker-compose -f scripts/docker/docker-compose.dev.yml restart agent-backend
+cd agent-backend/docker && ./backend.sh restart
 ```
 
 **前端热重载问题:**
@@ -304,7 +320,8 @@ npm run dev
 
 ```bash
 # 检查后端CORS配置
-docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend env | grep ALLOWED_ORIGINS
+cd agent-backend/docker
+docker-compose -f docker-compose.dev.yml exec agent-backend env | grep ALLOWED_ORIGINS
 
 # 测试CORS预检请求
 curl -H "Origin: http://localhost:3000" \
@@ -320,25 +337,26 @@ curl -H "Origin: http://localhost:3000" \
 
 ```bash
 # 进入容器手动安装
-docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend bash
+cd agent-backend/docker && ./backend.sh shell
 pip install -r requirements.txt
 
 # 重新构建镜像
-docker-compose -f scripts/docker/docker-compose.dev.yml build --no-cache agent-backend
+cd agent-backend/docker && ./backend.sh build
 ```
 
 ### 日志查看命令
 
 ```bash
 # 查看所有服务日志
-docker-compose -f scripts/docker/docker-compose.dev.yml logs
+cd agent-backend/docker && ./backend.sh logs
 
-# 查看特定服务日志
-docker-compose -f scripts/docker/docker-compose.dev.yml logs -f agent-backend
-docker-compose -f scripts/docker/docker-compose.dev.yml logs -f redis
+# 查看特定服务日志（实时）
+cd agent-backend/docker
+docker-compose -f docker-compose.dev.yml logs -f agent-backend
+docker-compose -f docker-compose.dev.yml logs -f redis
 
 # 查看最近的日志
-docker-compose -f scripts/docker/docker-compose.dev.yml logs --tail 50 agent-backend
+docker-compose -f docker-compose.dev.yml logs --tail 50 agent-backend
 ```
 
 ---
@@ -362,8 +380,9 @@ npm run dev
 
 ```bash
 # 更新requirements.txt后重新构建
-docker-compose -f scripts/docker/docker-compose.dev.yml build --no-cache agent-backend
-docker-compose -f scripts/docker/docker-compose.dev.yml up -d agent-backend
+cd agent-backend/docker
+./backend.sh build
+./backend.sh start
 ```
 
 ### 镜像管理
@@ -376,7 +395,7 @@ docker images | grep doudou
 docker image prune -f
 
 # 重新构建所有镜像
-docker-compose -f scripts/docker/docker-compose.dev.yml build --no-cache
+cd agent-backend/docker && ./backend.sh build
 ```
 
 ---
@@ -462,7 +481,7 @@ docker run -e DEBUG=false -p 8000:8000 your-production-image
 
 ```bash
 # 进入容器
-docker-compose -f scripts/docker/docker-compose.dev.yml exec agent-backend bash
+cd agent-backend/docker && ./backend.sh shell
 
 # 查看容器详情
 docker inspect doudou-agent-backend-dev

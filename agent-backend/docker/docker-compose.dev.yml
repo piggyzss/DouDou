@@ -2,16 +2,16 @@ services:
   # Python Agent 后端服务
   agent-backend:
     build:
-      context: ../../agent-backend
-      dockerfile: Dockerfile.dev
+      context: ..
+      dockerfile: docker/Dockerfile.dev
     container_name: doudou-agent-backend-dev
     ports:
       - "8000:8000"
     volumes:
       # 挂载代码目录实现热重载
-      - ../../agent-backend:/app:cached
+      - ..:/app:cached
       # 挂载日志目录
-      - ../../agent-backend/logs:/app/logs
+      - ../logs:/app/logs
     environment:
       # 开发环境配置
       - DEBUG=true

@@ -6,7 +6,7 @@ set -e
 
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# 项目根目录 (脚本在 scripts/docker/ 下，所以根目录是 ../../)
+# 项目根目录 (脚本在 agent-backend/docker/ 下，所以根目录是 ../../)
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # 切换到项目根目录
@@ -64,11 +64,13 @@ fi
 
 # 停止Docker容器
 print_msg "停止Docker容器..."
-if docker-compose -f scripts/docker/docker-compose.dev.yml down; then
+cd "$PROJECT_ROOT/agent-backend/docker"
+if ./backend.sh stop; then
     print_msg "✅ Docker容器已停止"
 else
     print_warn "Docker容器可能已经停止或不存在"
 fi
+cd "$PROJECT_ROOT"
 
 # 清理日志文件
 if [ -f "frontend.log" ]; then

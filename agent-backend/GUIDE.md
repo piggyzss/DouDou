@@ -1,32 +1,95 @@
 # AI News Agent - 开发指南
 
-## 🚀 快速开始
+## 🚀 快速开始（使用 Docker）
 
-### 1. 安装依赖
+### 方式1：只启动后端（推荐用于后端开发）
+
+```bash
+cd agent-backend/docker
+
+# 启动后端
+./backend.sh start
+
+# 查看日志
+./backend.sh logs
+
+# 停止后端
+./backend.sh stop
+```
+
+### 方式2：启动全栈（前端 + 后端）
+
+```bash
+cd agent-backend/docker
+
+# 启动前端和后端
+./scripts/startup/full-stack.sh start
+
+# 查看状态
+./scripts/startup/full-stack.sh status
+
+# 停止所有服务
+./scripts/startup/full-stack.sh stop
+```
+
+### Docker 服务说明
+
+启动后会自动：
+- ✅ 构建 Docker 镜像（使用国内镜像源加速）
+- ✅ 安装所有 Python 依赖
+- ✅ 启动 Python 后端服务
+- ✅ 启动 Redis 服务（如果需要）
+- ✅ 支持代码热重载（修改代码自动重启）
+
+**服务地址**：
+- 后端 API: http://localhost:8000
+- API 文档: http://localhost:8000/docs
+- 健康检查: http://localhost:8000/health
+
+### 2. 常用 Docker 命令
 
 ```bash
 cd agent-backend
-pip install -r requirements.txt
+
+# 查看所有可用命令
+./docker-dev.sh
+
+# 启动服务
+./docker-dev.sh start
+
+# 停止服务
+./docker-dev.sh stop
+
+# 重启服务
+./docker-dev.sh restart
+
+# 查看实时日志
+./docker-dev.sh logs
+
+# 进入容器 shell
+./docker-dev.sh shell
+
+# 运行测试
+./docker-dev.sh test
+
+# 重新构建镜像
+./docker-dev.sh build
+
+# 查看容器状态
+./docker-dev.sh ps
 ```
-
-### 2. 启动服务
-
-```bash
-# 方式1：Docker（推荐）
-./scripts/docker/start-dev-docker.sh
-
-# 方式2：本地运行
-python -m app.main
-```
-
-服务地址：http://localhost:8000
 
 ### 3. 测试功能
 
 #### 测试意图分析器
 
 ```bash
-python test_input_router.py
+# 使用快捷命令
+cd agent-backend
+./docker-dev.sh test
+
+# 或手动执行
+docker-compose -f agent-backend/docker/docker-compose.dev.yml exec agent-backend python test_input_router.py
 ```
 
 #### 测试 API
@@ -46,10 +109,15 @@ curl -X POST http://localhost:8000/api/agent/execute \
 #### 前端测试
 
 ```bash
-# 在项目根目录
+# 在项目根目录（前端在本地运行）
 npm run dev
 # 访问 http://localhost:3000/agent
 ```
+
+**混合模式**：后端在 Docker 中，前端在本地，这样可以：
+- ✅ 后端环境隔离，无依赖问题
+- ✅ 前端本地运行，调试方便
+- ✅ 两者通过 HTTP 通信
 
 ---
 
@@ -121,8 +189,6 @@ agent-backend/
 │   │   └── news_collector.py  # 新闻收集服务
 │   ├── config.py            # 配置
 │   └── main.py              # 应用入口
-├── test_input_router.py     # 测试脚本
-├── verify_structure.py      # 结构验证
 └── requirements.txt         # 依赖
 ```
 
@@ -220,33 +286,80 @@ REDIS_PORT=6379
 
 ## 🐛 故障排除
 
-### 问题1：导入错误
+### 问题1：执行 start 后容器显示暂停
+
+**现象**：执行 `./docker-dev.sh start` 后，Docker Desktop 中容器显示为暂停状态
+
+**原因**：执行脚本时 Docker Desktop 还没有完全启动
+
+**解决方案**：
+1. 确保 Docker Desktop 完全启动（菜单栏图标显示绿色）
+2. 在 Docker Desktop 中手动点击容器的启动按钮
+3. 或者重新执行：`./docker-dev.sh start`
+
+**预防措施**：
+- 先启动 Docker Desktop，等待完全就绪
+- 再执行 `./docker-dev.sh start`
+- 使用 `./docker-dev.sh status` 检查状态
+
+### 问题2：Docker 容器启动失败
 
 ```bash
-ModuleNotFoundError: No module named 'app'
+cd agent-backend/docker
+./backend.sh logs
 ```
 
-**解决方案**：确保在 `agent-backend` 目录下运行
-```bash
-cd agent-backend
-python -m app.main
-```
+**常见原因**：
+- 端口 8000 被占用
+- Docker 服务未启动
+- 镜像构建失败
 
 ### 问题2：端口占用
 
 ```bash
-ERROR: [Errno 48] Address already in use
+ERROR: port is already allocated
 ```
 
 **解决方案**：
 ```bash
-lsof -i :8000
-kill -9 <PID>
+# 查看占用端口的容器
+docker ps
+
+# 停止所有相关容器
+./agent-backend/docker/stop-dev-docker.sh
+
+# 或手动停止
+cd agent-backend/docker && ./backend.sh stop
 ```
 
-### 问题3：CORS 错误
+### 问题3：代码修改不生效
 
-**解决方案**：检查 `app/config.py` 中的 `ALLOWED_ORIGINS` 配置
+**解决方案**：检查代码挂载
+```bash
+# 重启容器
+cd agent-backend/docker && ./backend.sh restart
+```
+
+### 问题4：查看容器日志
+
+```bash
+# 实时查看日志
+cd agent-backend/docker && ./backend.sh logs
+
+# 或使用 docker-compose
+docker-compose -f agent-backend/docker/docker-compose.dev.yml logs -f agent-backend
+```
+
+### 问题5：进入容器调试
+
+```bash
+# 进入容器 shell
+cd agent-backend/docker && ./backend.sh shell
+
+# 在容器内运行命令
+python test_input_router.py
+python -m pytest
+```
 
 ---
 
