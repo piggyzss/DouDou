@@ -51,8 +51,8 @@
 # 1. 一键启动全栈开发环境（推荐）
 ./scripts/startup/full-stack.sh start
 
-# 或仅启动后端Docker开发环境
-./agent-backend/docker/start-dev-docker.sh
+# 或启动完整开发环境（前端 + 后端）
+./scripts/startup/full-stack.sh start
 
 # 服务将自动启动：
 # - Python Agent后端: http://localhost:8000

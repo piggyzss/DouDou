@@ -326,7 +326,7 @@ ERROR: port is already allocated
 docker ps
 
 # 停止所有相关容器
-./agent-backend/docker/stop-dev-docker.sh
+./scripts/startup/full-stack.sh stop
 
 # 或手动停止
 cd agent-backend/docker && ./backend.sh stop

@@ -75,8 +75,8 @@ agent-backend/
 # 一键启动全栈开发环境（推荐）
 ./scripts/startup/full-stack.sh start
 
-# 或仅启动后端开发环境
-./agent-backend/docker/start-dev-docker.sh
+# 或启动完整开发环境（前端 + 后端）
+./scripts/startup/full-stack.sh start
 
 # 服务地址：
 # - 后端: http://localhost:8000
@@ -208,9 +208,7 @@ class MyPlugin(BasePlugin):
 
 - `Dockerfile.dev` - 开发专用镜像（支持热重载）
 - `docker-compose.dev.yml` - 完整开发环境编排
-- `docker/start-dev-docker.sh` - 后端启动脚本
-- `docker/stop-dev-docker.sh` - 停止脚本
-- `docker/backend.sh` - 后端容器管理脚本
+- `docker/backend.sh` - 后端 Docker 服务管理脚本
 
 **全栈启动脚本：**
 - `scripts/startup/full-stack.sh` - 全栈一键启动脚本（推荐）
@@ -223,11 +221,11 @@ class MyPlugin(BasePlugin):
 # 启动全栈开发环境（前端+后端，推荐）
 ./scripts/startup/full-stack.sh start
 
-# 或仅启动后端开发环境
-./agent-backend/docker/start-dev-docker.sh
+# 或启动完整开发环境（前端 + 后端）
+./scripts/startup/full-stack.sh start
 
 # 停止开发环境
-./agent-backend/docker/stop-dev-docker.sh
+./scripts/startup/full-stack.sh stop
 
 # 查看后端日志
 cd agent-backend/docker && ./backend.sh logs

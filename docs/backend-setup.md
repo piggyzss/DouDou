@@ -79,9 +79,6 @@
 ./scripts/startup/full-stack.sh start
 # → Python后端: Docker容器（自动热重载）
 # → Next.js前端: 本地运行（保持调试功能）
-
-# 或使用混合开发环境
-./agent-backend/docker/start-dev-docker.sh
 ```
 
 **特点**:
@@ -600,8 +597,8 @@ CMD ["gunicorn", "app.main:app", \
 # 1. 一键启动全栈开发环境（推荐）
 ./scripts/startup/full-stack.sh start
 
-# 或启动混合开发环境
-./agent-backend/docker/start-dev-docker.sh
+# 或启动完整开发环境（前端 + 后端）
+./scripts/startup/full-stack.sh start
 
 # 2. 服务访问地址
 # - 前端应用: http://localhost:3000
@@ -612,7 +609,7 @@ CMD ["gunicorn", "app.main:app", \
 # 3. 停止开发环境
 ./scripts/startup/full-stack.sh stop
 # 或
-./agent-backend/docker/stop-dev-docker.sh
+./scripts/startup/full-stack.sh stop
 ```
 
 ### 开发工作流
@@ -641,6 +638,6 @@ CMD ["gunicorn", "app.main:app", \
 
 ## 📚 相关文档
 
-- **[Docker开发指南](./docker-development-guide.md)** - 详细的Docker使用指南
+- **[Docker 知识指南](./docker-guide.md)** - Docker 核心概念和最佳实践
 - **[本地开发指南](./local-development-guide.md)** - 传统开发环境
 - **[部署指南](./deployment-guide.md)** - 生产环境部署

@@ -92,11 +92,15 @@ npm run dev:fullstack:status
 如果只需要管理后端服务，可以使用 `agent-backend/docker/` 目录下的脚本：
 
 ```bash
-# 启动后端（包含前端）
-./agent-backend/docker/start-dev-docker.sh
+# 启动完整环境（前端 + 后端）
+./scripts/startup/full-stack.sh start
 
-# 停止后端
-./agent-backend/docker/stop-dev-docker.sh
+# 停止所有服务
+./scripts/startup/full-stack.sh stop
+
+# 仅启动后端
+cd agent-backend/docker
+./backend.sh start
 
 # 后端服务管理
 cd agent-backend/docker
@@ -163,5 +167,5 @@ docker system prune -a
 ## 🔗 相关文档
 
 - [后端设置指南](../../docs/backend-setup.md)
-- [Docker开发指南](../../docs/docker-development-guide.md)
+- [Docker 知识指南](../../docs/docker-guide.md)
 - [Agent模块设计](../../agent-backend/DESIGN.md)

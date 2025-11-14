@@ -135,11 +135,11 @@ chmod +x scripts/deployment/vercel-build.sh
 ### 后端独立开发
 
 ```bash
-# 启动后端Docker开发环境
-./agent-backend/docker/start-dev-docker.sh
+# 启动完整开发环境（前端 + 后端）
+./scripts/startup/full-stack.sh start
 
-# 停止后端环境
-./agent-backend/docker/stop-dev-docker.sh
+# 停止所有服务
+./scripts/startup/full-stack.sh stop
 ```
 
 ### 数据库初始化
