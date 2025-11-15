@@ -50,7 +50,7 @@ start_backend() {
     print_info "启动后端服务..."
     docker-compose -f "$COMPOSE_FILE" up -d agent-backend
     
-    # 等待后端启动
+    # 等待后端启动 
     local max_attempts=30
     local attempt=1
     

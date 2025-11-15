@@ -21,23 +21,61 @@
 **示例**:
 ```dockerfile
 # 选择地基类型
+# 选择基础镜像（带 Python 3.11 的轻量级 Linux 系统）
 FROM python:3.11-slim
 
 # 规划房间布局
+# 在容器内创建并进入 /app 目录
+# 这是容器的文件系统，不是你的主机（电脑）
 WORKDIR /app
 
 # 列出需要的建材清单
+# 把主机的 requirements.txt 复制到容器的 /app/requirements.txt
 COPY requirements.txt .
 
 # 采购并安装建材
+# 在容器的 /app 目录下安装 Python 依赖
 RUN pip install -r requirements.txt
 
 # 搬入家具和装饰
+# 第一个 .（源路径）: 你的主机上的当前目录（Dockerfile 所在目录）
+# 第二个 .（目标路径）: 容器内的当前工作目录（/app）
 COPY . .
 
 # 标注房屋用途
+# exec 形式
+# - 直接执行程序，不通过 shell
+# - 信号处理更好（Ctrl+C 可以正常停止）
+# - 性能更好
+# 等价于在容器内执行：uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# uvicorn:
+# ASGI 服务器，用于运行 FastAPI/Starlette 应用
+# 必须已经通过 pip install 安装
+
+# app.main:app:
+# app.main: Python 模块路径（app/main.py 文件）
+# :app: 该文件中的 FastAPI 应用实例变量名
+# 相当于 from app.main import app
+
+# --host 0.0.0.0:
+# 监听所有网络接口
+# 允许外部访问（如果只用 127.0.0.1 则只能容器内部访问）
+# 这样主机才能通过端口映射访问容器
+
+# --port 8000:
+# 在容器内监听 8000 端口
+# 需要配合 docker run -p 8000:8000 才能从主机访问
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
+
+**发生了什么**：
+- Docker 读取 Dockerfile，在容器内创建 /app 目录
+- 把你电脑上的代码复制到容器的 /app/
+- 在容器内安装依赖
+- 启动 uvicorn 服务，监听容器的 8000 端口
+- 通过 -p 8000:8000 把容器的 8000 端口映射到主机的 8000 端口
+- 你在浏览器访问 localhost:8000 就能访问到容器内的服务
 
 **特点**:
 - 📝 纯文本文件，可以版本控制
@@ -266,6 +304,24 @@ docker-compose up -d --build
 docker-compose exec 服务名 命令
 ```
 
+**说明**：
+使用Docker命令还是Docker Compose？
+简单判断标准
+✅ 多服务协同 - 自动处理启动顺序、网络连接
+✅ 版本控制 - YAML 文件提交到 Git，团队配置一致
+✅ 配置管理 - 声明式配置，清晰易维护
+vs.
+❌ 一堆冗长的命令脚本，难以维护和协作
+
+单个容器，简单测试
+  → docker run
+
+多个容器，需要协同工作
+  → Docker Compose
+
+生产环境，大规模部署
+  → Kubernetes (更高级的编排工具)
+
 ---
 
 ### 5. 卷 (Volume) = 保险箱室
@@ -279,6 +335,7 @@ docker-compose exec 服务名 命令
 **1. 命名卷 (Named Volume)**
 ```yaml
 volumes:
+  # Redis 数据持久化
   - redis_data:/data  # Docker 管理的独立存储
 ```
 **比喻**: 小区统一管理的保险箱室
@@ -286,9 +343,18 @@ volumes:
 **2. 绑定挂载 (Bind Mount)**
 ```yaml
 volumes:
+  # 绑定挂载：代码热重载（开发环境）
+  - ./agent-backend:/app  # 主机代码目录 → 容器工作目录
+  
+  # 绑定挂载：日志持久化
   - ./logs:/app/logs  # 直接映射到主机目录
 ```
 **比喻**: 直连你家仓库的通道
+
+**使用场景**:
+- **开发环境代码热重载**: 在主机上修改代码，容器内立即生效，无需重新构建镜像
+- **日志持久化**: 容器删除后，日志文件仍保留在主机
+- **配置文件共享**: 主机和容器共享配置文件，方便调试
 
 **3. 临时卷 (tmpfs)**
 ```yaml
@@ -301,7 +367,46 @@ tmpfs:
 - 💾 数据持久化，容器删除后数据不丢失
 - 🔄 可以在多个容器间共享
 - 📂 独立于容器生命周期
-- 🚀 性能优于绑定挂载
+- 🚀 命名卷性能优于绑定挂载
+
+**实际应用示例**:
+
+```yaml
+# docker-compose.yml 示例
+services:
+  backend:
+    volumes:
+      # 开发环境：代码热重载
+      - ./agent-backend:/app:cached
+      # 你在 VSCode 修改 main.py，容器内立即生效
+      
+      # 日志持久化
+      - ./logs:/app/logs
+      # 容器重启，日志不丢失
+  
+  redis:
+    volumes:
+      # 数据库数据持久化
+      - redis_data:/data
+      # Redis 数据不会因容器删除而丢失
+
+volumes:
+  redis_data:  # 声明命名卷
+```
+
+**绑定挂载的工作原理**:
+```
+主机（你的电脑）              Docker 容器
+/Users/you/project/            /app/
+├── agent-backend/       ←→   (实时同步)
+│   ├── main.py               ├── main.py
+│   └── config.py             └── config.py
+└── logs/                ←→   /app/logs/
+    └── app.log               └── app.log
+
+主机修改文件 → 容器内立即看到
+容器内修改文件 → 主机上立即看到
+```
 
 **常用命令**:
 ```bash

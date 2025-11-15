@@ -14,219 +14,48 @@ Next.js API Route
 浏览器 (React)
 ```
 
+
 ## 二、完整请求流程
 
-### 1. 浏览器层 (Client-Side)
-
-**文件**: `app/agent/hooks/useAgent.ts`
-
-```typescript
-// 用户输入 "查询最新博客"
-const processCommand = async (command: string) => {
-  const request: AgentRequest = {
-    command: "查询最新博客",
-    params: {},
-    sessionId: "default"
-  };
-  
-  // 调用插件管理器
-  const response = await agentPluginManager.executeCommand(request);
-};
+```
+浏览器          主机 - Next.js (3000端口)              Docker 容器 - Python 后端 (8000端口)
+  │                      │                                        │
+  │                      │                                        │
+  ├─ 1. 访问前端 ────────►                                         │
+  │  localhost:3000      │                                        │
+  │                      │                                        │
+  │  ◄─────────────── Next.js 前端服务 ────────────────────────────┤
+  │     返回 HTML/CSS/JS  (监听 3000 端口)                          │
+  │                      │                                        │
+  │                      │                                        │
+  ├─ 2. 点击按钮 ────────►                                         │
+  │  触发 API 请求        │                                        │
+  │  fetch('/api/agent/execute')                                  │
+  │  (相对路径)           │                                        │
+  │                      │                                        │
+  │                 app/api/agent/execute/route.ts                │
+  │                 (Next.js API Route)                           │
+  │                      │                                        │
+  │                      ├─ 3. 转发到后端 ────────────────────────►
+  │                      │  fetch('http://localhost:8000/...')   │
+  │                      │                                        │
+  │                      │                                   uvicorn 后端服务
+  │                      │                                   (监听容器内 8000)
+  │                      │                                        │
+  │                      │                                   处理请求、AI 逻辑
+  │                      │                                        │
+  │                      │ ◄─ 4. 返回响应 ────────────────────────┤
+  │                      │   JSON 数据                            │
+  │                      │                                        │
+  │                 处理/转换数据                                 │
+  │                 (可选)                                        │
+  │                      │                                        │
+  │  ◄─ 5. 返回给前端 ────┤                                        │
+  │     最终响应          │                                        │
+  │                      │                                        │
 ```
 
-### 2. 前端 API 层 (Client-Side)
-
-**文件**: `lib/agent/plugin-manager.ts`
-
-```typescript
-async executeCommand(request: AgentRequest): Promise<AgentResponse> {
-  // 发起 HTTP 请求到 Next.js API
-  const response = await fetch("/api/agent/execute", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      input: request.command,
-      session_id: request.sessionId,
-      context: request.params
-    })
-  });
-  
-  return await response.json();
-}
-```
-
-**请求体**:
-```json
-{
-  "input": "查询最新博客",
-  "session_id": "default",
-  "context": {}
-}
-```
-
-### 3. Next.js API 路由层 (Server-Side)
-
-**文件**: `app/api/agent/execute/route.ts`
-
-```typescript
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  
-  // 读取环境变量（浏览器无法访问）
-  const backendUrl = process.env.PYTHON_BACKEND_URL;
-  // 开发环境: http://localhost:8000
-  // 生产环境: http://internal-agent-service:8000
-  
-  // 转发到 Python 后端
-  const response = await fetch(
-    `${backendUrl}/api/agent/execute`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    }
-  );
-  
-  const data = await response.json();
-  return NextResponse.json(data);
-}
-```
-
-**转发的请求**:
-```
-POST http://localhost:8000/api/agent/execute
-Content-Type: application/json
-
-{
-  "input": "查询最新博客",
-  "session_id": "default",
-  "context": {}
-}
-```
-
-### 4. FastAPI 应用层 (Python Backend)
-
-**文件**: `agent-backend/app/main.py`
-
-```python
-app = FastAPI(title="AI News Agent Backend")
-
-# 配置 CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-)
-
-# 注册路由
-app.include_router(agent.router, prefix="/api/agent")
-```
-
-**路由匹配**: `/api/agent/execute` → `agent.router`
-
-### 5. FastAPI 路由处理 (Python Backend)
-
-**文件**: `agent-backend/app/api/routes/agent.py`
-
-```python
-@router.post("/execute", response_model=AgentResponse)
-async def execute_command(request: AgentRequest):
-    """
-    执行 Agent 命令或自然语言查询
-    """
-    # 1. 解析用户输入
-    user_input = request.input  # "查询最新博客"
-    
-    # 2. 意图识别
-    intent = await intent_analyzer.parse_input(user_input, request.context)
-    # intent.command = "/latest"
-    # intent.params = {"count": 5}
-    
-    # 3. 执行意图
-    response = await execute_intent(intent)
-    
-    return response
-```
-
-### 6. 插件执行 (Python Backend)
-
-```python
-async def execute_intent(intent: Intent) -> AgentResponse:
-    # 1. 找到对应插件
-    plugin_id = plugin_manager.get_plugin_for_command(intent.command)
-    # plugin_id = "blog"
-    
-    # 2. 获取插件实例
-    plugin = plugin_manager.get_plugin(plugin_id)
-    
-    # 3. 执行插件
-    response = await plugin.execute(legacy_request)
-    
-    return response
-```
-
-### 7. 返回响应
-
-**FastAPI 返回**:
-```json
-{
-  "success": true,
-  "data": [
-    {"title": "博客1", "date": "2024-01-01"},
-    {"title": "博客2", "date": "2024-01-02"}
-  ],
-  "type": "blog_list",
-  "plugin": "blog",
-  "command": "/latest",
-  "timestamp": "2024-01-01T12:00:00Z"
-}
-```
-
-**Next.js 转发** → **浏览器接收** → **UI 更新**
-
-## 三、关键数据模型
-
-### Next.js 侧 (TypeScript)
-
-```typescript
-// lib/agent/types.ts
-interface AgentRequest {
-  command: string;      // 用户输入
-  params?: any;         // 参数
-  sessionId?: string;   // 会话 ID
-}
-
-interface AgentResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-  type: string;         // text, structured, error
-  plugin: string;
-  command: string;
-  timestamp: number;
-}
-```
-
-### FastAPI 侧 (Python)
-
-```python
-# agent-backend/app/models/base.py
-class AgentRequest(BaseModel):
-    input: str                      # 用户输入
-    session_id: str = "default"
-    context: Dict[str, Any] = {}
-    
-class AgentResponse(BaseModel):
-    success: bool
-    data: Any = None
-    error: str = ""
-    type: str = "text"
-    plugin: str
-    command: str
-    timestamp: datetime
-```
-
-## 四、环境配置
+## 三、环境配置
 
 ### Next.js 环境变量
 
@@ -247,7 +76,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
 ```
 
-## 五、启动命令
+## 四、启动命令
 
 ```bash
 # 启动 Next.js (端口 3000)
