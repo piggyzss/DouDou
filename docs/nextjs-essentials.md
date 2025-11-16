@@ -1,4 +1,4 @@
-# Next.js 核心知识点
+# Next.js 核心知识与路由架构
 
 ## 一、Next.js 14 App Router 基础
 
@@ -30,7 +30,7 @@ app/
 
 ```typescript
 // 服务端组件 (默认)
-export default function Page() {
+export default async function Page() {
   // 可以直接访问数据库
   const data = await db.query();
   return <div>{data}</div>;
@@ -45,7 +45,100 @@ export default function Page() {
 }
 ```
 
-## 二、API Routes (服务端)
+---
+
+## 二、完整架构：Next.js + FastAPI
+
+### 1. 架构概览
+
+```
+浏览器 (React)
+    ↓ fetch
+Next.js API Route (Node.js)
+    ↓ fetch
+FastAPI Backend (Python)
+    ↓ 返回
+Next.js API Route
+    ↓ 返回
+浏览器 (React)
+```
+
+### 2. 完整请求流程图
+
+```
+浏览器          主机 - Next.js (3000端口)              Docker 容器 - Python 后端 (8000端口)
+  │                      │                                        │
+  │                      │                                        │
+  ├─ 1. 访问前端 ────────►                                         │
+  │  localhost:3000      │                                        │
+  │                      │                                        │
+  │  ◄─────────────── Next.js 前端服务 ────────────────────────────┤
+  │     返回 HTML/CSS/JS  (监听 3000 端口)                          │
+  │                      │                                        │
+  │                      │                                        │
+  ├─ 2. 点击按钮 ────────►                                         │
+  │  触发 API 请求        │                                        │
+  │  fetch('/api/agent/execute')                                  │
+  │  (相对路径)           │                                        │
+  │                      │                                        │
+  │                 app/api/agent/execute/route.ts                │
+  │                 (Next.js API Route)                           │
+  │                      │                                        │
+  │                      ├─ 3. 转发到后端 ────────────────────────►
+  │                      │  fetch('http://localhost:8000/...')   │
+  │                      │                                        │
+  │                      │                                   uvicorn 后端服务
+  │                      │                                   (监听容器内 8000)
+  │                      │                                        │
+  │                      │                                   处理请求、AI 逻辑
+  │                      │                                        │
+  │                      │ ◄─ 4. 返回响应 ────────────────────────┤
+  │                      │   JSON 数据                            │
+  │                      │                                        │
+  │                 处理/转换数据                                 │
+  │                 (可选)                                        │
+  │                      │                                        │
+  │  ◄─ 5. 返回给前端 ────┤                                        │
+  │     最终响应          │                                        │
+  │                      │                                        │
+```
+
+### 3. 环境配置
+
+**Next.js 环境变量：**
+```bash
+# .env.local
+PYTHON_BACKEND_URL=http://localhost:8000
+```
+
+**FastAPI 配置：**
+```python
+# agent-backend/app/config.py
+class Settings(BaseSettings):
+    APP_NAME: str = "AI News Agent Backend"
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    DEBUG: bool = True
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
+```
+
+### 4. 启动命令
+
+```bash
+# 启动 Next.js (端口 3000)
+npm run dev
+
+# 启动 FastAPI (端口 8000)
+cd agent-backend
+uvicorn app.main:app --reload --port 8000
+
+# 或使用 Docker
+./agent-backend/docker/backend.sh start
+```
+
+---
+
+## 三、API Routes (服务端)
 
 ### 1. 基本结构
 
@@ -131,7 +224,9 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-## 三、环境变量
+---
+
+## 四、环境变量
 
 ### 1. 类型区分
 
@@ -141,6 +236,7 @@ export async function POST(request: NextRequest) {
 # 服务端变量（API Routes 可访问）
 DATABASE_URL=postgresql://...
 SECRET_KEY=abc123
+PYTHON_BACKEND_URL=http://localhost:8000
 
 # 客户端变量（浏览器可访问，必须以 NEXT_PUBLIC_ 开头）
 NEXT_PUBLIC_API_URL=https://api.example.com
@@ -165,7 +261,9 @@ export default function Page() {
 }
 ```
 
-## 四、数据获取
+---
+
+## 五、数据获取模式
 
 ### 1. 服务端组件 (推荐)
 
@@ -203,90 +301,31 @@ export default function BlogPage() {
 }
 ```
 
-### 3. API Route 作为中间层
+### 3. API Route 作为代理层
 
 ```typescript
-// app/api/posts/route.ts
-export async function GET() {
-  // 在服务端调用外部 API
-  const res = await fetch("https://external-api.com/posts", {
-    headers: {
-      "Authorization": `Bearer ${process.env.API_KEY}`  // 隐藏 API Key
-    }
-  });
+// app/api/agent/execute/route.ts
+export async function POST(request: NextRequest) {
+  const body = await request.json();
   
-  const data = await res.json();
+  // 转发到 Python 后端
+  const response = await fetch(
+    `${process.env.PYTHON_BACKEND_URL}/api/agent/execute`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }
+  );
+  
+  const data = await response.json();
   return NextResponse.json(data);
 }
-
-// app/blog/page.tsx (客户端)
-"use client";
-export default function BlogPage() {
-  const [posts, setPosts] = useState([]);
-  
-  useEffect(() => {
-    // 调用自己的 API Route，而不是直接调用外部 API
-    fetch("/api/posts")
-      .then(res => res.json())
-      .then(data => setPosts(data));
-  }, []);
-}
 ```
 
-## 五、中间件 (Middleware)
+---
 
-### 1. 基本用法
-
-```typescript
-// middleware.ts (项目根目录)
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
-export function middleware(request: NextRequest) {
-  // 1. 检查认证
-  const token = request.cookies.get("token");
-  
-  if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-  
-  // 2. 添加自定义请求头
-  const response = NextResponse.next();
-  response.headers.set("X-Custom-Header", "value");
-  
-  return response;
-}
-
-// 配置匹配路径
-export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*"]
-};
-```
-
-## 六、缓存策略
-
-### 1. Fetch 缓存
-
-```typescript
-// 强制不缓存
-fetch(url, { cache: "no-store" });
-
-// 缓存 60 秒
-fetch(url, { next: { revalidate: 60 } });
-
-// 永久缓存
-fetch(url, { cache: "force-cache" });
-```
-
-### 2. 路由段配置
-
-```typescript
-// app/blog/page.tsx
-export const dynamic = "force-dynamic";  // 总是动态渲染
-export const revalidate = 60;  // 每 60 秒重新验证
-```
-
-## 七、常见模式
+## 六、常见模式
 
 ### 1. API 代理模式
 
@@ -300,7 +339,7 @@ export async function POST(request: NextRequest) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.API_KEY}`
+      "Authorization": `Bearer ${process.env.API_KEY}`  // 隐藏 API Key
     },
     body: JSON.stringify(body)
   });
@@ -355,7 +394,66 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-## 八、性能优化
+---
+
+## 七、中间件 (Middleware)
+
+### 1. 基本用法
+
+```typescript
+// middleware.ts (项目根目录)
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function middleware(request: NextRequest) {
+  // 1. 检查认证
+  const token = request.cookies.get("token");
+  
+  if (!token && request.nextUrl.pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  
+  // 2. 添加自定义请求头
+  const response = NextResponse.next();
+  response.headers.set("X-Custom-Header", "value");
+  
+  return response;
+}
+
+// 配置匹配路径
+export const config = {
+  matcher: ["/dashboard/:path*", "/api/:path*"]
+};
+```
+
+---
+
+## 八、缓存策略
+
+### 1. Fetch 缓存
+
+```typescript
+// 强制不缓存
+fetch(url, { cache: "no-store" });
+
+// 缓存 60 秒
+fetch(url, { next: { revalidate: 60 } });
+
+// 永久缓存
+fetch(url, { cache: "force-cache" });
+```
+
+### 2. 路由段配置
+
+```typescript
+// app/blog/page.tsx
+export const dynamic = "force-dynamic";  // 总是动态渲染
+export const revalidate = 60;  // 每 60 秒重新验证
+```
+
+---
+
+## 九、性能优化
 
 ### 1. 图片优化
 
@@ -401,7 +499,184 @@ export default function Page() {
 }
 ```
 
-## 九、TypeScript 配置
+### 4. API 超时控制
+
+```typescript
+// Next.js 侧
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+const response = await fetch(url, {
+  signal: controller.signal
+});
+```
+
+---
+
+## 十、调试技巧
+
+### 1. 查看 Next.js API 日志
+
+```typescript
+// app/api/agent/execute/route.ts
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  console.log("📤 Forwarding to Python:", body);
+  
+  const response = await fetch(...);
+  const data = await response.json();
+  console.log("📥 Received from Python:", data);
+  
+  return NextResponse.json(data);
+}
+```
+
+### 2. 查看 FastAPI 日志
+
+```python
+# agent-backend/app/api/routes/agent.py
+@router.post("/execute")
+async def execute_command(request: AgentRequest):
+    print(f"📥 Received: {request.input}")
+    
+    response = await execute_intent(intent)
+    print(f"📤 Returning: {response.dict()}")
+    
+    return response
+```
+
+### 3. 测试 API 端点
+
+```bash
+# 测试 Next.js API
+curl -X POST http://localhost:3000/api/agent/execute \
+  -H "Content-Type: application/json" \
+  -d '{"input": "查询最新博客", "session_id": "test"}'
+
+# 测试 FastAPI 直接
+curl -X POST http://localhost:8000/api/agent/execute \
+  -H "Content-Type: application/json" \
+  -d '{"input": "查询最新博客", "session_id": "test"}'
+```
+
+### 4. 查看构建输出
+
+```bash
+npm run build
+# 查看哪些页面是静态的，哪些是动态的
+```
+
+### 5. 错误边界
+
+```typescript
+// app/error.tsx
+"use client";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
+    </div>
+  );
+}
+```
+
+---
+
+## 十一、错误处理
+
+### 1. 浏览器层错误
+
+```typescript
+// 网络错误、超时
+catch (error) {
+  return {
+    success: false,
+    error: "网络连接失败",
+    type: "error"
+  };
+}
+```
+
+### 2. Next.js 层错误
+
+```typescript
+// Python 后端不可用
+catch (error) {
+  return NextResponse.json(
+    { success: false, error: "服务暂时不可用" },
+    { status: 503 }
+  );
+}
+```
+
+### 3. FastAPI 层错误
+
+```python
+# 业务逻辑错误
+except InvalidCommandError as e:
+    return AgentResponse(
+        success=False,
+        error=str(e),
+        type="error",
+        plugin="system"
+    )
+```
+
+---
+
+## 十二、安全考虑
+
+### 1. 隐藏后端 URL
+
+✅ 通过 Next.js API 路由代理，后端 URL 不暴露给浏览器
+
+### 2. 添加认证
+
+```typescript
+// Next.js 侧
+const response = await fetch(backendUrl, {
+  headers: {
+    "X-Internal-Auth": process.env.INTERNAL_SECRET
+  }
+});
+```
+
+```python
+# FastAPI 侧
+@router.post("/execute")
+async def execute_command(
+    request: AgentRequest,
+    auth: str = Header(None, alias="X-Internal-Auth")
+):
+    if auth != settings.INTERNAL_SECRET:
+        raise HTTPException(status_code=401)
+```
+
+### 3. 限流
+
+```python
+# FastAPI 侧使用 slowapi
+from slowapi import Limiter
+
+limiter = Limiter(key_func=get_remote_address)
+
+@router.post("/execute")
+@limiter.limit("10/minute")
+async def execute_command(request: AgentRequest):
+    ...
+```
+
+---
+
+## 十三、TypeScript 配置
 
 ```json
 // tsconfig.json
@@ -429,7 +704,9 @@ export default function Page() {
 }
 ```
 
-## 十、部署配置
+---
+
+## 十四、部署配置
 
 ### 1. Vercel 部署
 
@@ -463,45 +740,4 @@ app.prepare().then(() => {
     handle(req, res, parsedUrl);
   }).listen(3000);
 });
-```
-
-## 十一、调试技巧
-
-### 1. 查看构建输出
-
-```bash
-npm run build
-# 查看哪些页面是静态的，哪些是动态的
-```
-
-### 2. 开发者工具
-
-```typescript
-// 在 API Route 中打印日志
-export async function POST(request: NextRequest) {
-  console.log("Request received:", await request.json());
-  // 日志会在终端显示，不在浏览器
-}
-```
-
-### 3. 错误边界
-
-```typescript
-// app/error.tsx
-"use client";
-
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
-  return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button onClick={() => reset()}>Try again</button>
-    </div>
-  );
-}
 ```

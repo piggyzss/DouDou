@@ -54,7 +54,7 @@ AI News Agent 完整设计文档
 │  └────────────────────────────────────────────────────────────┘ │
 │         ↓ 命令式                              ↓ 自然语言          │
 │  ┌──────────────────┐              ┌──────────────────────────┐ │
-│  │ _parse_command() │              │ _fallback_parse()        │ │
+│  │ _parse_command() │              │ _parse_keyword_matching()│ │
 │  │ 直接解析          │              │ 关键词匹配（基础版）      │ │
 │  │ 置信度: 1.0       │              │ 置信度: 0.6-0.7          │ │
 │  └──────────────────┘              │                          │ │
@@ -155,7 +155,7 @@ class IntentAnalyzer:
             return await self._parse_natural_language(user_input, context)
         else:
             # LLM 不可用时，尝试简单的关键词匹配
-            return self._fallback_parse(user_input)
+            return self._parse_keyword_matching(user_input)
     
     def _parse_command(self, command: str) -> Intent:
         """解析命令式输入"""
@@ -183,9 +183,9 @@ class IntentAnalyzer:
         # 这里先返回一个基本的 Intent，后续会实现完整的 LLM 集成
         
         # 临时实现：使用简单的关键词匹配
-        return self._fallback_parse(query)
+        return self._parse_keyword_matching(query)
     
-    def _fallback_parse(self, query: str) -> Intent:
+    def _parse_keyword_matching(self, query: str) -> Intent:
         """
         降级解析：当 LLM 不可用时使用简单的关键词匹配
         """
@@ -550,7 +550,7 @@ class LLMService:
 async def parse_input(user_input: str, context: dict) -> Intent
 def _parse_command(command: str) -> Intent
 async def _parse_natural_language(query: str, context: dict) -> Intent
-def _fallback_parse(query: str) -> Intent
+def _parse_keyword_matching(query: str) -> Intent
 ```
 
 **处理流程：**
