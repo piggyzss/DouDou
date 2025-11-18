@@ -4,6 +4,10 @@ FROM python:3.11-slim
 # 设置工作目录
 WORKDIR /app
 
+# 替换为国内镜像源（清华大学）
+RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list.d/debian.sources
+
 # 安装系统依赖和开发工具
 RUN apt-get update && apt-get install -y \
     gcc \

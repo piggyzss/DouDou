@@ -15,10 +15,10 @@ pytest==8.4.2
 pytest-cov==7.0.0
 pytest-asyncio==1.2.0
 
-# LLM 相关（可选，根据需要安装）
-# google-generativeai==0.3.2  # Google Gemini
-# openai==1.12.0              # OpenAI GPT
-# tiktoken==0.5.2             # Token 计数
+# LLM 相关
+google-generativeai==0.3.2  # Google Gemini
+tiktoken==0.5.2             # Token 计数
+# openai==1.12.0              # OpenAI GPT (可选)
 
 # RSS 相关（未来功能）
 # feedparser==6.0.11          # RSS 解析

@@ -12,6 +12,9 @@ services:
       - ..:/app:cached
       # 挂载日志目录
       - ../logs:/app/logs
+    env_file:
+      # 从 .env 文件加载环境变量
+      - ../.env
     environment:
       # 开发环境配置
       - DEBUG=true
@@ -23,6 +26,7 @@ services:
       # 可选：Redis连接（如果启用Redis服务）
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      # LLM 配置会从 .env 文件自动加载，这里不需要重复定义
     networks:
       - doudou-dev
     restart: unless-stopped
