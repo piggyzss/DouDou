@@ -15,19 +15,29 @@ class LLMServiceError(Exception):
     """LLM 服务错误"""
     pass
 
-# 抽象基类
-class BaseLLMService(ABC):
-    """LLM 服务基类"""
+
+# ========== 接口定义（接口隔离原则 ISP）==========
+
+class Analyzable(ABC):
+    """意图分析接口 - 只包含分析相关的方法"""
     
     @abstractmethod
     async def analyze_intent(self, query: str, context: Optional[Dict[str, Any]] = None) -> Intent:
         """分析用户意图"""
         pass
+
+
+class Generatable(ABC):
+    """文本生成接口 - 只包含生成相关的方法"""
     
     @abstractmethod
     async def generate_text(self, prompt: str, **kwargs) -> str:
         """生成文本"""
         pass
+
+
+class ServiceAvailability(ABC):
+    """服务可用性接口 - 只包含可用性检查"""
     
     @abstractmethod
     def is_available(self) -> bool:
@@ -35,9 +45,36 @@ class BaseLLMService(ABC):
         pass
 
 
-# Gemini API 集成
+# ========== 组合接口（方便使用）==========
+
+class BaseLLMService(Analyzable, Generatable, ServiceAvailability):
+    """
+    LLM 服务基类 - 组合多个小接口
+    
+    设计说明：
+    - 这是一个便利类，组合了三个小接口
+    - 实际使用时应该依赖具体的小接口，而不是这个大接口
+    - 例如：IntentAnalyzer 只依赖 Analyzable
+    
+    符合原则：
+    - ISP: 使用者可以只依赖需要的小接口
+    - SRP: 实现类的职责是"封装 LLM API"
+    """
+    pass
+
+
+# ========== Gemini API 集成 ==========
 class GeminiLLMService(BaseLLMService):
-    """Google Gemini LLM 服务"""
+    """
+    Google Gemini LLM 服务
+    
+    实现了三个接口：
+    - Analyzable: 意图分析
+    - Generatable: 文本生成
+    - ServiceAvailability: 可用性检查
+    
+    单一职责：封装 Gemini API 的调用
+    """
     
     def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
         self.api_key = api_key

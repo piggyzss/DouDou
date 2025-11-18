@@ -1,18 +1,34 @@
 """
 Intent Analyzer - 意图分析器
 将所有输入（命令式/自然语言）转换为统一的 Intent 模型
+
+设计原则：
+- 依赖倒置原则（DIP）：依赖 Analyzable 接口，而非具体实现
+- 接口隔离原则（ISP）：只依赖需要的 analyze_intent 方法
 """
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, TYPE_CHECKING
 from ..models.intent import Intent, InvalidCommandError
 from ..core.plugin_manager import PluginManager
 
+# 类型提示：只依赖 Analyzable 接口
+if TYPE_CHECKING:
+    from ..services.llm_service import Analyzable
+
 
 class IntentAnalyzer:
-    """意图分析器 - 将所有输入转换为 Intent"""
+    """
+    意图分析器 - 将所有输入转换为 Intent
     
-    def __init__(self, plugin_manager: PluginManager, llm_service=None):
+    依赖注入：
+    - plugin_manager: 插件管理器
+    - llm_service: 只依赖 Analyzable 接口（不是 BaseLLMService）
+    
+    符合 ISP：只依赖需要的 analyze_intent 方法
+    """
+    
+    def __init__(self, plugin_manager: PluginManager, llm_service: Optional['Analyzable'] = None):
         self.plugin_manager = plugin_manager
-        self.llm_service = llm_service
+        self.llm_service = llm_service  # 类型是 Analyzable，不是 BaseLLMService
     
     async def parse_input(self, user_input: str, context: Optional[Dict[str, Any]] = None) -> Intent:
         """
