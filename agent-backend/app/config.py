@@ -58,9 +58,10 @@ class Settings(BaseSettings):
     # LLM 提供商选择
     LLM_PROVIDER: str = "none"  # 选项: "google" | "openai" | "none"
     
-    # Gemini 模型配置（稳定配置）
-    GEMINI_MODEL_FLASH: str = "gemini-1.5-flash"
-    GEMINI_MODEL_PRO: str = "gemini-1.5-pro"
+    # Gemini 模型配置
+    # 使用 Gemini 2.5 系列（1.5 系列已淘汰）
+    GEMINI_MODEL_FLASH: str = "gemini-2.5-flash"
+    GEMINI_MODEL_PRO: str = "gemini-2.5-pro"
     
     # OpenAI 模型配置（稳定配置）
     OPENAI_MODEL: str = "gpt-3.5-turbo"

@@ -9,6 +9,8 @@ Intent Analyzer - 意图分析器
 from typing import Dict, Any, Optional, TYPE_CHECKING
 from ..models.intent import Intent, InvalidCommandError
 from ..core.plugin_manager import PluginManager
+import hashlib
+import time
 
 # 类型提示：只依赖 Analyzable 接口
 if TYPE_CHECKING:
@@ -29,6 +31,9 @@ class IntentAnalyzer:
     def __init__(self, plugin_manager: PluginManager, llm_service: Optional['Analyzable'] = None):
         self.plugin_manager = plugin_manager
         self.llm_service = llm_service  # 类型是 Analyzable，不是 BaseLLMService
+        # 简单的内存缓存，避免重复调用 LLM
+        self._cache: Dict[str, tuple[Intent, float]] = {}
+        self._cache_ttl = 300  # 5分钟缓存
     
     async def parse_input(self, user_input: str, context: Optional[Dict[str, Any]] = None) -> Intent:
         """
@@ -122,9 +127,10 @@ class IntentAnalyzer:
         使用 LLM 解析自然语言
         
         实现策略：
-        1. 优先使用 LLM 服务进行智能分析
-        2. LLM 失败时降级到关键词匹配
-        3. 记录降级事件用于监控
+        1. 检查缓存，避免重复调用
+        2. 优先使用 LLM 服务进行智能分析
+        3. LLM 失败时降级到关键词匹配
+        4. 记录降级事件用于监控
         
         Args:
             query: 用户的自然语言输入
@@ -133,30 +139,48 @@ class IntentAnalyzer:
         Returns:
             Intent: 解析后的意图对象
         """
-        # 检查 LLM 服务是否可用
+        from loguru import logger
+        
+        # 1. 检查缓存
+        cache_key = hashlib.md5(query.encode()).hexdigest()
+        if cache_key in self._cache:
+            cached_intent, cached_time = self._cache[cache_key]
+            if time.time() - cached_time < self._cache_ttl:
+                logger.info(f"Using cached intent for: {query[:50]}...")
+                return cached_intent
+            else:
+                # 缓存过期，删除
+                del self._cache[cache_key]
+        
+        # 2. 检查 LLM 服务是否可用
         if not self.llm_service or not self.llm_service.is_available():
-            from loguru import logger
             logger.warning("LLM service not available, falling back to keyword matching")
             return self._parse_keyword_matching(query)
         
         try:
-            # 使用 LLM 分析意图
-            from loguru import logger
+            # 3. 使用 LLM 分析意图
             logger.info(f"Analyzing intent with LLM: {query[:50]}...")
             
             intent = await self.llm_service.analyze_intent(query, context)
             
-            # 验证命令有效性
+            # 4. 验证命令有效性
             if not self.plugin_manager.is_command_valid(intent.command):
                 logger.warning(f"LLM returned invalid command: {intent.command}, falling back")
                 return self._parse_keyword_matching(query)
+            
+            # 5. 缓存结果
+            self._cache[cache_key] = (intent, time.time())
+            # 限制缓存大小
+            if len(self._cache) > 100:
+                # 删除最旧的条目
+                oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k][1])
+                del self._cache[oldest_key]
             
             logger.info(f"LLM analysis successful: {intent.command} (confidence: {intent.confidence})")
             return intent
         
         except Exception as e:
-            # LLM 调用失败，降级到关键词匹配
-            from loguru import logger
+            # 6. LLM 调用失败，降级到关键词匹配
             logger.error(f"LLM analysis failed: {e}, falling back to keyword matching")
             return self._parse_keyword_matching(query)
     

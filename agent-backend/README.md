@@ -2,28 +2,6 @@
 
 基于 FastAPI 的 AI 新闻 Agent 后端服务，采用插件化架构设计，支持命令式和自然语言输入。
 
-## 🎉 最新进展
-
-### ✅ 阶段 3 已完成：端到端测试和前后端集成
-
-**核心功能：**
-- 🚀 完整的前后端数据流（Next.js → Python → 插件）
-- 🧠 LLM 集成到 API 路由
-- 🔄 意图分析 → 执行的完整流程
-- 🧪 端到端测试和集成测试
-- ✅ 错误处理和降级机制
-
-**快速验证：**
-```bash
-cd agent-backend
-python scripts/verify_stage3.py
-```
-
-**查看文档：**
-- [STAGE3_SUMMARY.md](STAGE3_SUMMARY.md) - 阶段 3 总结
-- [STAGE2_SUMMARY.md](STAGE2_SUMMARY.md) - 阶段 2 总结
-- [STAGE1_SUMMARY.md](STAGE1_SUMMARY.md) - 阶段 1 总结
-
 ---
 
 ## 📋 目录
@@ -118,37 +96,6 @@ agent-backend/
 ├── requirements.txt            # Python依赖包列表
 └── README.md                   # 项目文档
 ```
-
-## 🧠 LLM 集成
-
-**当前状态：阶段 1 已完成** ✅
-
-已实现 Gemini 1.5 Flash 集成，支持自然语言意图分析。
-
-### 快速设置
-
-**方式 1: Docker（推荐）**
-```bash
-cd agent-backend
-bash docker/setup_llm_docker.sh
-```
-
-**方式 2: 本地虚拟环境**
-```bash
-cd agent-backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-# 配置 .env 文件
-python scripts/verify_stage1.py
-```
-
-**文档：**
-- [QUICKSTART_LLM.md](QUICKSTART_LLM.md) - 快速开始（包含 Docker 和本地方式）
-- [STAGE1_SUMMARY.md](STAGE1_SUMMARY.md) - 技术细节
-- [DESIGN.md](DESIGN.md) - 完整设计
-
----
 
 ## 🚀 快速开始
 
@@ -617,3 +564,31 @@ Google Gemini 1.5 Pro: $1.25/1M tokens (输入) + $5.00/1M tokens (输出)
 | **免费额度** | ❌ 无 | ❌ 无 | ✅ 1500次/天 | ✅ 50次/天 | ❌ 无 |
 | **SDK 成熟度** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
 
+
+
+---
+
+## 🔧 故障排除
+
+1. **LLM 服务不可用**
+   - 检查 `GOOGLE_API_KEY` 环境变量
+   - 确认 `LLM_PROVIDER=google` 在 `.env` 文件中
+   - 运行 `python scripts/test_llm_setup.py` 测试连接
+   - 确认使用 Gemini 2.5 系列模型（1.5 已淘汰）
+
+2. **Docker 容器无法启动**
+   - 检查端口占用：`lsof -i :8000`
+   - 查看日志：`docker-compose -f docker/docker-compose.dev.yml logs`
+   - 重新构建：`docker-compose -f docker/docker-compose.dev.yml build --no-cache`
+
+3. **依赖安装失败**
+   - 升级 pip：`pip install --upgrade pip`
+   - 清除缓存：`pip cache purge`
+   - 使用国内镜像：`pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
+
+---
+
+## 📚 相关文档
+
+- [GUIDE.md](./GUIDE.md) - 完整开发指南
+- [DESIGN.md](./DESIGN.md) - 架构设计文档

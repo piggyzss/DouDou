@@ -233,6 +233,7 @@ cd agent-backend/docker
 # 或仅查看后端状态
 cd agent-backend/docker
 ./backend.sh status
+
 ```
 
 ### 场景 4: 停止服务
@@ -250,6 +251,21 @@ cd agent-backend/docker
 cd agent-backend/docker
 ./backend.sh build
 ./backend.sh start
+```
+
+### 场景 6: 重启后端服务
+
+#### 使用重启脚本
+```bash
+cd agent-backend/docker
+./restart-backend.sh
+```
+
+#### 手动重启方法
+
+```bash
+cd agent-backend/docker
+docker-compose -f docker-compose.dev.yml restart
 ```
 
 ## 环境变量配置

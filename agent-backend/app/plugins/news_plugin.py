@@ -1,16 +1,20 @@
 from typing import List
 from ..models.base import BasePlugin, AgentCommand, AgentRequest, AgentResponse
 from ..services.news_collector import NewsCollectorService
+from ..services.llm_service import get_llm_service
 
 
 class NewsPlugin(BasePlugin):
     """AI资讯插件"""
 
-    def __init__(self):
+    def __init__(self, use_real_data: bool = True):
         super().__init__(
             name="AI资讯", plugin_id="news", description="获取最新的AI和科技资讯"
         )
-        self.news_service = NewsCollectorService()
+        # 默认使用真实数据，可以通过参数控制
+        self.news_service = NewsCollectorService(use_real_data=use_real_data)
+        # 获取 LLM 服务用于深度分析
+        self.llm_service = get_llm_service()
 
     def get_commands(self) -> List[AgentCommand]:
         return [
@@ -157,30 +161,41 @@ class NewsPlugin(BasePlugin):
         )
 
     async def _handle_deepdive(self, params: dict) -> AgentResponse:
-        """处理深度分析命令"""
+        """
+        处理深度分析命令
+        使用 LLM 对指定主题进行深度分析
+        """
         topic = params.get("topic", "AI developments")
 
-        # 这里可以集成LLM进行深度分析
         response_text = "[INFO] Initializing deep analysis mode...\n"
-        response_text += f"[ANALYSIS] Processing recent {topic}...\n"
-        response_text += "[INSIGHTS] Key trends identified:\n\n"
-        response_text += (
-            "• Large Language Models continue to dominate with recent releases\n"
-        )
-        response_text += (
-            "• Multimodal AI gaining significant traction across major tech companies\n"
-        )
-        response_text += (
-            "• Open-source models closing performance gap with proprietary solutions\n"
-        )
-        response_text += (
-            "• AI Safety becoming increasingly important in enterprise adoption\n"
-        )
-        response_text += "• Robotics integration with LLMs showing promising real-world applications\n\n"
-        response_text += "[RECOMMENDATION] Focus areas for next 30 days:\n"
-        response_text += "1. Monitor latest model performance benchmarks\n"
-        response_text += "2. Track open-source LLM developments\n"
-        response_text += "3. Watch for regulatory updates on AI safety"
+        response_text += f"[ANALYSIS] Processing recent developments in {topic}...\n\n"
+
+        try:
+            # 1. 搜索相关新闻
+            related_news = await self.news_service.search_news(topic, limit=10)
+            
+            if not related_news:
+                response_text += "[WARNING] No recent news found for this topic.\n"
+                response_text += "Using general AI trends analysis...\n\n"
+            
+            # 2. 准备新闻摘要给 LLM
+            news_summary = self._prepare_news_summary(related_news, topic)
+            
+            # 3. 使用 LLM 进行深度分析
+            if self.llm_service and self.llm_service.is_available():
+                response_text += "[LLM] Generating deep analysis...\n\n"
+                
+                analysis = await self._generate_llm_analysis(topic, news_summary)
+                response_text += analysis
+            else:
+                # LLM 不可用时的降级方案
+                response_text += "[FALLBACK] LLM service not available, using basic analysis...\n\n"
+                response_text += self._generate_basic_analysis(related_news, topic)
+        
+        except Exception as e:
+            response_text += f"[ERROR] Analysis failed: {str(e)}\n"
+            response_text += "Using fallback analysis...\n\n"
+            response_text += self._generate_basic_analysis([], topic)
 
         return AgentResponse(
             success=True,
@@ -189,3 +204,88 @@ class NewsPlugin(BasePlugin):
             plugin=self.id,
             command="/deepdive",
         )
+    
+    def _prepare_news_summary(self, news_items: list, topic: str) -> str:
+        """准备新闻摘要供 LLM 分析"""
+        if not news_items:
+            return f"No recent news found about {topic}."
+        
+        summary = f"Recent news about {topic}:\n\n"
+        for i, item in enumerate(news_items[:5], 1):  # 只取前5条
+            summary += f"{i}. {item.title}\n"
+            summary += f"   Source: {item.source} | {item.publish_time}\n"
+            summary += f"   Summary: {item.summary[:200]}...\n\n"
+        
+        return summary
+    
+    async def _generate_llm_analysis(self, topic: str, news_summary: str) -> str:
+        """使用 LLM 生成深度分析"""
+        prompt = f"""You are an AI technology analyst. Analyze the following recent news about "{topic}" and provide a comprehensive deep-dive analysis.
+
+{news_summary}
+
+Please provide:
+1. Key Trends: Identify 3-5 major trends or patterns
+2. Technical Insights: Explain the technical significance
+3. Industry Impact: Analyze the impact on the AI industry
+4. Future Outlook: Predict developments in the next 30-60 days
+5. Recommendations: Suggest 3 focus areas for monitoring
+
+Format your response in a clear, structured way with bullet points and sections.
+Keep it concise but insightful (around 300-400 words).
+"""
+        
+        try:
+            analysis = await self.llm_service.generate_text(
+                prompt,
+                temperature=0.7,
+                max_tokens=800
+            )
+            
+            return f"┌─ Deep Analysis: {topic} ────────────────────────────────┐\n\n{analysis}\n\n└─────────────────────────────────────────────────────────┘"
+        
+        except Exception as e:
+            return f"[ERROR] LLM analysis failed: {str(e)}\nFalling back to basic analysis..."
+    
+    def _generate_basic_analysis(self, news_items: list, topic: str) -> str:
+        """生成基础分析（降级方案）"""
+        analysis = f"┌─ Basic Analysis: {topic} ───────────────────────────────┐\n\n"
+        
+        if news_items:
+            # 统计来源
+            sources = {}
+            for item in news_items:
+                sources[item.source] = sources.get(item.source, 0) + 1
+            
+            # 统计标签
+            tags = {}
+            for item in news_items:
+                for tag in item.tags:
+                    tags[tag] = tags.get(tag, 0) + 1
+            
+            analysis += "[INSIGHTS] Key findings:\n\n"
+            analysis += f"• Found {len(news_items)} recent articles about {topic}\n"
+            analysis += f"• Top sources: {', '.join(list(sources.keys())[:3])}\n"
+            
+            if tags:
+                top_tags = sorted(tags.items(), key=lambda x: x[1], reverse=True)[:5]
+                analysis += f"• Related topics: {', '.join([tag for tag, _ in top_tags])}\n"
+            
+            analysis += f"\n[RECENT DEVELOPMENTS]\n\n"
+            for i, item in enumerate(news_items[:3], 1):
+                analysis += f"{i}. {item.title}\n"
+                analysis += f"   {item.summary[:150]}...\n\n"
+        else:
+            analysis += "[INSIGHTS] General AI trends:\n\n"
+            analysis += "• Large Language Models continue to evolve rapidly\n"
+            analysis += "• Multimodal AI gaining significant traction\n"
+            analysis += "• Open-source models closing the performance gap\n"
+            analysis += "• AI Safety becoming increasingly important\n"
+        
+        analysis += "\n[RECOMMENDATION] Focus areas:\n"
+        analysis += "1. Monitor latest model releases and benchmarks\n"
+        analysis += "2. Track open-source developments\n"
+        analysis += "3. Watch for regulatory updates\n\n"
+        analysis += "└─────────────────────────────────────────────────────────┘"
+        
+        return analysis
