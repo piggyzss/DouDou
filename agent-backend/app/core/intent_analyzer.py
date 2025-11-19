@@ -118,12 +118,47 @@ class IntentAnalyzer:
         return params
     
     async def _parse_natural_language(self, query: str, context: Dict[str, Any]) -> Intent:
-        """使用 LLM 解析自然语言"""
-        # TODO: 实现 LLM 调用
-        # 这里先返回一个基本的 Intent，后续会实现完整的 LLM 集成
+        """
+        使用 LLM 解析自然语言
         
-        # 临时实现：使用简单的关键词匹配
-        return self._parse_keyword_matching(query)
+        实现策略：
+        1. 优先使用 LLM 服务进行智能分析
+        2. LLM 失败时降级到关键词匹配
+        3. 记录降级事件用于监控
+        
+        Args:
+            query: 用户的自然语言输入
+            context: 上下文信息（会话历史等）
+        
+        Returns:
+            Intent: 解析后的意图对象
+        """
+        # 检查 LLM 服务是否可用
+        if not self.llm_service or not self.llm_service.is_available():
+            from loguru import logger
+            logger.warning("LLM service not available, falling back to keyword matching")
+            return self._parse_keyword_matching(query)
+        
+        try:
+            # 使用 LLM 分析意图
+            from loguru import logger
+            logger.info(f"Analyzing intent with LLM: {query[:50]}...")
+            
+            intent = await self.llm_service.analyze_intent(query, context)
+            
+            # 验证命令有效性
+            if not self.plugin_manager.is_command_valid(intent.command):
+                logger.warning(f"LLM returned invalid command: {intent.command}, falling back")
+                return self._parse_keyword_matching(query)
+            
+            logger.info(f"LLM analysis successful: {intent.command} (confidence: {intent.confidence})")
+            return intent
+        
+        except Exception as e:
+            # LLM 调用失败，降级到关键词匹配
+            from loguru import logger
+            logger.error(f"LLM analysis failed: {e}, falling back to keyword matching")
+            return self._parse_keyword_matching(query)
     
     def _parse_keyword_matching(self, query: str) -> Intent:
         """

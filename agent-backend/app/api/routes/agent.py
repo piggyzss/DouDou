@@ -3,11 +3,13 @@ from ...models.base import AgentRequest, AgentResponse
 from ...models.intent import Intent, InvalidCommandError
 from ...core.plugin_manager import plugin_manager
 from ...core.intent_analyzer import IntentAnalyzer
+from ...services.llm_service import get_llm_service
 
 router = APIRouter()
 
-# 初始化 Intent Analyzer
-intent_analyzer = IntentAnalyzer(plugin_manager=plugin_manager, llm_service=None)
+# 初始化 Intent Analyzer（集成 LLM Service）
+llm_service = get_llm_service()
+intent_analyzer = IntentAnalyzer(plugin_manager=plugin_manager, llm_service=llm_service)
 
 
 @router.post("/execute", response_model=AgentResponse)
@@ -21,7 +23,7 @@ async def execute_command(request: AgentRequest):
     """
     try:
         # 兼容旧版 API（使用 command 字段）
-        user_input = request.input or request.command
+        user_input = request.input
         
         if not user_input:
             raise HTTPException(status_code=400, detail="Missing input or command field")

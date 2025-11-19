@@ -2,6 +2,30 @@
 
 基于 FastAPI 的 AI 新闻 Agent 后端服务，采用插件化架构设计，支持命令式和自然语言输入。
 
+## 🎉 最新进展
+
+### ✅ 阶段 3 已完成：端到端测试和前后端集成
+
+**核心功能：**
+- 🚀 完整的前后端数据流（Next.js → Python → 插件）
+- 🧠 LLM 集成到 API 路由
+- 🔄 意图分析 → 执行的完整流程
+- 🧪 端到端测试和集成测试
+- ✅ 错误处理和降级机制
+
+**快速验证：**
+```bash
+cd agent-backend
+python scripts/verify_stage3.py
+```
+
+**查看文档：**
+- [STAGE3_SUMMARY.md](STAGE3_SUMMARY.md) - 阶段 3 总结
+- [STAGE2_SUMMARY.md](STAGE2_SUMMARY.md) - 阶段 2 总结
+- [STAGE1_SUMMARY.md](STAGE1_SUMMARY.md) - 阶段 1 总结
+
+---
+
 ## 📋 目录
 
 - [整体架构和工作流程](#-整体架构和工作流程)
