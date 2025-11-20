@@ -30,14 +30,22 @@ class Settings(BaseSettings):
     LOG_FILE: str = "logs/agent.log"
 
     # ========== CORS 配置 ==========
+    ALLOWED_ORIGINS_ENV: str = ""  # 从环境变量读取，逗号分隔
+    
     @property
     def ALLOWED_ORIGINS(self) -> List[str]:
         """允许的跨域来源"""
+        # 如果环境变量中配置了 ALLOWED_ORIGINS_ENV，优先使用
+        if self.ALLOWED_ORIGINS_ENV:
+            return [origin.strip() for origin in self.ALLOWED_ORIGINS_ENV.split(",")]
+        
+        # 默认配置
         return [
             "http://localhost:3000",
+            "http://localhost:3001",
             "http://127.0.0.1:3000",
             "http://host.docker.internal:3000",
-            "https://yourdomain.com",  # 生产环境需要替换
+            "https://doudoulook.cn",  # 生产环境域名
         ]
 
     # ========== Redis 配置（外部服务）==========
