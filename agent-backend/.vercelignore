@@ -1,10 +1,33 @@
-# 忽略Python相关文件，强制使用Docker
-*.py
-requirements.txt
+# 开发和测试文件
 venv/
 __pycache__/
 .pytest_cache/
+.coverage
+*.pyc
+*.pyo
+*.pyd
+.Python
 
-# 保留Docker相关文件
-!Dockerfile
-!vercel.json
+# Docker 相关（不需要部署到 Vercel）
+docker/
+Dockerfile
+docker-compose*.yml
+
+# 文档和脚本
+docs/
+scripts/
+tests/
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日志
+logs/
+*.log
+
+# Next.js 相关（如果存在）
+.next/
+out/
