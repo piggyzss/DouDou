@@ -1,42 +1,73 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings
-from app.api.routes import agent
+import sys
+import traceback
 
 # 创建FastAPI应用
 app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
+    title="AI News Agent",
+    version="1.0.0",
     description="AI News Agent Backend Service",
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
 )
 
-# 配置CORS
+# 配置CORS - 使用更宽松的配置以确保可以访问
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=["*"],  # 临时允许所有来源，用于调试
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
-# 注册路由
-app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
+# 尝试导入和注册路由
+try:
+    from app.config import settings
+    from app.api.routes import agent
+    
+    # 注册路由
+    app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
+    
+    routes_loaded = True
+    routes_error = None
+except Exception as e:
+    routes_loaded = False
+    routes_error = str(e)
+    traceback.print_exc()
 
 
 @app.get("/")
 async def root():
     """根路径"""
     return {
-        "name": settings.APP_NAME,
-        "version": settings.APP_VERSION,
+        "name": "AI News Agent",
+        "version": "1.0.0",
         "status": "running",
-        "docs": "/docs" if settings.DEBUG else "disabled",
+        "routes_loaded": routes_loaded,
+        "routes_error": routes_error if not routes_loaded else None,
+        "python_version": sys.version,
     }
 
 
 @app.get("/health")
 async def health():
     """健康检查"""
-    return {"status": "healthy", "service": "agent-backend"}
+    return {
+        "status": "healthy",
+        "service": "agent-backend",
+        "routes_loaded": routes_loaded,
+    }
+
+
+@app.get("/debug")
+async def debug():
+    """调试信息"""
+    return {
+        "routes_loaded": routes_loaded,
+        "routes_error": routes_error,
+        "python_version": sys.version,
+        "sys_path": sys.path[:5],  # 只显示前5个路径
+        "available_routes": [
+            {"path": route.path, "methods": route.methods}
+            for route in app.routes
+        ],
+    }

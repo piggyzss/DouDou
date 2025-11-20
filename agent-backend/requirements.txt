@@ -1,29 +1,31 @@
+# 核心框架
 fastapi==0.104.1
-uvicorn[standard]==0.24.0
 pydantic==2.5.0
 pydantic-settings==2.1.0
-requests==2.31.0
-beautifulsoup4==4.12.2
-python-multipart==0.0.6
-python-jose[cryptography]==3.3.0
 python-dotenv==1.0.0
-redis==5.0.1
-aioredis==2.0.1
-httpx==0.25.2
-loguru==0.7.2
-pytest==8.4.2
-pytest-cov==7.0.0
-pytest-asyncio==1.2.0
 
-# LLM 相关
-google-generativeai>=0.8.3  # Google Gemini (最新版本，修复 API v1 兼容性)
-tiktoken==0.5.2             # Token 计数
-# openai==1.12.0              # OpenAI GPT (可选)
+# HTTP 客户端
+requests==2.31.0
+httpx==0.25.2
+
+# 网页解析
+beautifulsoup4==4.12.2
 
 # RSS 和新闻抓取
-feedparser==6.0.11          # RSS 解析
-aiohttp==3.9.1              # 异步 HTTP
-python-dateutil==2.8.2      # 日期解析
+feedparser==6.0.11
+aiohttp==3.9.1
+python-dateutil==2.8.2
 
-# 工具库（未来功能）
-# tenacity==8.2.3             # 重试机制
+# LLM 相关（可选）
+google-generativeai>=0.8.3
+
+# 日志
+loguru==0.7.2
+
+# 注意：移除了以下可能导致部署问题的依赖
+# - aioredis (已弃用)
+# - redis (Vercel 环境中不需要)
+# - uvicorn (Vercel 自动处理)
+# - python-jose (不需要认证)
+# - python-multipart (不需要文件上传)
+# - pytest 相关 (只在开发环境需要)
