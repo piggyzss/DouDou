@@ -70,7 +70,8 @@ class NewsCollectorService:
         """初始化 Mock 数据（降级方案）"""
         self.mock_news = get_mock_news()
         self.mock_trending = get_mock_trending()
-
+    
+    # 单个 RSS 源的读取
     async def _fetch_rss_feed(self, source: str, url: str) -> List[NewsItem]:
         """
         获取单个 RSS feed
@@ -83,7 +84,7 @@ class NewsCollectorService:
             新闻列表
         """
         try:
-            # 使用 aiohttp 异步获取
+            # 1. 使用 aiohttp发送 HTTP 请求获取 RSS XML
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                     if response.status != 200:
@@ -92,9 +93,10 @@ class NewsCollectorService:
                     
                     content = await response.text()
             
-            # 解析 RSS
+            # 2. 解析 RSS
             feed = feedparser.parse(content)
             
+            # 3. 遍历每条新闻
             news_items = []
             for entry in feed.entries[:20]:  # 每个源最多取 20 条
                 try:
@@ -144,22 +146,24 @@ class NewsCollectorService:
         Returns:
             所有新闻列表
         """
-        # 检查缓存
+        # 1. 检查缓存（15 分钟内有效）
         if self._cache_time and datetime.now() - self._cache_time < self._cache_duration:
             logger.info(f"Using cached news ({len(self._news_cache)} items)")
             return self._news_cache
         
+        # 2. 缓存过期，重新获取
         logger.info("Fetching news from all RSS feeds...")
         
-        # 并发获取所有 RSS feeds
+        # 3. 并发获取所有 RSS feeds
         tasks = [
             self._fetch_rss_feed(source, url)
             for source, url in self.rss_feeds.items()
         ]
         
+        # 4. 等待所有请求完成
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # 合并所有新闻
+        # 5. 合并所有新闻
         all_news = []
         for result in results:
             if isinstance(result, list):
@@ -170,7 +174,7 @@ class NewsCollectorService:
         # 按时间排序
         all_news.sort(key=lambda x: x.publish_time, reverse=True)
         
-        # 更新缓存
+        # 6. 保存到缓存
         self._news_cache = all_news
         self._cache_time = datetime.now()
         
