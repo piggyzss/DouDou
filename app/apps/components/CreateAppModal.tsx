@@ -12,6 +12,8 @@ interface AppData {
   type: "app" | "miniprogram" | "game" | "plugin";
   experienceMethod: "download" | "qrcode";
   downloadUrl: string;
+  coverImage: File | null;
+  experienceVideo: File | null;
   qrCodeImage: File | null;
   status: "development" | "beta" | "online";
   githubUrl?: string;
@@ -36,40 +38,40 @@ export default function CreateAppModal({
   const [experienceMethod, setExperienceMethod] = useState("download");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
-  // const [coverImage, setCoverImage] = useState<File | null>(null);
-  // const [experienceVideo, setExperienceVideo] = useState<File | null>(null);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [experienceVideo, setExperienceVideo] = useState<File | null>(null);
   const [qrCodeImage, setQrCodeImage] = useState<File | null>(null);
-  // const [coverPreview, setCoverPreview] = useState<string>("");
-  // const [videoPreview, setVideoPreview] = useState<string>("");
+  const [coverPreview, setCoverPreview] = useState<string>("");
+  const [videoPreview, setVideoPreview] = useState<string>("");
   const [qrPreview, setQrPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
-  // const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setCoverImage(file);
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       setCoverPreview(e.target?.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  // const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setExperienceVideo(file);
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       setVideoPreview(e.target?.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setExperienceVideo(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setVideoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleQrCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,6 +101,8 @@ export default function CreateAppModal({
         type: type as "app" | "miniprogram" | "game" | "plugin",
         experienceMethod: experienceMethod as "download" | "qrcode",
         downloadUrl: downloadUrl.trim(),
+        coverImage,
+        experienceVideo,
         qrCodeImage,
         status: status as "development" | "beta" | "online",
         githubUrl: githubUrl.trim() || undefined,
@@ -167,6 +171,78 @@ export default function CreateAppModal({
               placeholder="请输入App简介"
               disabled={isSubmitting}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2 font-body">
+              封面图片 <span className="text-gray-400 text-xs">(可选)</span>
+            </label>
+            <div className="relative group">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverImageChange}
+                className="hidden"
+                id="coverImageUpload"
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor="coverImageUpload"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {coverPreview ? (
+                  <Image
+                    src={coverPreview}
+                    alt="封面预览"
+                    width={200}
+                    height={100}
+                    className="max-h-24 object-contain"
+                  />
+                ) : (
+                  <>
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <span className="text-xs font-blog text-gray-500">
+                      点击上传封面图片
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2 font-body">
+              体验视频 <span className="text-gray-400 text-xs">(可选)</span>
+            </label>
+            <div className="relative group">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoChange}
+                className="hidden"
+                id="videoUpload"
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor="videoUpload"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {videoPreview ? (
+                  <video
+                    src={videoPreview}
+                    className="max-h-24 object-contain"
+                    controls
+                  />
+                ) : (
+                  <>
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <span className="text-xs font-blog text-gray-500">
+                      点击上传体验视频
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
           </div>
 
           <div>

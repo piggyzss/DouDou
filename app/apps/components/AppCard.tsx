@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import {
-  Copy,
   Download,
   Edit,
+  ExternalLink,
   Github,
   Play,
   QrCode,
@@ -37,8 +37,16 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [dauTrend, setDauTrend] = useState<number[]>([]);
   const [buttonWidth, setButtonWidth] = useState(0);
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // URL 截断函数
+  const truncateUrl = (url: string, maxLength: number = 50) => {
+    if (url.length <= maxLength) return url;
+    const start = url.substring(0, maxLength - 10);
+    const end = url.substring(url.length - 7);
+    return `${start}...${end}`;
+  };
 
   // 获取DAU趋势数据
   useEffect(() => {
@@ -86,22 +94,26 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
     };
   }, []);
 
+  // 检测深色模式
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
 
-  // 处理复制GitHub地址
-  const handleCopyGithubUrl = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (app.github_url) {
-      try {
-        await navigator.clipboard.writeText(app.github_url);
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      } catch (error) {
-        // 复制失败，静默处理
-      }
-    }
-  };
+    checkDarkMode();
+
+    // 监听主题变化
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+
+
 
   // DAU趋势图表配置
   const getDauChartOptions = () => {
@@ -166,6 +178,17 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
       }
     }
 
+    // 深色模式配色
+    const labelColor = isDarkMode ? "#9CA3AF" : "#6B7280";
+    const gridLineColor = isDarkMode ? "#374151" : "#F3F4F6";
+    const plotBandColor = isDarkMode ? "#1F2937" : "#f1f8fc";
+    const lineColor = isDarkMode ? "#60A5FA" : "#006aff";
+    const tooltipBg = isDarkMode ? "#1F2937" : "#ffffff";
+    const tooltipBorder = isDarkMode ? "#374151" : "#e5e7eb";
+    const tooltipTextColor = isDarkMode ? "#F3F4F6" : "#374151";
+    const tooltipTitleColor = isDarkMode ? "#F9FAFB" : "#111827";
+    const tooltipValueColor = isDarkMode ? "#60A5FA" : "#006aff";
+
     return {
       chart: {
         type: "line",
@@ -184,7 +207,7 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
         labels: {
           style: {
             fontSize: "10px",
-            color: "#6B7280",
+            color: labelColor,
           },
         },
         lineWidth: 0,
@@ -202,28 +225,28 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
           enabled: true,
           style: {
             fontSize: "10px",
-            color: "#6B7280",
+            color: labelColor,
           },
         },
         gridLineWidth: 1,
-        gridLineColor: "#F3F4F6",
+        gridLineColor: gridLineColor,
         lineWidth: 0,
         tickLength: 0,
         plotBands: yAxisTicks.slice(0, -1).map((tick, index) => ({
           from: tick,
           to: yAxisTicks[index + 1],
-          color: index % 2 === 0 ? "#f1f8fc" : "transparent",
+          color: index % 2 === 0 ? plotBandColor : "transparent",
         })),
       },
       series: [
         {
           name: "DAU",
           data: dauTrend,
-          color: "#006aff",
+          color: lineColor,
           lineWidth: 2,
           marker: {
             radius: 3,
-            fillColor: "#006aff",
+            fillColor: lineColor,
             lineWidth: 0,
           },
           animation: {
@@ -240,27 +263,27 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
       },
       tooltip: {
         enabled: true,
-        backgroundColor: "#ffffff",
-        borderColor: "#e5e7eb",
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
         borderWidth: 1,
         borderRadius: 8,
         shadow: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)",
           offsetX: 0,
           offsetY: 2,
-          opacity: 0.1,
+          opacity: isDarkMode ? 0.3 : 0.1,
           width: 3,
         },
         style: {
-          color: "#374151",
+          color: tooltipTextColor,
           fontSize: "12px",
         },
         formatter: function (this: any): string { // eslint-disable-line no-unused-vars
           const pointIndex = this.point.index;
           const fullDate = fullDates[pointIndex];
           return `<div style="padding: 8px;">
-            <div style="font-weight: 600; margin-bottom: 4px; color: #111827;">${fullDate}</div>
-            <div style="color: #6b7280;">DAU: <span style="color: #006aff; font-weight: 600;">${this.y.toLocaleString()}</span></div>
+            <div style="font-weight: 600; margin-bottom: 4px; color: ${tooltipTitleColor};">${fullDate}</div>
+            <div style="color: ${tooltipTextColor};">DAU: <span style="color: ${tooltipValueColor}; font-weight: 600;">${this.y.toLocaleString()}</span></div>
           </div>`;
         },
       },
@@ -420,12 +443,25 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
 
             {/* 标签 */}
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">
-                #{getTypeLabel(app.type)}
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">
-                #{getPlatformLabel(app.platform)}
-              </span>
+              {app.tags && app.tags.length > 0 ? (
+                app.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog"
+                  >
+                    #{tag}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">
+                    #{getTypeLabel(app.type)}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-blog">
+                    #{getPlatformLabel(app.platform)}
+                  </span>
+                </>
+              )}
             </div>
 
             {/* 下方左右两个区域 */}
@@ -464,39 +500,74 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
 
                 {/* 体验入口 */}
                 <div className="mt-3 flex gap-3">
-                  {/* 体验一下按钮 */}
-                  <div className="relative inline-block group/qr">
-                    <button
-                      ref={buttonRef}
-                      className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 px-3 py-2 rounded hover:scale-105"
-                    >
-                      <QrCode size={14} />
-                      <span>体验一下</span>
-                    </button>
-
-                    {/* 二维码悬浮显示 */}
-                    <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover/qr:opacity-100 transition-opacity duration-200 pointer-events-none">
-                      <div
-                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2 flex items-center justify-center"
-                        style={{
-                          width: `${buttonWidth}px`,
-                          height: `${buttonWidth}px`,
-                        }}
+                  {/* 体验一下按钮 - 根据体验方式显示不同内容 */}
+                  {app.experience_method === "qrcode" ? (
+                    <div className="relative inline-block group/qr">
+                      <button
+                        ref={buttonRef}
+                        className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 px-3 py-2 rounded hover:scale-105"
                       >
-                        <Image
-                          src={
-                            app.qr_code_url
-                              ? `/api/apps/proxy-image?url=${encodeURIComponent(app.qr_code_url)}`
-                              : "/images/placeholder-qr.png"
-                          }
-                          alt={`${app.name} 二维码`}
-                          width={80}
-                          height={80}
-                          className="w-20 h-20 object-contain"
-                        />
+                        <QrCode size={14} />
+                        <span>体验一下</span>
+                      </button>
+
+                      {/* 二维码悬浮显示 */}
+                      <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover/qr:opacity-100 transition-opacity duration-200 pointer-events-none">
+                        <div
+                          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2 flex items-center justify-center"
+                          style={{
+                            width: `${buttonWidth}px`,
+                            height: `${buttonWidth}px`,
+                          }}
+                        >
+                          <Image
+                            src={
+                              app.qr_code_url
+                                ? `/api/apps/proxy-image?url=${encodeURIComponent(app.qr_code_url)}`
+                                : "/images/placeholder-qr.png"
+                            }
+                            alt={`${app.name} 二维码`}
+                            width={80}
+                            height={80}
+                            className="w-20 h-20 object-contain"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="relative inline-block group/download">
+                      <button
+                        className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-all duration-300 font-blog bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 px-3 py-2 rounded hover:scale-105"
+                      >
+                        <Download size={14} />
+                        <span>体验一下</span>
+                      </button>
+
+                      {/* 下载链接悬浮显示 */}
+                      <div className="absolute bottom-full left-0 pb-2 opacity-0 group-hover/download:opacity-100 transition-opacity duration-200 z-50 pointer-events-none group-hover/download:pointer-events-auto">
+                        {/* 桥接区域 - 填补按钮和链接之间的间隙 */}
+                        <div className="h-2 w-full"></div>
+                        {app.download_url ? (
+                          <a
+                            href={app.download_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-3 flex items-center gap-2 min-w-max text-text-secondary hover:text-[#6747ce] transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="text-sm font-blog max-w-md truncate">
+                              {truncateUrl(app.download_url)}
+                            </span>
+                            <ExternalLink size={14} className="flex-shrink-0" />
+                          </a>
+                        ) : (
+                          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-3 flex items-center gap-2 min-w-max">
+                            <span className="text-sm text-text-muted font-blog">暂无下载链接</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* 代码仓库按钮 */}
                   {app.github_url && (
@@ -509,19 +580,21 @@ export default function AppCard({ app, onEdit, onDelete }: AppCardProps) {
                       </button>
 
                       {/* GitHub地址悬浮显示 */}
-                      <div className="absolute bottom-full left-0 mb-1 opacity-0 group-hover/github:opacity-100 transition-opacity duration-200 z-50">
-                        {/* 连接线 - 让鼠标可以平滑移动 */}
-                        <div className="h-1 w-full"></div>
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-3 flex items-center gap-2 min-w-max">
-                          <span className="text-sm text-text-primary font-blog">{app.github_url}</span>
-                          <button
-                            onClick={handleCopyGithubUrl}
-                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                            title="复制地址"
-                          >
-                            <Copy size={14} className={copySuccess ? "text-green-500" : "text-text-secondary"} />
-                          </button>
-                        </div>
+                      <div className="absolute bottom-full left-0 pb-2 opacity-0 group-hover/github:opacity-100 transition-opacity duration-200 z-50 pointer-events-none group-hover/github:pointer-events-auto">
+                        {/* 桥接区域 - 填补按钮和链接之间的间隙 */}
+                        <div className="h-2 w-full"></div>
+                        <a
+                          href={app.github_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg p-3 flex items-center gap-2 min-w-max text-text-secondary hover:text-[#6747ce] transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="text-sm font-blog max-w-md truncate">
+                            {truncateUrl(app.github_url)}
+                          </span>
+                          <ExternalLink size={14} className="flex-shrink-0" />
+                        </a>
                       </div>
                     </div>
                   )}

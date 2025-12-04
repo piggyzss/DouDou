@@ -13,6 +13,8 @@ interface EditAppData {
   type: "app" | "miniprogram" | "game" | "plugin";
   experienceMethod: "download" | "qrcode";
   downloadUrl: string;
+  coverImage: File | null;
+  experienceVideo: File | null;
   qrCodeImage: File | null;
   status: "development" | "beta" | "online";
   githubUrl?: string;
@@ -39,7 +41,11 @@ export default function EditAppModal({
   const [experienceMethod, setExperienceMethod] = useState("download");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [experienceVideo, setExperienceVideo] = useState<File | null>(null);
   const [qrCodeImage, setQrCodeImage] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string>("");
+  const [videoPreview, setVideoPreview] = useState<string>("");
   const [qrPreview, setQrPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -55,11 +61,45 @@ export default function EditAppModal({
       setExperienceMethod(app.experience_method);
       setDownloadUrl(app.download_url || "");
       setGithubUrl(app.github_url || "");
-      setQrPreview(app.qr_code_url || "");
+      
+      // 设置图片预览 - 使用代理 URL
+      if (app.cover_image_url) {
+        setCoverPreview(`/api/apps/proxy-image?url=${encodeURIComponent(app.cover_image_url)}`);
+      }
+      if (app.video_url) {
+        setVideoPreview(app.video_url);
+      }
+      if (app.qr_code_url) {
+        setQrPreview(`/api/apps/proxy-image?url=${encodeURIComponent(app.qr_code_url)}`);
+      }
     }
   }, [app]);
 
   if (!isOpen) return null;
+
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCoverPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setExperienceVideo(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setVideoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleQrCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,6 +129,8 @@ export default function EditAppModal({
         type: type as "app" | "miniprogram" | "game" | "plugin",
         experienceMethod: experienceMethod as "download" | "qrcode",
         downloadUrl: downloadUrl.trim(),
+        coverImage,
+        experienceVideo,
         qrCodeImage,
         status: status as "development" | "beta" | "online",
         githubUrl: githubUrl.trim() || undefined,
@@ -107,14 +149,15 @@ export default function EditAppModal({
       isOpen={isOpen}
       onClose={onClose}
       title="编辑App"
-      maxWidth="max-w-2xl"
+      maxWidth="max-w-md"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
 
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2 font-body">
@@ -158,6 +201,78 @@ export default function EditAppModal({
               placeholder="请输入App简介"
               disabled={isSubmitting}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2 font-body">
+              封面图片 <span className="text-gray-400 text-xs">(可选)</span>
+            </label>
+            <div className="relative group">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverImageChange}
+                className="hidden"
+                id="coverImageUpload"
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor="coverImageUpload"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {coverPreview ? (
+                  <Image
+                    src={coverPreview}
+                    alt="封面预览"
+                    width={200}
+                    height={100}
+                    className="max-h-24 object-contain"
+                  />
+                ) : (
+                  <>
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <span className="text-xs font-blog text-gray-500">
+                      点击上传封面图片
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2 font-body">
+              体验视频 <span className="text-gray-400 text-xs">(可选)</span>
+            </label>
+            <div className="relative group">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoChange}
+                className="hidden"
+                id="videoUpload"
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor="videoUpload"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {videoPreview ? (
+                  <video
+                    src={videoPreview}
+                    className="max-h-24 object-contain"
+                    controls
+                  />
+                ) : (
+                  <>
+                    <Upload size={24} className="text-gray-400 mb-2" />
+                    <span className="text-xs font-blog text-gray-500">
+                      点击上传体验视频
+                    </span>
+                  </>
+                )}
+              </label>
+            </div>
           </div>
 
           <div>
@@ -333,21 +448,28 @@ export default function EditAppModal({
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-text-primary dark:text-white bg-white dark:bg-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting}
             >
               取消
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !name.trim()}
+              className="flex-1 px-4 py-2 rounded bg-primary text-white text-sm hover:bg-primary-dark transition-colors font-blog disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isSubmitting ? "更新中..." : "更新App"}
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  更新中...
+                </>
+              ) : (
+                "完成"
+              )}
             </button>
           </div>
         </form>

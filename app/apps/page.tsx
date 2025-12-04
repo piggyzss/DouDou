@@ -140,6 +140,14 @@ export default function AppsPage() {
         formData.append("download_url", appData.downloadUrl);
       }
 
+      if (appData.coverImage) {
+        formData.append("cover_image", appData.coverImage);
+      }
+
+      if (appData.experienceVideo) {
+        formData.append("video", appData.experienceVideo);
+      }
+
       if (appData.qrCodeImage) {
         formData.append("qr_code_image", appData.qrCodeImage);
       }

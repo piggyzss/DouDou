@@ -127,14 +127,14 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
           onClick={handleBackdropClick}
         />
         <motion.div
-          className="relative w-full max-w-4xl bg-transparent rounded hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-4xl bg-transparent rounded hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
         >
-          {/* 固定画布高度；背景改为纯白，无透明层/模糊层 */}
-          <div className="relative flex-1 bg-white overflow-hidden">
+          {/* 固定画布高度 600px，背景为黑色 */}
+          <div className="relative w-full h-[600px] bg-black overflow-hidden flex items-center justify-center">
             {/* 关闭按钮：画布内右上角 */}
             <button
               onClick={onClose}
@@ -143,8 +143,8 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
             >
               <X size={16} />
             </button>
-            {/* 纯白边框容器，去除磨砂与透明度 */}
-            <div className="relative z-10 h-full w-full overflow-hidden">
+            {/* 视频容器：高度固定，宽度自适应 */}
+            <div className="relative z-10 h-full flex items-center justify-center">
               <video
                 ref={videoRef}
                 src={
@@ -152,7 +152,7 @@ function VideoModal({ videoUrl, title, onClose }: VideoModalProps) {
                     ? `/api/apps/proxy-video?url=${encodeURIComponent(videoUrl)}`
                     : ""
                 }
-                className="w-full h-full object-cover bg-transparent"
+                className="h-full w-auto max-w-full object-contain"
                 onLoadedMetadata={onLoadedMetadata}
                 onTimeUpdate={onTimeUpdate}
                 onPlay={() => setIsPlaying(true)}
