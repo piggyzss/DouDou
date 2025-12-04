@@ -87,23 +87,10 @@ describe("AppCard", () => {
         "This is a test application for demonstration purposes.",
       ),
     ).toBeInTheDocument();
-    // AppCard组件只显示type和platform标签，不显示tags
-    expect(
-      screen.getAllByText((content, element) => {
-        return (
-          element?.textContent === "应用" ||
-          element?.textContent?.includes("应用")
-        );
-      })[0],
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByText((content, element) => {
-        return (
-          element?.textContent === "Web" ||
-          element?.textContent?.includes("Web")
-        );
-      })[0],
-    ).toBeInTheDocument();
+    // AppCard组件显示自定义tags
+    expect(screen.getByText("#React")).toBeInTheDocument();
+    expect(screen.getByText("#TypeScript")).toBeInTheDocument();
+    expect(screen.getByText("#Next.js")).toBeInTheDocument();
   });
 
   it("should display app statistics", async () => {
@@ -146,7 +133,12 @@ describe("AppCard", () => {
   });
 
   it("should display app type and platform", async () => {
-    render(<AppCard app={mockApp} />);
+    const appWithoutTags = {
+      ...mockApp,
+      tags: [], // Empty tags so type/platform labels are shown
+    };
+    
+    render(<AppCard app={appWithoutTags} />);
 
     // Wait for data to load
     await screen.findByText("Test App");
@@ -240,6 +232,7 @@ describe("AppCard", () => {
     const miniprogramApp = {
       ...mockApp,
       type: "miniprogram" as const,
+      tags: [], // Empty tags so type label is shown
     };
 
     render(<AppCard app={miniprogramApp} />);
@@ -259,6 +252,7 @@ describe("AppCard", () => {
     const mobileApp = {
       ...mockApp,
       platform: "mobile" as const,
+      tags: [], // Empty tags so platform label is shown
     };
 
     render(<AppCard app={mobileApp} />);
