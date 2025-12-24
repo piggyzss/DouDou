@@ -1,5 +1,5 @@
 # 核心框架
-fastapi==0.104.1
+fastapi==0.121.3
 pydantic==2.5.0
 pydantic-settings==2.1.0
 python-dotenv==1.0.0
