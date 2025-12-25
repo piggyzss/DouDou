@@ -25,6 +25,9 @@ DouDou 数据库系统
 │   └── apps (应用独立)
 ├── 📝 博客模块
 │   └── blog_posts (文章)
+├── 🤖 Agent 系统模块
+│   ├── agent_conversations (对话记录)
+│   └── agent_sessions (会话管理)
 ├── 👍 点赞系统
 │   └── likes (统一点赞表)
 ```
@@ -175,6 +178,44 @@ CREATE TABLE blog_posts (
 );
 ```
 
+### Agent 系统表
+
+#### 对话记录表
+
+```sql
+CREATE TABLE agent_conversations (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(255) NOT NULL,
+    user_query TEXT NOT NULL,
+    agent_response TEXT NOT NULL,
+    steps JSONB,                       -- ReAct execution steps
+    plan JSONB,                        -- Execution plan
+    evaluation JSONB,                  -- Quality evaluation
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**索引**:
+- `idx_agent_conversations_session_id` - 按会话查询
+- `idx_agent_conversations_created_at` - 按时间排序
+- `idx_agent_conversations_session_time` - 复合索引优化
+
+#### 会话管理表
+
+```sql
+CREATE TABLE agent_sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255),              -- Optional user identifier
+    context JSONB,                     -- Session context
+    summary TEXT,                      -- Compressed conversation summary
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**索引**:
+- `idx_agent_sessions_last_active` - 会话过期清理
+
 ### 点赞系统表
 
 #### 统一点赞表
@@ -255,8 +296,10 @@ npm run preflight               # 启动前检查
 
 ```bash
 npm run db:init                 # 初始化 AIGC 表
-npm run db:setup                # 完整数据库设置
+npm run db:setup                # 完整数据库设置 (包含 Agent 表)
 ```
+
+**注意**: `npm run db:setup` 会自动运行 Agent 系统的数据库迁移，创建 `agent_conversations` 和 `agent_sessions` 表。
 
 ### 数据修复
 
@@ -344,6 +387,23 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO doudou_user;
 ```bash
 npm run db:init     # 初始化 AIGC 表
 npm run db:setup    # 完整数据库设置
+```
+
+### Q: Agent 系统表是做什么的？
+
+**A**: Agent 系统表用于支持 ReAct Agent 的对话功能：
+
+- **agent_conversations**: 存储每次对话的完整记录，包括用户查询、Agent 响应、执行步骤和质量评估
+- **agent_sessions**: 管理会话状态，支持多轮对话和上下文记忆
+
+这些表在运行 `npm run db:setup` 时会自动创建。
+
+### Q: 如何清理过期的 Agent 会话？
+
+**A**: Agent 系统会自动标记 24 小时未活动的会话为过期。可以通过后端 API 或直接 SQL 清理：
+
+```sql
+DELETE FROM agent_sessions WHERE last_active < NOW() - INTERVAL '24 hours';
 ```
 
 ---

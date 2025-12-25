@@ -1,923 +1,644 @@
-AI News Agent 完整设计文档
-📋 目录
-1. [系统概述](#一系统概述) 
-2. [输入处理架构](#二输入处理架构)
-3. [LLM技术选型对比](#三LLM技术选型对比)
-4. [Agent架构设计](#四Agent架构设计)
-5. [工作流程设计](#五工作流程设计)
-6. [数据源设计](#六数据源设计)
-7. [技术实现细节](#七技术实现细节)
-8. [部署和成本](#八部署和成本)
+# ReAct Agent 系统设计文档
+
+## 📋 目录
+
+1. [系统概述](#一系统概述)
+2. [架构设计](#二架构设计)
+3. [核心组件详解](#三核心组件详解)
+4. [数据模型](#四数据模型)
+5. [ReAct 工作流程](#五react工作流程)
+6. [LLM 集成策略](#六llm集成策略)
+7. [数据库设计](#七数据库设计)
+8. [技术实现细节](#八技术实现细节)
+
+---
 
 ## 一、系统概述
 
-### 核心功能
+### 1.1 ReAct Agent 简介
 
-用户可以通过两种方式与 AI News Agent 交互：
+ReAct (Reasoning + Acting) Agent 是一个智能对话系统，通过交替进行推理和行动来解决复杂任务。
 
-1. **命令式输入**：`/latest`、`/trending`、`/deepdive GPT-4` 等结构化命令
-2. **自然语言输入**：`"最近 OpenAI 有什么新进展？"`、`"我想了解本周的 AI 热点"`
+**核心特性**：
+- 🧠 **多步推理**：最多 5 次迭代的思考-行动-观察循环
+- 📋 **任务规划**：自动分解复杂查询为可执行步骤
+- 🔧 **工具编排**：智能选择和执行工具链
+- 💾 **会话记忆**：持久化对话历史和上下文
+- 🎯 **质量评估**：自我反思和输出质量评估
+- 🔄 **向后兼容**：支持旧版命令式 API
 
-系统智能识别输入类型，并提供统一的处理流程。
-
-### 后端流程架构
+### 1.2 架构演进
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        用户输入                                   │
-│              "/latest 5" 或 "最近有什么AI新闻？"                  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   Frontend (React)                               │
-│                   AgentTerminal Component                        │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓ HTTP
-┌─────────────────────────────────────────────────────────────────┐
-│                   Next.js API Proxy                              │
-│                   /api/agent/execute                             │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓ HTTP
-┌─────────────────────────────────────────────────────────────────┐
-│                   Python Backend (FastAPI)                       │
-│                                                                   │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  1. API Route (/api/agent/execute)                         │ │
-│  │     - 接收 AgentRequest                                     │ │
-│  │     - 提取 user_input                                       │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              ↓                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  2. Intent Analyzer (app/core/intent_analyzer.py)          │ │
-│  │     - 识别输入类型                                          │ │
-│  │     - 转换为统一的 Intent 模型                              │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│         ↓ 命令式                              ↓ 自然语言          │
-│  ┌──────────────────┐              ┌──────────────────────────┐ │
-│  │ _parse_command() │              │ _parse_keyword_matching()│ │
-│  │ 直接解析          │              │ 关键词匹配（基础版）      │ │
-│  │ 置信度: 1.0       │              │ 置信度: 0.6-0.7          │ │
-│  └──────────────────┘              │                          │ │
-│                                     │ _parse_natural_language()│ │
-│                                     │ LLM 分析（未来）          │ │
-│                                     │ 置信度: 0.9+             │ │
-│                                     └──────────────────────────┘ │
-│                              ↓                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  3. 统一 Intent 模型                                        │ │
-│  │     {                                                       │ │
-│  │       command: "/latest",                                  │ │
-│  │       params: {count: 5},                                  │ │
-│  │       source: "command" | "natural_language",              │ │
-│  │       confidence: 0.6-1.0                                  │ │
-│  │     }                                                       │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              ↓                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  4. Plugin Manager (app/core/plugin_manager.py)            │ │
-│  │     - 根据 Intent.command 路由到对应插件                    │ │
-│  │     - 验证插件可用性                                        │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              ↓                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  5. News Plugin (app/plugins/news_plugin.py)               │ │
-│  │     - 处理 /latest, /trending, /deepdive 等命令            │ │
-│  │     - 调用 News Collector Service                          │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              ↓                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  6. News Collector Service                                 │ │
-│  │     (app/services/news_collector.py)                       │ │
-│  │     - 当前：返回 mock 数据                                  │ │
-│  │     - 未来：RSS Aggregator + HN API                        │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                              ↓                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │  7. 格式化响应                                              │ │
-│  │     AgentResponse {                                        │ │
-│  │       success: true,                                       │ │
-│  │       data: "formatted news",                              │ │
-│  │       type: "text",                                        │ │
-│  │       plugin: "news",                                      │ │
-│  │       command: "/latest"                                   │ │
-│  │     }                                                       │ │
-│  └────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   Frontend 显示结果                              │
-└─────────────────────────────────────────────────────────────────┘
+V1.0 (命令路由)          V2.0 (工具选择)          V3.0 (ReAct Agent)
+     ↓                        ↓                        ↓
+命令 → 插件              自然语言 → LLM → 工具    查询 → 规划 → ReAct循环
+单次执行                 单次执行                  多步推理
+无状态                   无状态                    会话记忆
+无规划                   无规划                    任务分解
 ```
 
-### 关键特性
+---
 
-1. **统一入口**：所有输入都通过 Intent Analyzer 处理
-2. **统一模型**：命令式和自然语言都转换为 Intent
-3. **统一执行**：Plugin Manager 不关心输入来源
-4. **渐进增强**：当前使用关键词匹配，未来集成 LLM
- 
-## 二、输入处理架构
+## 二、架构设计
 
-### Intent Analyzer（意图分析器）
+### 2.1 分层架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Presentation Layer                       │
+│  Frontend (React) + API Routes (FastAPI)                    │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                      Application Layer                       │
+│  ReactAgent + TaskPlanner + ReflectionEngine                │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                       Domain Layer                           │
+│  ToolOrchestrator + ConversationMemory + ToolRegistry       │
+└─────────────────────────────────────────────────────────────┘
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                    Infrastructure Layer                      │
+│  LLM Service + PostgreSQL + Plugin Manager                  │
+└─────────────────────────────────────────────────────────────┘
+
+
+### 2.2 核心工作流程
+
+```
+用户查询
+    ↓
+1. ReactAgent.execute()
+   ├─ 加载会话历史 (ConversationMemory)
+   ├─ 创建执行计划 (TaskPlanner)
+   └─ 进入 ReAct 循环
+    ↓
+2. ReAct 循环迭代 (最多 5 次)
+   ├─ Thought: LLM 生成推理
+   ├─ Action: 选择工具和参数
+   ├─ Execute: ToolOrchestrator 执行工具
+   ├─ Observation: 记录执行结果
+   └─ Reflect: 判断是否继续
+    ↓
+3. 任务完成
+   ├─ 合成最终响应 (LLM)
+   ├─ 评估输出质量
+   ├─ 保存到会话历史
+   └─ 返回完整响应
+```
+
+### 2.3 组件交互图
+
+```
+┌──────────────┐
+│ ReactAgent   │ ◄─── 协调所有组件
+└──────┬───────┘
+       │
+       ├──────► ┌──────────────┐
+       │        │ TaskPlanner  │ 创建执行计划
+       │        └──────────────┘
+       │
+       ├──────► ┌──────────────┐
+       │        │ Tool         │ 执行工具链
+       │        │ Orchestrator │
+       │        └──────────────┘
+       │
+       ├──────► ┌──────────────┐
+       │        │ Conversation │ 管理会话历史
+       │        │ Memory       │
+       │        └──────────────┘
+       │
+       └──────► ┌──────────────┐
+                │ LLM Service  │ 生成推理和响应
+                └──────────────┘
+```
+
+---
+
+## 三、核心组件详解
+
+### 3.1 ReactAgent (执行器)
+
+**文件**: `app/core/react_agent.py`
+
+**职责**：
+- 协调 ReAct 循环执行
+- 管理迭代状态和历史
+- 集成所有子组件
+- 合成最终响应
+
+**关键方法**：
+```python
+class ReactAgent:
+    async def execute(
+        query: str, 
+        session_id: str,
+        context: Optional[Dict] = None
+    ) -> ReactResponse:
+        """执行用户查询，使用 ReAct 循环"""
+        
+    async def _react_loop(
+        query: str,
+        plan: ExecutionPlan,
+        context: Dict
+    ) -> List[ReActStep]:
+        """执行 ReAct 循环"""
+        
+    async def _react_iteration(
+        query: str,
+        plan: ExecutionPlan,
+        history: List[ReActStep],
+        context: Dict,
+        iteration: int
+    ) -> ReActStep:
+        """执行单次 ReAct 迭代"""
+        
+    async def _synthesize_response(
+        query: str,
+        steps: List[ReActStep],
+        plan: ExecutionPlan
+    ) -> str:
+        """从执行历史合成最终响应"""
+```
+
+**设计原则**：
+- 单一职责：专注于循环协调
+- 依赖注入：通过构造函数注入依赖
+- 错误恢复：优雅处理各种异常
+- 向后兼容：支持旧版 API 格式
+
+
+### 3.2 TaskPlanner (任务规划器)
+
+**文件**: `app/core/task_planner.py`
+
+**职责**：
+- 分析查询复杂度（简单/中等/复杂）
+- 将复杂查询分解为子任务
+- 识别所需工具和执行顺序
+- 根据执行反馈调整计划
+
+**关键方法**：
+```python
+class TaskPlanner:
+    async def create_plan(
+        query: str,
+        conversation_history: List[ConversationTurn],
+        context: Dict
+    ) -> ExecutionPlan:
+        """创建执行计划"""
+        
+    async def adjust_plan(
+        plan: ExecutionPlan,
+        observation: str
+    ) -> ExecutionPlan:
+        """根据执行结果调整计划"""
+        
+    def _classify_complexity(
+        query: str
+    ) -> Literal["simple", "medium", "complex"]:
+        """分类查询复杂度"""
+```
+
+**复杂度分类规则**：
+- **简单**：单一工具调用即可完成（如 "最新新闻"）
+- **中等**：需要 2-3 个工具调用（如 "分析 OpenAI 进展"）
+- **复杂**：需要 3+ 个工具调用或复杂推理（如 "对比分析多家公司"）
+
+### 3.3 ConversationMemory (会话记忆)
+
+**文件**: `app/core/conversation_memory.py`
+
+**职责**：
+- 存储和检索对话历史
+- 管理会话生命周期
+- 压缩长对话（使用 LLM 摘要）
+- 处理会话过期
+
+**关键方法**：
+```python
+class ConversationMemory:
+    async def get_history(
+        session_id: str,
+        limit: int = 10
+    ) -> List[ConversationTurn]:
+        """检索对话历史"""
+        
+    async def save_interaction(
+        session_id: str,
+        query: str,
+        response: ReactResponse,
+        user_id: Optional[str] = None
+    ) -> bool:
+        """保存对话轮次"""
+        
+    async def get_context_summary(
+        session_id: str
+    ) -> str:
+        """获取长对话的压缩摘要"""
+        
+    async def cleanup_expired_sessions(
+        hours: int = 24
+    ) -> int:
+        """清理过期会话"""
+```
+
+**存储策略**：
+- 最近 10 条对话：完整存储
+- 10+ 条对话：生成摘要，保留最近 10 条
+- 24 小时无活动：自动清理
+
+### 3.4 ToolOrchestrator (工具编排器)
+
+**文件**: `app/core/tool_orchestrator.py`
+
+**职责**：
+- 执行工具链（处理依赖关系）
+- 解析参数引用（如 `${step1.result}`）
+- 处理工具失败（重试逻辑）
+- 缓存工具结果（5 分钟 TTL）
+
+**关键方法**：
+```python
+class ToolOrchestrator:
+    async def execute_tool(
+        tool_call: ToolCall,
+        use_cache: bool = True
+    ) -> ToolResult:
+        """执行单个工具"""
+        
+    async def execute_chain(
+        tools: List[ToolCall],
+        context: Dict
+    ) -> List[ToolResult]:
+        """执行工具链"""
+        
+    def resolve_parameters(
+        parameters: Dict[str, Any],
+        previous_results: List[ToolResult]
+    ) -> Dict[str, Any]:
+        """解析参数引用"""
+```
+
+**缓存策略**：
+- 缓存键：`hash(tool_name + parameters)`
+- TTL：5 分钟
+- 存储：内存字典（LRU 淘汰）
+- 命中率目标：> 30%
+
+### 3.5 ToolRegistry (工具注册表)
+
+**文件**: `app/core/tool_registry.py`
+
+**职责**：
+- 注册和管理所有可用工具
+- 提供工具查询接口
+- 将工具格式化为 LLM 可理解的格式
+
+**关键方法**：
+```python
+class ToolRegistry:
+    def register_tool(tool: ToolDefinition) -> None
+    def get_tool(tool_name: str) -> Optional[ToolDefinition]
+    def get_all_tools() -> List[ToolDefinition]
+    def format_for_llm() -> str
+```
+
+---
+
+## 四、数据模型
+
+### 4.1 ReActStep (ReAct 步骤)
 
 ```python
-# agent-backend/app/core/intent_analyzer.py
-class IntentAnalyzer:
-    """意图分析器 - 将所有输入转换为统一的 Intent 模型"""
+@dataclass
+class ReActStep:
+    step_number: int              # 步骤编号（从 1 开始）
+    thought: str                  # Agent 的思考过程
+    action: ToolCall              # 选择的工具调用
+    observation: ToolResult       # 工具执行结果
+    status: str                   # pending | running | completed | failed
+    timestamp: datetime           # 时间戳
     
-    def __init__(self, plugin_manager: PluginManager, llm_service=None):
-        self.plugin_manager = plugin_manager
-        self.llm_service = llm_service
-    
-    async def parse_input(self, user_input: str, context: Optional[Dict[str, Any]] = None) -> Intent:
-        """
-        统一入口：将任何输入转换为 Intent
-        
-        Args:
-            user_input: 用户输入（命令或自然语言）
-            context: 上下文信息（会话历史等）
-        
-        Returns:
-            Intent: 统一的意图模型
-        
-        Raises:
-            InvalidCommandError: 无效命令
-        """
-        if context is None:
-            context = {}
-        
-        # 1. 命令式输入：直接解析
-        if user_input.strip().startswith('/'):
-            return self._parse_command(user_input)
-        
-        # 2. 自然语言：使用 LLM 转换（如果可用）
-        if self.llm_service:
-            return await self._parse_natural_language(user_input, context)
-        else:
-            # LLM 不可用时，尝试简单的关键词匹配
-            return self._parse_keyword_matching(user_input)
-    
-    def _parse_command(self, command: str) -> Intent:
-        """解析命令式输入"""
-        parts = command.strip().split()
-        cmd = parts[0]
-        
-        # 验证命令
-        if not self.plugin_manager.is_command_valid(cmd):
-            raise InvalidCommandError(f"Unknown command: {cmd}. Type /help for available commands.")
-        
-        # 解析参数
-        params = self._parse_params(parts[1:], cmd)
-        
-        return Intent(
-            command=cmd,
-            params=params,
-            source="command",
-            confidence=1.0,
-            original_input=command
-        )
-    
-    async def _parse_natural_language(self, query: str, context: Dict[str, Any]) -> Intent:
-        """使用 LLM 解析自然语言"""
-        # TODO: 实现 LLM 调用
-        # 这里先返回一个基本的 Intent，后续会实现完整的 LLM 集成
-        
-        # 临时实现：使用简单的关键词匹配
-        return self._parse_keyword_matching(query)
-    
-    def _parse_keyword_matching(self, query: str) -> Intent:
-        """
-        降级解析：当 LLM 不可用时使用简单的关键词匹配
-        """
-        query_lower = query.lower()
-        
-        # 检测意图
-        if any(keyword in query_lower for keyword in ["最新", "latest", "new", "recent"]):
-            # 映射到 /latest
-            count = 5
-            # 尝试提取数字
-            import re
-            numbers = re.findall(r'\d+', query)
-            if numbers:
-                count = int(numbers[0])
-            
-            return Intent(
-                command="/latest",
-                params={"count": min(count, 20)},
-                source="natural_language",
-                confidence=0.7,
-                original_input=query,
-                keywords=self._extract_keywords(query)
-            )
-        
-        elif any(keyword in query_lower for keyword in ["趋势", "热门", "trending", "hot", "popular"]):
-            # 映射到 /trending
-            return Intent(
-                command="/trending",
-                params={},
-                source="natural_language",
-                confidence=0.7,
-                original_input=query,
-                keywords=self._extract_keywords(query)
-            )
-        
-        elif any(keyword in query_lower for keyword in ["深度", "分析", "deepdive", "analysis", "详细"]):
-            # 映射到 /deepdive
-            keywords = self._extract_keywords(query)
-            topic = " ".join(keywords) if keywords else "AI developments"
-            
-            return Intent(
-                command="/deepdive",
-                params={"topic": topic},
-                source="natural_language",
-                confidence=0.7,
-                original_input=query,
-                keywords=keywords
-            )
-        
-        else:
-            # 默认映射到搜索
-            keywords = self._extract_keywords(query)
-            
-            return Intent(
-                command="/search" if keywords else "/latest",
-                params={
-                    "keywords": keywords,
-                    "count": 10
-                } if keywords else {"count": 5},
-                source="natural_language",
-                confidence=0.6,
-                original_input=query,
-                keywords=keywords
-            )
-```
-### 数据模型
-
-#### 核心设计理念：统一意图模型
-
-无论用户输入的是命令式（如 `/latest 5`）还是自然语言（如 `"最近 OpenAI 有什么新进展？"`），最终都会被转换为**统一的 Intent 模型**，然后由相同的执行流程处理。
-
-```
-命令式输入 ──┐
-             ├──> 统一 Intent 模型 ──> 统一执行引擎 ──> 结果
-自然语言输入 ──┘
+    def is_successful() -> bool:
+        """判断步骤是否成功"""
+        return status == "completed" and observation.is_success()
 ```
 
-#### Intent 模型（唯一的数据模型）
+### 4.2 ExecutionPlan (执行计划)
 
 ```python
-# agent-backend/app/models/intent.py
-
-class Intent(BaseModel):
-    """统一的用户意图模型"""
-    
-    # 核心字段（必需）
-    command: str                    # 映射到的命令，如 /latest, /search, /trending
-    params: Dict[str, Any]          # 命令参数
-    
-    # 元数据字段（用于日志、分析、可选增强）
-    source: str = "command"         # "command" | "natural_language"
-    confidence: float = 1.0         # 置信度 0-1（命令式为 1.0）
-    original_input: str = ""        # 原始用户输入
-    
-    # 自然语言增强字段（可选，仅自然语言输入时填充）
-    keywords: List[str] = []        # 提取的关键词，如 ["OpenAI", "GPT"]
-    time_range: Optional[str] = None  # 时间范围，如 "last 7 days", "this week"
-    importance: str = "all"         # 重要性过滤：high, medium, all
-    entities: Dict[str, List[str]] = {}  # 实体识别：{"companies": ["OpenAI"], "topics": ["GPT-4"]}
+@dataclass
+class ExecutionPlan:
+    query: str                    # 原始用户查询
+    complexity: str               # simple | medium | complex
+    steps: List[PlanStep]         # 计划步骤列表
+    estimated_iterations: int     # 预计迭代次数（1-5）
+    created_at: datetime          # 创建时间
 ```
 
-**关键点：**
-- `source` 字段只是元数据，**不影响执行流程**
-- 所有输入最终都转换为相同的 Intent 结构
-- 命令式和自然语言走**完全相同的执行路径**
-- 自然语言可以选择性地在输出时用 LLM 增强
+### 4.3 ReactResponse (完整响应)
 
-#### 示例对比
-
-**命令式输入：`/latest 5`**
 ```python
-Intent(
-    command="/latest",
-    params={"count": 5},
-    source="command",
-    confidence=1.0,
-    original_input="/latest 5"
-)
+@dataclass
+class ReactResponse:
+    success: bool                 # 执行是否成功
+    response: str                 # 最终响应内容
+    steps: List[ReActStep]        # 执行步骤列表
+    plan: ExecutionPlan           # 执行计划
+    evaluation: QualityEvaluation # 质量评估
+    session_id: str               # 会话 ID
+    execution_time: float         # 执行时间（秒）
+    error: Optional[str]          # 错误信息
+    timestamp: datetime           # 响应时间戳
 ```
 
-**自然语言输入：`"最近 OpenAI 有什么新进展？"`**
+### 4.4 QualityEvaluation (质量评估)
+
 ```python
-Intent(
-    command="/search",  # LLM 映射到搜索命令
-    params={
-        "count": 10,
-        "keywords": ["OpenAI"],
-        "time_range": "last 7 days",
-        "importance": "high"
-    },
-    source="natural_language",
-    confidence=0.95,
-    original_input="最近 OpenAI 有什么新进展？",
-    keywords=["OpenAI"],
-    time_range="last 7 days",
-    importance="high",
-    entities={"companies": ["OpenAI"]}
-)
+@dataclass
+class QualityEvaluation:
+    completeness_score: int       # 完整性评分 (0-10)
+    quality_score: int            # 质量评分 (0-10)
+    missing_info: List[str]       # 缺失的信息
+    needs_retry: bool             # 是否需要重试
+    suggestions: List[str]        # 改进建议
 ```
 
-**执行结果：** 两者都调用相同的搜索逻辑，只是参数不同。
+---
 
-### 前端输入处理更新
-```typescript
-// app/agent/hooks/useAgent.ts
+## 五、ReAct 工作流程
 
-const processCommand = useCallback(async (userInput: string) => {
-    const trimmedInput = userInput.trim();
-    
-    // 添加用户消息
-    const userMessage: AgentMessage = {
-        id: Date.now().toString(),
-        type: "user",
-        content: trimmedInput.startsWith('/') 
-            ? `user@agent:~$ ${userInput}` //@shanshan
-            : userInput,  // 自然语言直接显示
-        timestamp: new Date(),
-        status: "success",
-    };
-    
-    setMessages((prev) => [...prev, userMessage]);
-    setAgentState((prev) => ({ ...prev, status: "processing" }));
-    
-    try {
-        // 统一发送到后端，由 IntentAnalyzer 处理
-        const request: AgentRequest = {
-            command: trimmedInput,  // 用户输入（命令或自然语言）
-            params: {},
-            sessionId: "default"
-        };
-        
-        const response = await agentPluginManager.executeCommand(request);
-        
-        // 处理响应...
-    } catch (error) {
-        // 错误处理...
-    }
-}, []);
-```
-
-## 三、LLM技术选型对比
-### 方案对比表
-| 特性 | OpenAI GPT-3.5 | OpenAI GPT-4 | Google Gemini 1.5 Flash | Google Gemini 1.5 Pro | Anthropic Claude 3.5 Sonnet | |------|----------------|--------------|------------------------|----------------------|---------------------------| | 输入价格 | 
-0.50/1Mtokens∣5.00/1M tokens | 
-0.075/1Mtokens∣1.25/1M tokens | 
-3.00/1Mtokens∣∣∗∗输出价格∗∗∣1.50/1M tokens | 
-15.00/1Mtokens∣0.30/1M tokens | 
-5.00/1Mtokens∣15.00/1M tokens | | 上下文窗口 | 16K tokens | 128K tokens | 1M tokens | 2M tokens | 200K tokens | | 响应速度 | ⭐⭐⭐⭐⭐ 快 | ⭐⭐⭐ 中等 | ⭐⭐⭐⭐⭐ 极快 | ⭐⭐⭐⭐ 快 | ⭐⭐⭐⭐ 快 | | 理解能力 | ⭐⭐⭐⭐ 好 | ⭐⭐⭐⭐⭐ 优秀 | ⭐⭐⭐⭐ 好 | ⭐⭐⭐⭐⭐ 优秀 | ⭐⭐⭐⭐⭐ 优秀 | | 中文支持 | ⭐⭐⭐⭐ 好 | ⭐⭐⭐⭐⭐ 优秀 | ⭐⭐⭐⭐⭐ 优秀 | ⭐⭐⭐⭐⭐ 优秀 | ⭐⭐⭐⭐ 好 | | JSON 模式 | ✅ 支持 | ✅ 支持 | ✅ 支持 | ✅ 支持 | ✅ 支持 | | 免费额度 | ❌ 无 | ❌ 无 | ✅ 1500次/天 | ✅ 50次/天 | ❌ 无 | | SDK 成熟度 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-
-成本对比（月度 3000 次查询）
-假设每次查询：
-
-意图分析：500 tokens 输入 + 200 tokens 输出
-内容分析：2000 tokens 输入 + 500 tokens 输出
-总计：2500 tokens 输入 + 700 tokens 输出 = 3200 tokens/查询
-| LLM 方案 | 月度成本 | 备注 | |---------|---------|------| | OpenAI GPT-3.5 | 
-5.40∣基础方案∣∣∗∗OpenAIGPT−4∗∗∣44.00 | 高级方案 | | Gemini 1.5 Flash | **
-1.01∗∗∣🏆∗∗最便宜∗∗∣∣∗∗Gemini1.5Pro∗∗∣11.63 | 平衡方案 | | Claude 3.5 Sonnet | $17.85 | 高质量方案 |
-
-### 推荐方案
-🥇 方案一：Gemini 1.5 Flash（推荐）
-
-优势：
-✅ 成本最低：仅 $1.01/月，是 GPT-3.5 的 1/5
-✅ 速度最快：响应时间 < 1 秒
-✅ 免费额度：1500 次/天，足够开发测试
-✅ 超大上下文：1M tokens，可以处理大量文章
-✅ 中文优秀：Google 对中文支持很好
-
-劣势：
-⚠️ 理解能力略逊于 GPT-4/Claude
-⚠️ SDK 相对较新
-
-适用场景：
-- 意图分析（快速响应）
-- 内容过滤和排序
-- 基础摘要生成
-
-代码示例：
-```python
-import google.generativeai as genai
-
-genai.configure(api_key=settings.GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
-
-response = model.generate_content(
-    prompt,
-    generation_config={
-        "temperature": 0.7,
-        "max_output_tokens": 1000,
-    }
-)
-```
-🥈 方案二：混合方案（最优性价比）
-架构：
-Gemini 1.5 Flash：意图分析、内容过滤（90% 请求）
-Gemini 1.5 Pro：深度分析、趋势洞察（10% 请求）
-成本：
-月度成本：约 $2-3
-性能：快速响应 + 高质量分析
-实现：
-```python
-class LLMService:
-    def __init__(self):
-        self.flash_model = genai.GenerativeModel('gemini-1.5-flash')
-        self.pro_model = genai.GenerativeModel('gemini-1.5-pro')
-    
-    async def analyze_intent(self, query: str) -> Intent:
-        """使用 Flash 快速分析意图"""
-        return await self._call_model(self.flash_model, query)
-    
-    async def deep_analysis(self, articles: List[NewsItem]) -> Analysis:
-        """使用 Pro 进行深度分析"""
-        return await self._call_model(self.pro_model, articles)
-```
-🥉 方案三：OpenAI GPT-3.5（备选）
-优势：
-✅ SDK 最成熟
-✅ 社区资源丰富
-✅ 文档完善
-
-劣势：
-❌ 成本是 Gemini Flash 的 5 倍
-❌ 无免费额度
-
-适用场景：
-- 需要最稳定的 API
-- 团队熟悉 OpenAI 生态
-
-最终推荐
-🎯 推荐使用：Gemini 1.5 Flash + Gemini 1.5 Pro 混合方案
-
-理由：
-- 成本极低：月度 $2-3，是 GPT-3.5 的一半
-- 性能优秀：Flash 速度快，Pro 质量高
-- 免费开发：1500 次/天免费额度足够开发测试
-- 中文友好：Google 对中文支持优秀
-- 可扩展：未来可以无缝切换到其他模型
-
-## 四、Agent架构设计
-
-### 整体架构图
-┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                        │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  AgentTerminal Component                                  │  │
-│  │  - 接收用户输入（命令 / 自然语言）                             │  │
-│  │  - 显示格式化响应                                           │  │
-│  │  - 管理会话状态                                            │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓ HTTP/WebSocket
-┌──────────────────────────────────────────────────────────────────────┐
-│                    Next.js API Layer (Proxy)                         │
-│lib/agent/plugin-manager.ts-/api/agent/execute - 转发请求到 Python 后端 │
-└─────────────────────────────────────────────────────────────────────┘
-                              ↓ HTTP
-┌─────────────────────────────────────────────────────────────────┐
-│                   Python Backend (FastAPI)                      │
-|            /agent-backend/app/api/routes/agent.py               |
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  Intent Analyzer (意图分析器) agent-backend/app/core    │  │
-│  │  - 识别输入类型（命令 vs 自然语言）                        │  │
-│  │  - 转换为统一的 Intent 模型                               │  │
-│  │  - 支持 LLM 增强（可选）                                  │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                              ↓                                   │
-│                        统一 Intent 模型                          │
-│                              ↓                                   │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Plugin Manager (插件管理器)                              │  │
-│  │  - 根据 Intent.command 路由到对应插件                     │  │
-│  │  - 管理插件注册和生命周期                                  │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│           ↓                              ↓                       │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  News Plugin (统一数据层)                                 │  │
-│  │  - 处理所有新闻相关请求                                    │  │
-│  │  - 调用 News Collector Service                            │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│           ↓                                                      │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  News Collector Service                                   │  │
-│  │  ┌────────────────┐  ┌────────────────┐  ┌─────────────┐ │  │
-│  │  │ RSS Aggregator │  │ HN API Client  │  │ Cache Layer │ │  │
-│  │  └────────────────┘  └────────────────┘  └─────────────┘ │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│           ↓                                                      │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  LLM Service (抽象层)                                      │  │
-│  │  - Gemini 1.5 Flash (意图分析、快速处理)                   │  │
-│  │  - Gemini 1.5 Pro (深度分析、洞察生成)                     │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│           ↓                                                      │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Context Manager                                          │  │
-│  │  - 会话状态管理                                            │  │
-│  │  - 用户偏好跟踪                                            │  │
-│  │  - 历史记录                                                │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                    External Services                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │ RSS Feeds│  │ HN API   │  │ Redis    │  │ Gemini   │       │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
-└─────────────────────────────────────────────────────────────────┘
-### 核心组件详解
-
-#### 1. Intent Analyzer（意图分析器）
-
-**位置：** `app/core/intent_analyzer.py`
-
-**职责：**
-- 统一入口，接收所有用户输入
-- 识别输入类型（命令 vs 自然语言）
-- 转换为统一的 Intent 模型
-
-**关键方法：**
-```python
-async def parse_input(user_input: str, context: dict) -> Intent
-def _parse_command(command: str) -> Intent
-async def _parse_natural_language(query: str, context: dict) -> Intent
-def _parse_keyword_matching(query: str) -> Intent
-```
-
-**处理流程：**
-1. 检查输入是否以 `/` 开头
-2. 如果是命令：直接解析为 Intent（置信度 1.0）
-3. 如果是自然语言：
-   - 优先使用 LLM 分析（如果可用）
-   - 降级使用关键词匹配（置信度 0.6-0.7）
-
-#### 2. LLM Service（LLM 服务层）
-
-**位置：** `app/services/llm_service.py`（未来实现）
-
-**职责：**
-- 提供统一的 LLM 调用接口
-- 支持多个 LLM 提供商（Gemini, OpenAI）
-- 处理意图分析、内容分析、洞察生成
-
-**子功能：**
-- **Intent Analysis**：分析用户意图，提取参数
-- **Content Analysis**：分析文章相关性和重要性
-- **Insight Generation**：生成智能摘要和洞察
-
-#### 3. Plugin Manager（插件管理器）
-职责：
-- 管理所有插件
-- 验证和路由命令
-- 保持向后兼容
-- 保持不变：现有的插件系统继续工作
-
-#### 4. News Collector Service（新闻收集服务）
-职责：
-- 从多个数据源获取新闻
-- 缓存管理
-- 数据清洗和标准化
-
-数据源：
-RSS Feeds（主要）
-Hacker News API（补充）
-
-#### 5. LLM Service（LLM 服务抽象层）
-职责：
-- 统一 LLM 调用接口
-- 支持多个 LLM 提供商
-- 错误处理和重试
-
-支持的模型：
-- Gemini 1.5 Flash（默认）
-- Gemini 1.5 Pro（高级）
-- OpenAI GPT-3.5/4（备选）
-
-#### 6. Context Manager（上下文管理器）
-职责：
-- 管理用户会话
-- 跟踪交互历史
-- 个性化推荐基础
-
-## 五、工作流程设计
-### 流程 1：命令式输入处理
+### 5.1 完整执行流程
 
 ```
-用户输入: "/latest 5"
+用户查询: "分析最近 OpenAI 的技术进展"
     ↓
-Frontend: AgentTerminal
+┌─────────────────────────────────────────────────────────┐
+│ 1. 加载会话历史                                          │
+│    - 从数据库加载最近 10 条对话                          │
+│    - 如果对话过长，生成摘要                              │
+└─────────────────────────────────────────────────────────┘
     ↓
-Next.js API: /api/agent/execute
+┌─────────────────────────────────────────────────────────┐
+│ 2. 创建执行计划 (TaskPlanner)                           │
+│    - 复杂度: medium                                      │
+│    - 步骤 1: 搜索 OpenAI 相关新闻                        │
+│    - 步骤 2: 分析技术趋势                                │
+│    - 预计迭代: 2 次                                      │
+└─────────────────────────────────────────────────────────┘
     ↓
-Python Backend: Intent Analyzer
+┌─────────────────────────────────────────────────────────┐
+│ 3. ReAct 循环 - 迭代 1                                  │
+│    Thought: "首先需要获取 OpenAI 的最新新闻..."         │
+│    Action: search_news(query="OpenAI", count=10)        │
+│    Observation: "找到 10 篇相关新闻..."                  │
+│    Status: completed                                     │
+└─────────────────────────────────────────────────────────┘
     ↓
-识别: 命令式输入（以 / 开头）
+┌─────────────────────────────────────────────────────────┐
+│ 4. ReAct 循环 - 迭代 2                                  │
+│    Thought: "现在需要分析这些新闻的技术趋势..."         │
+│    Action: analyze_trends(articles=[...])               │
+│    Observation: "识别出 3 个主要技术趋势..."             │
+│    Status: completed                                     │
+└─────────────────────────────────────────────────────────┘
     ↓
-解析为 Intent: {
-    command: "/latest",
-    params: {count: 5},
-    source: "command",
-    confidence: 1.0
-}
+┌─────────────────────────────────────────────────────────┐
+│ 5. 合成最终响应                                          │
+│    - 使用 LLM 从执行历史生成自然语言响应                 │
+│    - 包含所有关键信息和分析结果                          │
+└─────────────────────────────────────────────────────────┘
     ↓
-Plugin Manager
+┌─────────────────────────────────────────────────────────┐
+│ 6. 质量评估                                              │
+│    - 完整性评分: 9/10                                    │
+│    - 质量评分: 8/10                                      │
+│    - 需要重试: false                                     │
+└─────────────────────────────────────────────────────────┘
     ↓
-根据 Intent.command 找到 News Plugin
-    ↓
-News Plugin.execute(Intent)
-    ↓
-News Collector Service
-    ↓
-RSS Aggregator (检查缓存)
-    ↓
-返回: 5 篇最新文章
-    ↓
-格式化输出
-    ↓
-Frontend: 显示结果
+返回完整响应给用户
 ```
 
-**时间：** < 500ms（缓存命中）
+### 5.2 迭代终止条件
 
-### 流程 2：自然语言输入处理（基础版）
+ReAct 循环在以下情况下终止：
 
+1. **达到最大迭代次数**：5 次迭代
+2. **任务完成**：评估认为响应已完整
+3. **工具失败**：必需工具执行失败
+4. **超时**：总执行时间超过 30 秒
+
+---
+
+## 六、LLM 集成策略
+
+### 6.1 LLM 使用场景
+
+| 场景 | 模型 | 温度 | 最大 Token |
+|------|------|------|-----------|
+| 任务规划 | Gemini 2.0 Flash | 0.7 | 500 |
+| 推理生成 | Gemini 2.0 Flash | 0.7 | 500 |
+| 响应合成 | Gemini 2.0 Flash | 0.7 | 800 |
+| 质量评估 | Gemini 2.0 Flash | 0.3 | 300 |
+| 对话摘要 | Gemini 2.0 Flash | 0.5 | 500 |
+
+### 6.2 提示词模板
+
+**任务规划提示词**：
 ```
-用户输入: "最近 OpenAI 有什么新进展？"
-    ↓
-Frontend: AgentTerminal
-    ↓
-Next.js API: /api/agent/execute
-    ↓
-Python Backend: Intent Analyzer
-    ↓
-识别: 自然语言输入（不以 / 开头）
-    ↓
-LLM 不可用 → 使用关键词匹配
-    ↓
-解析为 Intent: {
-    command: "/search",
-    params: {
-        keywords: ["openai"],
-        count: 10
-    },
-    source: "natural_language",
-    confidence: 0.7,
-    keywords: ["openai"]
-}
-    ↓
-Plugin Manager
-    ↓
-根据 Intent.command 找到 News Plugin
-    ↓
-News Plugin.execute(Intent)
-    ↓
-News Collector Service
-    ↓
-根据 keywords 过滤文章
-    ↓
-返回: 10 篇相关文章
-    ↓
-格式化输出
-    ↓
-Frontend: 显示结果
-```
+你是一个任务规划助手。分析以下用户查询并创建执行计划。
 
-**时间：** < 1 秒（基础版，无 LLM）
+用户查询: {query}
+对话历史: {history}
 
-### 流程 3：自然语言输入处理（LLM 增强版 - 未来）
+可用工具:
+{tools_description}
 
-```
-用户输入: "最近 OpenAI 有什么新进展？"
-    ↓
-Frontend: AgentTerminal
-    ↓
-Next.js API: /api/agent/execute
-    ↓
-Python Backend: Intent Analyzer
-    ↓
-识别: 自然语言输入
-    ↓
-调用 LLM Service (Gemini 1.5 Flash)
-    ↓
-LLM 分析意图: {
-    command: "/search",
-    params: {
-        keywords: ["OpenAI"],
-        time_range: "last 7 days",
-        importance: "high"
-    },
-    source: "natural_language",
-    confidence: 0.95,
-    entities: {"companies": ["OpenAI"]}
-}
-    ↓
-Plugin Manager → News Plugin
-    ↓
-News Collector Service
-    ↓
-获取所有文章（缓存）
-    ↓
-Content Analyzer (Gemini 1.5 Flash) - 可选
-    ↓
-过滤和排序:
-- 匹配关键词 "OpenAI"
-- 时间范围: 最近 7 天
-- 重要性评分 > 7
-    ↓
-返回: 10 篇相关文章
-    ↓
-Insight Generator (Gemini 1.5 Flash) - 可选
-    ↓
-生成摘要:
-"本周 OpenAI 发布了 GPT-4.5，主要改进包括..."
-    ↓
-格式化输出
-    ↓
-Frontend: 显示结果
-```
+分类查询复杂度（simple/medium/complex）并分解为步骤。
+对于每个步骤，指定：
+- 描述
+- 使用的工具
+- 所需参数
+- 是否必需
+- 依赖的步骤
 
-**时间：** 2-3 秒（包含 LLM 调用）
-
-### 流程 4：深度分析（/deepdive）
-
-```
-用户输入: "/deepdive GPT-4" 或 "深度分析 GPT-4 的最新进展"
-    ↓
-Intent Analyzer → 识别意图
-    ↓
-解析为 Intent: {
-    command: "/deepdive",
-    params: {topic: "GPT-4"},
-    source: "command" | "natural_language"
-}
-    ↓
-Plugin Manager → News Plugin
-    ↓
-News Collector Service
-    ↓
-获取相关文章（50+ 篇）
-    ↓
-Content Analyzer (Gemini 1.5 Pro) ← 使用高级模型（未来）
-    ↓
-深度分析:
-- 提取关键信息
-- 识别趋势
-- 对比分析
-- 预测影响
-    ↓
-Insight Generator (Gemini 1.5 Pro)
-    ↓
-生成深度报告:
-- 技术突破点
-- 行业影响
-- 竞争态势
-- 未来趋势
-    ↓
-Frontend: 显示详细报告
-```
-
-**时间：** 5-8 秒（深度分析，包含 LLM）
-
-## 六、数据源设计
-RSS Feeds 配置
-```python
-# agent-backend/app/config.py
-
-RSS_FEEDS = {
-    # AI 公司官方博客
-    "openai": {
-        "url": "https://openai.com/blog/rss.xml",
-        "priority": "high",
-        "category": "Company",
-    },
-    "anthropic": {
-        "url": "https://www.anthropic.com/news/rss.xml",
-        "priority": "high",
-        "category": "Company",
-    },
-    "google_ai": {
-        "url": "https://blog.google/technology/ai/rss/",
-        "priority": "high",
-        "category": "Company",
-    },
-    "meta_ai": {
-        "url": "https://ai.meta.com/blog/rss/",
-        "priority": "high",
-        "category": "Company",
-    },
-    "deepmind": {
-        "url": "https://deepmind.google/discover/blog/rss.xml",
-        "priority": "high",
-        "category": "Company",
-    },
-    "microsoft_ai": {
-        "url": "https://blogs.microsoft.com/ai/feed/",
-        "priority": "high",
-        "category": "Company",
-    },
-    
-    # 科技媒体
-    "techcrunch_ai": {
-        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "priority": "medium",
-        "category": "Media",
-    },
-    "mit_tech_review": {
-        "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
-        "priority": "medium",
-        "category": "Media",
-    },
-    "venturebeat_ai": {
-        "url": "https://venturebeat.com/category/ai/feed/",
-        "priority": "medium",
-        "category": "Media",
-    },
-    "the_verge_ai": {
-        "url": "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
-        "priority": "medium",
-        "category": "Media",
-    },
-    "ars_technica_ai": {
-        "url": "https://arstechnica.com/tag/artificial-intelligence/feed/",
-        "priority": "medium",
-        "category": "Media",
-    },
+返回 JSON 格式：
+{
+  "complexity": "simple|medium|complex",
+  "steps": [...],
+  "estimated_iterations": 3
 }
 ```
-Hacker News API 集成
-```python
-# agent-backend/app/services/hn_client.py
 
-class HackerNewsClient:
-    """Hacker News API 客户端"""
-    
-    BASE_URL = "https://hacker-news.firebaseio.com/v0"
-    
-    async def get_top_ai_stories(self, limit: int = 20) -> List[NewsItem]:
-        """获取 AI 相关的热门故事"""
-        # 1. 获取 top stories
-        top_stories = await self._fetch_top_stories()
-        
-        # 2. 过滤 AI 相关
-        ai_stories = []
-        for story_id in top_stories[:100]:  # 检查前 100 个
-            story = await self._fetch_story(story_id)
-            if self._is_ai_related(story):
-                ai_stories.append(self._convert_to_news_item(story))
-            
-            if len(ai_stories) >= limit:
-                break
-        
-        return ai_stories
-    
-    def _is_ai_related(self, story: dict) -> bool:
-        """判断是否 AI 相关"""
-        ai_keywords = [
-            "ai", "artificial intelligence", "machine learning", "ml",
-            "deep learning", "neural network", "gpt", "llm", "chatgpt",
-            "openai", "anthropic", "google ai", "deepmind"
-        ]
-        
-        title = story.get("title", "").lower()
-        return any(keyword in title for keyword in ai_keywords)
+**ReAct 迭代提示词**：
 ```
-缓存策略
-```python
-# agent-backend/app/utils/cache.py
+你是一个智能 Agent，使用 ReAct 框架执行任务。
 
-class CacheManager:
-    """缓存管理器"""
-    
-    def __init__(self, redis_client):
-        self.redis = redis_client
-    
-    async def get_rss_feed(self, feed_url: str) -> Optional[List[NewsItem]]:
-        """获取缓存的 RSS feed"""
-        key = f"rss:{feed_url}"
-        cached = await self.redis.get(key)
-        if cached:
-            return json.loads(cached)
-        return None
-    
-    async def set_rss_feed(self, feed_url: str, articles: List[NewsItem], ttl: int = 1800):
-        """缓存 RSS feed（30 分钟）"""
-        key = f"rss:{feed_url}"
-        await self.redis.setex(
-            key,
-            ttl,
-            json.dumps([article.dict() for article in articles])
-        )
-    
-    async def get_llm_result(self, prompt_hash: str) -> Optional[dict]:
-        """获取缓存的 LLM 结果"""
-        key = f"
+任务: {query}
+执行计划: {plan}
+当前进度: {history}
+
+逐步思考：
+1. 我们目前完成了什么？
+2. 下一步需要做什么？
+3. 应该使用哪个工具和什么参数？
+
+返回 JSON 格式：
+{
+  "thought": "你对下一步的推理",
+  "tool_name": "要使用的工具名称",
+  "parameters": {"param1": "value1"}
+}
 ```
+
+### 6.3 成本优化
+
+**月度成本估算**（3000 次查询）：
+
+- 任务规划：500 tokens × 3000 = 1.5M tokens
+- ReAct 迭代：1000 tokens × 2 × 3000 = 6M tokens
+- 响应合成：1000 tokens × 3000 = 3M tokens
+- 总计：约 10.5M tokens
+
+**Gemini 2.0 Flash 定价**：
+- 输入：$0.075/1M tokens
+- 输出：$0.30/1M tokens
+- 月度成本：约 $2-3
+
+---
+
+## 七、数据库设计
+
+### 7.1 表结构
+
+**agent_conversations** (对话历史)
+```sql
+CREATE TABLE agent_conversations (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(255) NOT NULL,
+    user_query TEXT NOT NULL,
+    agent_response TEXT NOT NULL,
+    steps JSONB,                    -- ReActStep 列表
+    plan JSONB,                     -- ExecutionPlan
+    evaluation JSONB,               -- QualityEvaluation
+    created_at TIMESTAMP DEFAULT NOW(),
+    INDEX idx_session_id (session_id),
+    INDEX idx_created_at (created_at),
+    INDEX idx_session_time (session_id, created_at DESC)
+);
+```
+
+**agent_sessions** (会话元数据)
+```sql
+CREATE TABLE agent_sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255),
+    context JSONB,
+    summary TEXT,                   -- 对话摘要
+    created_at TIMESTAMP DEFAULT NOW(),
+    last_active TIMESTAMP DEFAULT NOW(),
+    INDEX idx_last_active (last_active)
+);
+```
+
+### 7.2 查询优化
+
+**常用查询**：
+```sql
+-- 获取会话历史（最近 10 条）
+SELECT * FROM agent_conversations
+WHERE session_id = $1
+ORDER BY created_at DESC
+LIMIT 10;
+
+-- 清理过期会话
+DELETE FROM agent_sessions
+WHERE last_active < NOW() - INTERVAL '24 hours';
+```
+
+**索引策略**：
+- `idx_session_id`: 加速会话查询
+- `idx_created_at`: 加速时间范围查询
+- `idx_session_time`: 复合索引，优化分页查询
+
+---
+
+## 八、技术实现细节
+
+### 8.1 错误处理策略
+
+**错误分类**：
+1. **LLM 错误**：服务不可用、速率限制、无效响应
+2. **工具错误**：工具未找到、参数无效、执行超时
+3. **数据库错误**：连接失败、查询超时
+4. **验证错误**：无效输入、缺少参数
+
+**重试策略**：
+- LLM 调用：3 次重试，指数退避（1s, 2s, 4s）
+- 工具执行：2 次重试（仅瞬态错误）
+- 数据库操作：3 次重试，500ms 延迟
+
+**降级方案**：
+- LLM 不可用 → 使用简单规则
+- 数据库不可用 → 内存存储
+- 工具失败 → 跳过可选工具
+
+### 8.2 性能优化
+
+**目标指标**：
+- 简单查询：< 2 秒
+- 复杂查询：< 10 秒
+- 数据库查询：< 100ms
+- LLM 调用：< 3 秒
+- 并发会话：100+
+
+**优化策略**：
+1. **工具结果缓存**：5 分钟 TTL，LRU 淘汰
+2. **对话摘要缓存**：1 小时 TTL
+3. **数据库连接池**：最小 5，最大 20
+4. **异步执行**：所有 I/O 操作异步化
+5. **批量查询**：合并数据库查询
+
+### 8.3 监控和日志
+
+**关键指标**：
+- 平均迭代次数
+- 工具执行成功率
+- LLM 调用延迟
+- 数据库查询性能
+- 会话时长
+- 错误率（按类型）
+
+**日志级别**：
+- **DEBUG**：详细执行轨迹
+- **INFO**：查询开始/结束、工具选择
+- **WARNING**：重试、降级
+- **ERROR**：失败（带堆栈跟踪）
+
+---
+
+## 附录
+
+### A. 术语表
+
+- **ReAct**: Reasoning + Acting，推理和行动的结合
+- **Thought**: Agent 的思考过程
+- **Action**: Agent 执行的工具调用
+- **Observation**: 工具执行的结果
+- **Reflection**: Agent 对输出质量的评估
+
+### B. 参考资料
+
+- [ReAct 论文](https://arxiv.org/abs/2210.03629)
+- [LangChain ReAct Agent](https://python.langchain.com/docs/modules/agents/agent_types/react)
+- [Google Gemini API](https://ai.google.dev/docs)
+
+---
+
+**版本**: 3.0.0  
+**最后更新**: 2024-01-01  
+**作者**: Agent Backend Team

@@ -1,11 +1,12 @@
 from typing import List
-from ..models.base import BasePlugin, AgentCommand, AgentRequest, AgentResponse
+from ..models.base import BasePlugin, AgentRequest, AgentResponse
+from ..models.tool import ToolDefinition, ToolParameter, ToolCall, ToolResult
 from ..services.news_collector import NewsCollectorService
 from ..services.llm_service import get_llm_service
 
 
 class NewsPlugin(BasePlugin):
-    """AI资讯插件"""
+    """AI资讯插件（增强版，支持工具定义）"""
 
     def __init__(self, use_real_data: bool = True):
         super().__init__(
@@ -15,36 +16,146 @@ class NewsPlugin(BasePlugin):
         self.news_service = NewsCollectorService(use_real_data=use_real_data)
         # 获取 LLM 服务用于深度分析
         self.llm_service = get_llm_service()
-
-    def get_commands(self) -> List[AgentCommand]:
+    
+    def get_tool_definitions(self) -> List[ToolDefinition]:
+        """返回工具定义列表（NEW）"""
         return [
-            AgentCommand(
+            ToolDefinition(
+                name="get_latest_news",
+                description="Get the latest AI news articles from various sources including company blogs, tech media, and community discussions",
+                parameters=[
+                    ToolParameter(
+                        name="count",
+                        type="integer",
+                        description="Number of articles to retrieve (1-20)",
+                        required=False,
+                        default=5
+                    ),
+                    ToolParameter(
+                        name="keywords",
+                        type="array",
+                        description="Filter articles by keywords (e.g., ['OpenAI', 'GPT'])",
+                        required=False
+                    )
+                ],
+                examples=[
+                    {
+                        "input": "Show me the latest 10 AI news",
+                        "parameters": {"count": 10}
+                    },
+                    {
+                        "input": "Latest news about OpenAI",
+                        "parameters": {"count": 5, "keywords": ["OpenAI"]}
+                    },
+                    {
+                        "input": "What's new in AI?",
+                        "parameters": {"count": 5}
+                    }
+                ],
+                plugin_id=self.id,
                 command="/latest",
-                description="获取最新AI资讯",
-                usage="/latest [count]",
-                examples=["/latest", "/latest 5"],
+                category="news"
             ),
-            AgentCommand(
+            ToolDefinition(
+                name="get_trending_topics",
+                description="Get currently trending AI topics and discussions based on mention frequency and engagement",
+                parameters=[
+                    ToolParameter(
+                        name="category",
+                        type="string",
+                        description="Filter by category",
+                        required=False,
+                        enum=["all", "research", "industry", "products"]
+                    )
+                ],
+                examples=[
+                    {
+                        "input": "What's trending in AI?",
+                        "parameters": {}
+                    },
+                    {
+                        "input": "Show me trending AI research topics",
+                        "parameters": {"category": "research"}
+                    }
+                ],
+                plugin_id=self.id,
                 command="/trending",
-                description="获取热门趋势",
-                usage="/trending [category]",
-                examples=["/trending", "/trending ai"],
+                category="news"
             ),
-            AgentCommand(
+            ToolDefinition(
+                name="deep_analysis",
+                description="Perform in-depth analysis on a specific AI topic, including recent developments, technical insights, and industry impact",
+                parameters=[
+                    ToolParameter(
+                        name="topic",
+                        type="string",
+                        description="The topic to analyze (e.g., 'GPT-4', 'multimodal AI', 'AI safety')",
+                        required=True
+                    )
+                ],
+                examples=[
+                    {
+                        "input": "Deep dive into GPT-4 developments",
+                        "parameters": {"topic": "GPT-4"}
+                    },
+                    {
+                        "input": "Analyze recent progress in multimodal AI",
+                        "parameters": {"topic": "multimodal AI"}
+                    }
+                ],
+                plugin_id=self.id,
                 command="/deepdive",
-                description="深度分析特定主题",
-                usage="/deepdive <topic>",
-                examples=["/deepdive GPT-4", "/deepdive 机器学习"],
-            ),
-            AgentCommand(
-                command="/help",
-                description="显示帮助信息",
-                usage="/help [command]",
-                examples=["/help", "/help /latest"],
-            ),
+                category="analysis"
+            )
         ]
 
+    async def execute_tool(self, tool_call: ToolCall) -> ToolResult:
+        """执行工具调用（ReactAgent 使用）"""
+        try:
+            tool_name = tool_call.tool_name
+            parameters = tool_call.parameters
+
+            if tool_name == "get_latest_news":
+                response = await self._handle_latest(parameters)
+                return ToolResult(
+                    success=response.success,
+                    data=response.data,
+                    error=response.error if not response.success else None,
+                    tool_name=tool_name,
+                )
+            elif tool_name == "get_trending_topics":
+                response = await self._handle_trending(parameters)
+                return ToolResult(
+                    success=response.success,
+                    data=response.data,
+                    error=response.error if not response.success else None,
+                    tool_name=tool_name,
+                )
+            elif tool_name == "deep_analysis":
+                response = await self._handle_deepdive(parameters)
+                return ToolResult(
+                    success=response.success,
+                    data=response.data,
+                    error=response.error if not response.success else None,
+                    tool_name=tool_name,
+                )
+            else:
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error=f"Unknown tool: {tool_name}",
+                    tool_name=tool_name,
+                )
+        except Exception as e:
+            return ToolResult(
+                success=False,
+                data=None,
+                error=str(e),
+                tool_name=tool_name if "tool_name" in locals() else "unknown",
+            )
+
     async def execute(self, request: AgentRequest) -> AgentResponse:
+        """执行命令（向后兼容）"""
         command = request.command
         params = request.params
 
@@ -76,12 +187,15 @@ class NewsPlugin(BasePlugin):
 
     async def _handle_help(self, params: dict) -> AgentResponse:
         """处理帮助命令"""
-        help_text = "=== AI资讯插件 ===\n"
-        for cmd in self.commands:
-            help_text += f"{cmd.command.ljust(20)} # {cmd.description}\n"
+        help_text = "=== AI资讯插件 ===\n\n"
+        help_text += "可用工具:\n"
+        for tool in self.tools:
+            help_text += f"• {tool.name.ljust(25)} - {tool.description}\n"
             if params.get("detailed"):
-                help_text += f"  用法: {cmd.usage}\n"
-                help_text += f"  示例: {', '.join(cmd.examples)}\n\n"
+                help_text += f"  参数: {', '.join([p.name for p in tool.parameters])}\n"
+                if tool.examples:
+                    help_text += f"  示例: {tool.examples[0]['input']}\n"
+                help_text += "\n"
 
         return AgentResponse(
             success=True, data=help_text, type="text", plugin=self.id, command="/help"
@@ -107,30 +221,35 @@ class NewsPlugin(BasePlugin):
                 command="/latest",
             )
 
-        # 格式化输出
-        response_text = "[INFO] Fetching latest AI news...\n"
-        response_text += f"[SUCCESS] Found {len(news_items)} new articles\n\n"
-        response_text += "┌─ Latest AI News ────────────────────────────────────────┐\n"
+        # 格式化输出 - 按照要求的格式
+        response_text = f"[INFO] Fetching latest AI news...\n"
+        response_text += f"[SUCCESS] Found {len(news_items)} articles\n\n"
+        response_text += "=" * 80 + "\n\n"
 
         for i, item in enumerate(news_items, 1):
-            response_text += f"│ {i}. {item.title}\n"
-            response_text += f"│    Source: {item.source} | {item.publish_time}\n"
-            # 增加概括内容到三行左右
-            summary_lines = item.summary.split(". ")
-            if len(summary_lines) >= 3:
-                # 如果概括内容足够，显示前3行
-                for j in range(min(3, len(summary_lines))):
-                    response_text += f"│    {summary_lines[j]}{'.' if j < 2 else ''}\n"
-            else:
-                # 如果概括内容不够，重复或扩展
-                response_text += f"│    {item.summary}\n"
-                if len(item.summary) < 100:  # 如果概括太短，添加额外信息
-                    response_text += "│    This development represents a significant advancement in the field.\n"
-                    response_text += "│    Industry experts are closely monitoring the implications.\n"
-            response_text += f"│    Link: {item.url}\n"
-            response_text += "│\n"
+            # 标题
+            response_text += f"{item.title}\n"
+            
+            # 来源和时间
+            response_text += f"Source: {item.source} | {item.publish_time}\n"
+            
+            # 分类和标签（如果有）
+            if item.category:
+                response_text += f"Category: {item.category}\n"
+            if item.tags:
+                response_text += f"Tags: {', '.join(item.tags[:5])}\n"  # 最多显示5个标签
+            
+            # 摘要
+            response_text += f"Abstract: {item.summary}\n"
+            
+            # 链接
+            response_text += f"Link: {item.url}\n"
+            
+            # 分隔线（最后一条不加）
+            if i < len(news_items):
+                response_text += "\n" + "-" * 80 + "\n\n"
 
-        response_text += "└─────────────────────────────────────────────────────────┘"
+        response_text += "\n" + "=" * 80
 
         return AgentResponse(
             success=True,

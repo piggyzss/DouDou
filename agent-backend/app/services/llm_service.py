@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from loguru import logger
 
 from ..config import settings
-from ..models.intent import Intent
 
 
 class LLMServiceError(Exception):
@@ -18,21 +17,21 @@ class LLMServiceError(Exception):
 
 # ========== 接口定义（接口隔离原则 ISP）==========
 
-class Analyzable(ABC):
-    """意图分析接口 - 只包含分析相关的方法"""
-    
-    @abstractmethod
-    async def analyze_intent(self, query: str, context: Optional[Dict[str, Any]] = None) -> Intent:
-        """分析用户意图"""
-        pass
-
-
 class Generatable(ABC):
     """文本生成接口 - 只包含生成相关的方法"""
     
     @abstractmethod
     async def generate_text(self, prompt: str, **kwargs) -> str:
         """生成文本"""
+        pass
+
+
+class ToolSelectable(ABC):
+    """工具选择接口 - 只包含工具选择相关的方法"""
+    
+    @abstractmethod
+    async def select_tool(self, user_input: str, tools_description: str, context: Optional[Dict[str, Any]] = None):
+        """选择合适的工具"""
         pass
 
 
@@ -47,14 +46,14 @@ class ServiceAvailability(ABC):
 
 # ========== 组合接口（方便使用）==========
 
-class BaseLLMService(Analyzable, Generatable, ServiceAvailability):
+class BaseLLMService(Generatable, ToolSelectable, ServiceAvailability):
     """
     LLM 服务基类 - 组合多个小接口
     
     设计说明：
-    - 这是一个便利类，组合了三个小接口
+    - 这是一个便利类，组合了四个小接口
     - 实际使用时应该依赖具体的小接口，而不是这个大接口
-    - 例如：IntentAnalyzer 只依赖 Analyzable
+    - 例如：AgentExecutor 只依赖 ToolSelectable
     
     符合原则：
     - ISP: 使用者可以只依赖需要的小接口
@@ -69,8 +68,8 @@ class GeminiLLMService(BaseLLMService):
     Google Gemini LLM 服务
     
     实现了三个接口：
-    - Analyzable: 意图分析
     - Generatable: 文本生成
+    - ToolSelectable: 工具选择
     - ServiceAvailability: 可用性检查
     
     单一职责：封装 Gemini API 的调用
@@ -100,36 +99,6 @@ class GeminiLLMService(BaseLLMService):
         """检查服务是否可用"""
         return self.model is not None and bool(self.api_key)
     
-    async def analyze_intent(self, query: str, context: Optional[Dict[str, Any]] = None) -> Intent:
-        """
-        使用 Gemini 分析用户意图
-        
-        Args:
-            query: 用户输入的自然语言
-            context: 上下文信息（可选）
-        
-        Returns:
-            Intent: 解析后的意图对象
-        """
-        if not self.is_available():
-            raise LLMServiceError("Gemini service not available")
-        
-        # 构建 prompt
-        prompt = self._build_intent_prompt(query, context)
-        
-        try:
-            # 调用 Gemini API
-            response = await self._call_gemini(prompt, temperature=0.3, response_format="json")
-            
-            # 解析响应
-            intent_data = self._parse_intent_response(response, query)
-            
-            return Intent(**intent_data)
-        
-        except Exception as e:
-            logger.error(f"Intent analysis failed: {e}")
-            raise LLMServiceError(f"Intent analysis failed: {e}")
-    
     async def generate_text(self, prompt: str, **kwargs) -> str:
         """生成文本"""
         if not self.is_available():
@@ -142,94 +111,147 @@ class GeminiLLMService(BaseLLMService):
             logger.error(f"Text generation failed: {e}")
             raise LLMServiceError(f"Text generation failed: {e}")
     
+    async def select_tool(self, user_input: str, tools_description: str, context: Optional[Dict[str, Any]] = None):
+        """
+        使用 Gemini 选择合适的工具
+        
+        Args:
+            user_input: 用户输入
+            tools_description: 工具描述（由 ToolRegistry.format_for_llm() 生成）
+            context: 上下文信息（可选）
+        
+        Returns:
+            ToolCall 对象
+        """
+        if not self.is_available():
+            raise LLMServiceError("Gemini service not available")
+        
+        # 导入 ToolCall（避免循环导入）
+        from ..models.tool import ToolCall
+        
+        # 构建 prompt
+        prompt = self._build_tool_selection_prompt(user_input, tools_description, context)
+        
+        try:
+            # 调用 Gemini API
+            response = await self._call_gemini(prompt, temperature=0.3, response_format="json")
+            
+            # 解析响应
+            tool_call_data = self._parse_tool_selection_response(response, user_input)
+            
+            return ToolCall(**tool_call_data)
+        
+        except Exception as e:
+            logger.error(f"Tool selection failed: {e}")
+            raise LLMServiceError(f"Tool selection failed: {e}")
+    
     async def _call_gemini(
         self, 
         prompt: str, 
         temperature: float = 0.7,
         max_tokens: int = 1000,
-        response_format: str = "text"
+        response_format: str = "text",
+        max_retries: int = 3,
+        timeout: float = 30.0  # 30 秒超时
     ) -> str:
         """
-        调用 Gemini API
+        调用 Gemini API（带重试机制和超时）
         
         Args:
             prompt: 提示词
             temperature: 温度参数 (0-1)
             max_tokens: 最大 token 数
             response_format: 响应格式 ("text" | "json")
+            max_retries: 最大重试次数
+            timeout: 超时时间（秒）
         
         Returns:
             str: 模型响应
         """
-        try:
-            generation_config = {
-                "temperature": temperature,
-                "max_output_tokens": max_tokens,
-            }
-            
-            # 如果需要 JSON 格式，在 prompt 中明确要求
-            if response_format == "json":
-                prompt = f"{prompt}\n\nPlease respond with valid JSON only, no additional text."
-            
-            response = self.model.generate_content(
-                prompt,
-                generation_config=generation_config
-            )
-            
-            return response.text.strip()
+        import asyncio
         
-        except Exception as e:
-            logger.error(f"Gemini API call failed: {e}")
-            raise
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                generation_config = {
+                    "temperature": temperature,
+                    "max_output_tokens": max_tokens,
+                }
+                
+                # 如果需要 JSON 格式，在 prompt 中明确要求
+                if response_format == "json":
+                    prompt_with_format = f"{prompt}\n\nPlease respond with valid JSON only, no additional text."
+                else:
+                    prompt_with_format = prompt
+                
+                # 使用 asyncio.wait_for 添加超时
+                response = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        self.model.generate_content,
+                        prompt_with_format,
+                        generation_config=generation_config
+                    ),
+                    timeout=timeout
+                )
+                
+                return response.text.strip()
+            
+            except asyncio.TimeoutError:
+                last_error = LLMServiceError(f"Gemini API call timed out after {timeout}s")
+                logger.warning(f"Gemini API call timed out (attempt {attempt + 1}/{max_retries})")
+                
+                # 如果不是最后一次尝试，等待后重试
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 2  # 指数退避：2s, 4s, 6s
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    await asyncio.sleep(wait_time)
+            
+            except Exception as e:
+                last_error = e
+                logger.warning(f"Gemini API call failed (attempt {attempt + 1}/{max_retries}): {e}")
+                
+                # 如果不是最后一次尝试，等待后重试
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 2  # 指数退避：2s, 4s, 6s
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    await asyncio.sleep(wait_time)
+        
+        # 所有重试都失败
+        logger.error(f"Gemini API call failed after {max_retries} attempts")
+        raise last_error
     
-    def _build_intent_prompt(self, query: str, context: Optional[Dict[str, Any]] = None) -> str:
-        """构建意图分析的 prompt"""
-        prompt = f"""You are an AI assistant that analyzes user queries about AI news and technology.
+    def _build_tool_selection_prompt(self, user_input: str, tools_description: str, context: Optional[Dict[str, Any]] = None) -> str:
+        """构建工具选择的 prompt"""
+        prompt = f"""You are an AI assistant that helps users by selecting the most appropriate tool for their request.
 
-Available commands:
-- /latest: Get the latest AI news articles
-- /trending: Get trending AI topics
-- /search: Search for specific topics or keywords
-- /deepdive: Get in-depth analysis on a topic
-- /help: Show help information
+{tools_description}
 
-User query: "{query}"
+User request: "{user_input}"
 
-Analyze the user's intent and extract:
-1. Which command best matches their intent
-2. Relevant parameters (count, keywords, topic, etc.)
-3. Time range if mentioned (e.g., "last week", "today", "recent")na m
-4. Importance level (high, medium, all)
-5. Key entities (companies, technologies, people)
+Analyze the user's request and select the most appropriate tool. Consider:
+1. What is the user trying to accomplish?
+2. Which tool best matches their intent?
+3. What parameters does the tool need?
+4. How confident are you in this selection?
 
 Respond with a JSON object in this exact format:
 {{
-    "command": "/latest or /trending or /search or /deepdive",
-    "params": {{
-        "count": 10,
-        "keywords": ["keyword1", "keyword2"],
-        "topic": "topic name",
-        "time_range": "last 7 days"
+    "tool_name": "name_of_selected_tool",
+    "parameters": {{
+        "param1": "value1",
+        "param2": "value2"
     }},
-    "confidence": 0.95,
-    "keywords": ["extracted", "keywords"],
-    "time_range": "last 7 days",
-    "importance": "high",
-    "entities": {{
-        "companies": ["OpenAI", "Google"],
-        "technologies": ["GPT-4", "Gemini"],
-        "people": []
-    }}
+    "reasoning": "Brief explanation of why you chose this tool",
+    "confidence": 0.95
 }}
 
 Rules:
+- tool_name must exactly match one of the available tools
+- parameters must match the tool's parameter schema
 - confidence should be between 0.0 and 1.0
-- Use /search for specific topic queries
-- Use /latest for general "what's new" queries
-- Use /trending for "hot topics" or "popular" queries
-- Use /deepdive for "analysis" or "detailed" queries
-- Extract all relevant keywords and entities
-- If time range is not specified, omit it from params
+- reasoning should be concise (1-2 sentences)
+- Only include parameters that are mentioned or can be inferred from the user's request
 """
         
         if context:
@@ -237,10 +259,10 @@ Rules:
         
         return prompt
     
-    def _parse_intent_response(self, response: str, original_query: str) -> Dict[str, Any]:
-        """解析 LLM 返回的意图数据"""
+    def _parse_tool_selection_response(self, response: str, original_input: str) -> Dict[str, Any]:
+        """解析 LLM 返回的工具选择数据"""
         try:
-            # 尝试提取 JSON（可能包含在 markdown 代码块中）
+            # 提取 JSON
             response = response.strip()
             if response.startswith("```json"):
                 response = response[7:]
@@ -253,20 +275,20 @@ Rules:
             data = json.loads(response)
             
             # 验证必需字段
-            if "command" not in data:
-                raise ValueError("Missing 'command' field")
+            if "tool_name" not in data:
+                raise ValueError("Missing 'tool_name' field")
             
             # 添加元数据
-            data["source"] = "natural_language"
-            data["original_input"] = original_query
+            data["source"] = "llm"
+            data["original_input"] = original_input
             
             # 设置默认值
-            if "params" not in data:
-                data["params"] = {}
+            if "parameters" not in data:
+                data["parameters"] = {}
+            if "reasoning" not in data:
+                data["reasoning"] = "No reasoning provided"
             if "confidence" not in data:
                 data["confidence"] = 0.8
-            if "keywords" not in data:
-                data["keywords"] = []
             
             return data
         
@@ -275,8 +297,8 @@ Rules:
             logger.error(f"JSON error: {e}")
             raise LLMServiceError(f"Invalid JSON response from LLM: {e}")
         except Exception as e:
-            logger.error(f"Failed to parse intent response: {e}")
-            raise LLMServiceError(f"Failed to parse intent: {e}")
+            logger.error(f"Failed to parse tool selection response: {e}")
+            raise LLMServiceError(f"Failed to parse tool selection: {e}")
 
 
 # 工厂模式创建服务

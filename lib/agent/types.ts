@@ -29,6 +29,13 @@ export interface AgentResponse {
   plugin: string;
   command: string;
   timestamp: number;
+  metadata?: {
+    steps?: any[];
+    plan?: any;
+    evaluation?: any;
+    session_id?: string;
+    execution_time?: number;
+  };
 }
 
 export interface PluginExecutionContext {

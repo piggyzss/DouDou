@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { agentPluginManager } from "@/lib/agent/plugin-manager";
 import { AgentRequest, AgentResponse } from "@/lib/agent/types";
+import { ReactResponse, ReActStep, ExecutionPlan, QualityEvaluation } from "../types/react-agent";
 
 // 格式化结构化响应的辅助函数
 const formatStructuredResponse = (data: any, command: string): string => {
@@ -23,11 +24,16 @@ export interface AgentMessage {
   content: string;
   timestamp: Date;
   status?: "sending" | "success" | "error";
+  steps?: ReActStep[];
+  plan?: ExecutionPlan;
+  evaluation?: QualityEvaluation;
 }
 
 export interface AgentState {
   status: "idle" | "processing" | "error";
   lastUpdate: Date | null;
+  currentStep?: number;
+  totalSteps?: number;
 }
 
 export function useAgent() {
@@ -36,7 +42,7 @@ export function useAgent() {
       id: "1",
       type: "system",
       content:
-        "> Welcome to AI News Agent\n> Intelligence about Intelligence\n> Type '/help' for available commands",
+        "> Welcome to AI News Agent\n> Intelligence about Intelligence\n> Type '/help' for available commands or ask in natural language",
       timestamp: new Date(),
       status: "success",
     },
@@ -45,10 +51,14 @@ export function useAgent() {
   const [agentState, setAgentState] = useState<AgentState>({
     status: "idle",
     lastUpdate: new Date(),
+    currentStep: undefined,
+    totalSteps: undefined,
   });
 
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const [streamingSteps, setStreamingSteps] = useState<ReActStep[]>([]);
 
   const processCommand = useCallback(async (command: string) => {
     const trimmedCommand = command.trim();
@@ -69,7 +79,12 @@ export function useAgent() {
     setHistoryIndex(-1);
 
     // 设置处理状态
-    setAgentState((prev) => ({ ...prev, status: "processing" }));
+    setAgentState((prev) => ({ 
+      ...prev, 
+      status: "processing",
+      currentStep: undefined,
+      totalSteps: undefined,
+    }));
 
     // 处理特殊命令
     if (trimmedCommand.toLowerCase() === "/clear") {
@@ -87,14 +102,19 @@ export function useAgent() {
         ...prev,
         status: "idle",
         lastUpdate: new Date(),
+        currentStep: undefined,
+        totalSteps: undefined,
       }));
       return;
     }
 
+    // 重置流式步骤
+    setStreamingSteps([]);
+
     try {
       // 使用插件管理器处理命令
       const request: AgentRequest = {
-        command: trimmedCommand, // 不再转小写，保留原始输入
+        command: trimmedCommand,
         params: {},
         sessionId: "default",
       };
@@ -103,7 +123,25 @@ export function useAgent() {
         await agentPluginManager.executeCommand(request);
 
       let responseContent = "";
+      let steps: ReActStep[] | undefined;
+      let plan: ExecutionPlan | undefined;
+      let evaluation: QualityEvaluation | undefined;
+
       if (response.success) {
+        // 检查是否有 ReactAgent 元数据
+        if (response.metadata) {
+          steps = response.metadata.steps as ReActStep[];
+          plan = response.metadata.plan as ExecutionPlan;
+          evaluation = response.metadata.evaluation as QualityEvaluation;
+          
+          // 调试日志
+          console.log('Received metadata:', {
+            stepsCount: steps?.length,
+            planComplexity: plan?.complexity,
+            evaluationScore: evaluation?.completeness_score
+          });
+        }
+
         // 根据响应类型格式化内容
         if (response.type === "structured" && response.data) {
           responseContent = formatStructuredResponse(
@@ -123,6 +161,9 @@ export function useAgent() {
         content: responseContent,
         timestamp: new Date(),
         status: response.success ? "success" : "error",
+        steps,
+        plan,
+        evaluation,
       };
 
       setMessages((prev) => [...prev, agentMessage]);
@@ -130,6 +171,8 @@ export function useAgent() {
         ...prev,
         status: "idle",
         lastUpdate: new Date(),
+        currentStep: undefined,
+        totalSteps: undefined,
       }));
     } catch (error) {
       const errorMessage: AgentMessage = {
@@ -145,6 +188,8 @@ export function useAgent() {
         ...prev,
         status: "error",
         lastUpdate: new Date(),
+        currentStep: undefined,
+        totalSteps: undefined,
       }));
     }
   }, []);
@@ -175,11 +220,21 @@ export function useAgent() {
     [commandHistory, historyIndex],
   );
 
+  // 清理 EventSource 连接
+  const cleanupEventSource = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, []);
+
   return {
     messages,
     agentState,
     processCommand,
     getHistoryCommand,
     setMessages,
+    streamingSteps,
+    cleanupEventSource,
   };
 }

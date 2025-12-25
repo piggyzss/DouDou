@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Terminal, Wifi, Link, Bot, Command } from "lucide-react";
+import { X, Terminal, Wifi, Link, Bot, Command, Zap } from "lucide-react";
 import { useTerminalTheme } from "../hooks/useTerminalTheme";
 import { useAgent } from "../hooks/useAgent";
+import StepVisualization from "./StepVisualization";
 
 export default function AgentTerminal() {
   const [input, setInput] = useState("");
@@ -15,7 +16,7 @@ export default function AgentTerminal() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const terminalTheme = useTerminalTheme();
-  const { messages, agentState, processCommand, getHistoryCommand } =
+  const { messages, agentState, processCommand, getHistoryCommand, streamingSteps } =
     useAgent();
 
   // 确保只在客户端渲染时显示时间
@@ -279,7 +280,45 @@ export default function AgentTerminal() {
         );
       }
 
-      // 处理包含链接的行
+      // 处理Link标签
+      if (line.includes("Link:")) {
+        const parts = line.split("Link:");
+        const urlMatch = parts[1]?.trim().match(/(https?:\/\/[^\s]+)/);
+        if (urlMatch) {
+          const url = urlMatch[0];
+          return (
+            <div key={index} className="mb-2">
+              <div className="flex items-start">
+                <span className="text-terminal-blue font-semibold text-xs md:text-sm flex-shrink-0">
+                  Link:
+                </span>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="terminal-link inline-flex items-center gap-1 ml-2 text-xs md:text-sm break-all underline"
+                  style={{
+                    color: "var(--primary-light)",
+                    transition: "color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--primary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--primary-light)";
+                  }}
+                  title={url}
+                >
+                  <Link size={12} className="flex-shrink-0" />
+                  <span className="break-all">{url}</span>
+                </a>
+              </div>
+            </div>
+          );
+        }
+      }
+
+      // 处理包含链接的行（通用处理）
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       if (urlRegex.test(line)) {
         const parts = line.split(urlRegex);
@@ -441,6 +480,14 @@ export default function AgentTerminal() {
                 />
                 <span className="capitalize">{agentState.status}</span>
               </div>
+              {agentState.currentStep !== undefined && agentState.totalSteps !== undefined && (
+                <>
+                  <span>|</span>
+                  <div className="flex items-center space-x-1">
+                    <span>Step {agentState.currentStep}/{agentState.totalSteps}</span>
+                  </div>
+                </>
+              )}
               <span>|</span>
               <div className="flex items-center space-x-1">
                 <Wifi size={12} strokeWidth={1.5} className="flex-shrink-0" />
@@ -507,10 +554,77 @@ export default function AgentTerminal() {
             {/* 消息显示区域 */}
             <div className="flex-1 p-3 md:p-6 overflow-y-auto font-mono text-xs md:text-sm font-normal leading-relaxed terminal-messages-container custom-scrollbar terminal-content-text">
               {messages.map((message) => (
-                <div key={message.id} className="mb-2">
+                <div key={message.id} className="mb-4">
                   {formatMessage(message.content)}
+                  
+                  {/* 显示执行计划 */}
+                  {message.plan && (
+                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                          Execution Plan ({message.plan.complexity})
+                        </span>
+                      </div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                        <div>Steps: {message.plan.steps.length}</div>
+                        <div>Estimated iterations: {message.plan.estimated_iterations}</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 显示执行步骤 */}
+                  {message.steps && message.steps.length > 0 && (
+                    <div className="mt-3">
+                      <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                        Execution Steps:
+                      </div>
+                      <StepVisualization 
+                        steps={message.steps} 
+                        currentStep={agentState.currentStep}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* 显示质量评估 */}
+                  {message.evaluation && (
+                    <div className="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                      <div className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">
+                        Quality Evaluation
+                      </div>
+                      <div className="text-xs text-purple-600 dark:text-purple-400 space-y-1">
+                        <div>Completeness: {message.evaluation.completeness_score}/10</div>
+                        <div>Quality: {message.evaluation.quality_score}/10</div>
+                        {message.evaluation.missing_info.length > 0 && (
+                          <div className="mt-2">
+                            <div className="font-semibold">Missing info:</div>
+                            <ul className="list-disc list-inside">
+                              {message.evaluation.missing_info.map((info, idx) => (
+                                <li key={idx}>{info}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
+              
+              {/* 显示流式步骤（正在处理中） */}
+              {agentState.status === "processing" && streamingSteps.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mb-2 flex items-center gap-2">
+                    <Bot className="w-4 h-4 animate-pulse" />
+                    Processing...
+                  </div>
+                  <StepVisualization 
+                    steps={streamingSteps} 
+                    currentStep={agentState.currentStep}
+                  />
+                </div>
+              )}
+              
               <div ref={messagesEndRef} />
             </div>
 

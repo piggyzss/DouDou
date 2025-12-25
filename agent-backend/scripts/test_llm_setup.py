@@ -137,10 +137,10 @@ async def test_api_call():
         return False
 
 
-async def test_intent_analysis():
-    """测试意图分析"""
+async def test_tool_selection():
+    """测试工具选择"""
     print("=" * 60)
-    print("5. 测试意图分析功能")
+    print("5. 测试工具选择功能")
     print("=" * 60)
     
     try:
@@ -148,26 +148,34 @@ async def test_intent_analysis():
         
         service = get_llm_service()
         if not service:
-            print("✗ LLM 服务不可用，跳过意图分析测试")
+            print("✗ LLM 服务不可用，跳过工具选择测试")
             return False
         
         test_query = "最近 OpenAI 有什么新进展？"
         print(f"测试查询: {test_query}")
-        print("正在分析意图...")
+        print("正在选择工具...")
         
-        intent = await service.analyze_intent(test_query)
+        # 模拟工具描述
+        tools_description = """Available tools:
+1. get_latest_news - Get the latest AI news articles
+   Parameters: count (int, optional), keywords (list, optional)
+2. search_news - Search for specific topics
+   Parameters: query (str, required), count (int, optional)
+"""
         
-        print(f"\n✓ 意图分析结果:")
-        print(f"  命令: {intent.command}")
-        print(f"  参数: {intent.params}")
-        print(f"  置信度: {intent.confidence}")
-        print(f"  关键词: {intent.keywords}")
+        tool_call = await service.select_tool(test_query, tools_description)
         
-        print("\n✅ 意图分析功能正常\n")
+        print(f"\n✓ 工具选择结果:")
+        print(f"  工具: {tool_call.tool_name}")
+        print(f"  参数: {tool_call.parameters}")
+        print(f"  置信度: {tool_call.confidence}")
+        print(f"  推理: {tool_call.reasoning}")
+        
+        print("\n✅ 工具选择功能正常\n")
         return True
     
     except Exception as e:
-        print(f"✗ 意图分析失败: {e}")
+        print(f"✗ 工具选择失败: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -193,8 +201,8 @@ async def main():
     # 4. 测试 API 调用
     results.append(("API 调用", await test_api_call()))
     
-    # 5. 测试意图分析
-    results.append(("意图分析", await test_intent_analysis()))
+    # 5. 测试工具选择
+    results.append(("工具选择", await test_tool_selection()))
     
     # 总结
     print("=" * 60)

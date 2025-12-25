@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .api.routes import agent
+from .api.routes.agent import global_exception_handler
 import uvicorn
 
 # 创建FastAPI应用
@@ -21,6 +22,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+
+# 注册全局异常处理器
+app.add_exception_handler(Exception, global_exception_handler)
 
 # 注册路由
 app.include_router(agent.router, prefix="/api/agent", tags=["agent"])

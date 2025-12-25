@@ -99,6 +99,14 @@ export default function Hero() {
           </motion.div>
         </motion.div>
       </div>
+      {/* --- Background Elements --- */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* 右上角的紫色光晕 */}
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-violet-200 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-pulse-slow"></div>
+        
+        {/* 左下角的粉紫色光晕 */}
+        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-fuchsia-200 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-pulse-slow delay-1000"></div>
+      </div>
     </section>
   );
 }

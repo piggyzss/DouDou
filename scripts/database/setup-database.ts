@@ -248,12 +248,86 @@ async function createTables() {
       $$ language 'plpgsql'
     `);
 
+    // Drop triggers if they exist before creating them
+    await client.query(
+      `DROP TRIGGER IF EXISTS update_blog_posts_updated_at ON blog_posts`,
+    );
+    await client.query(
+      `DROP TRIGGER IF EXISTS update_blog_comments_updated_at ON blog_comments`,
+    );
+
     await client.query(
       `CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`,
     );
     await client.query(
       `CREATE TRIGGER update_blog_comments_updated_at BEFORE UPDATE ON blog_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()`,
     );
+
+    // 创建 Agent 系统表
+    console.log("🤖 创建 Agent 系统表...");
+    
+    // Agent conversations table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS agent_conversations (
+        id SERIAL PRIMARY KEY,
+        session_id VARCHAR(255) NOT NULL,
+        user_query TEXT NOT NULL,
+        agent_response TEXT NOT NULL,
+        steps JSONB,
+        plan JSONB,
+        evaluation JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Agent sessions table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS agent_sessions (
+        session_id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255),
+        context JSONB,
+        summary TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create indexes for agent tables
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_agent_conversations_session_id ON agent_conversations(session_id)`,
+    );
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_agent_conversations_created_at ON agent_conversations(created_at)`,
+    );
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_agent_conversations_session_time ON agent_conversations(session_id, created_at DESC)`,
+    );
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_agent_sessions_last_active ON agent_sessions(last_active)`,
+    );
+
+    console.log("✅ Agent 系统表创建完成");
+
+    // Verify agent tables exist
+    const conversationsCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'agent_conversations'
+      );
+    `);
+    
+    const sessionsCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'agent_sessions'
+      );
+    `);
+    
+    if (conversationsCheck.rows[0].exists && sessionsCheck.rows[0].exists) {
+      console.log("✅ Agent 表验证通过");
+    } else {
+      throw new Error("Agent 表创建失败");
+    }
 
     console.log("✅ 所有表结构创建完成");
   } catch (error) {

@@ -127,26 +127,69 @@ vercel --prod
 
 ### 前端
 
+#### 框架和运行时
 - **Next.js 14**: React全栈框架
-- **TypeScript**: 类型安全
-- **Tailwind CSS**: 原子化CSS
+- **react (18.x)**: UI 库
+
+#### UI 和样式
+- **Tailwind CSS**: CSS 框架
 - **Framer Motion**: 动画效果
-- **React Query**: 数据获取和缓存
+- **lucide-react**: 图标库
+
+#### 其他
+- **TypeScript**: 类型安全
 
 ### 后端
 
+#### Web 框架和服务器
 - **FastAPI**: 现代Python Web框架
-- **Pydantic**: 数据验证
-- **Uvicorn**: ASGI服务器
+- **Pydantic**: 数据验证和模型定义
+- **Uvicorn**: ASGI服务器，，用于运行 FastAPI
 - **Gunicorn**: WSGI服务器
 - **Redis**: 缓存和会话存储
 
+#### LLM 集成
+**google-generativeai**: Google Gemini API 官方 SDK
+- 用于 Gemini 2.0 Flash 模型调用
+- 支持任务规划、ReAct 迭代、质量评估
+
+#### 数据库
+**psycopg2-binary**: PostgreSQL 数据库驱动
+- 用于会话记忆持久化存储
+- 原生 SQL 查询，不使用 ORM
+
+#### 异步和并发
+- **asyncio (Python 内置)**: 异步编程核心
+- **aiohttp**: 异步 HTTP 客户端
+
+#### 日志和监控
+- **loguru**: 结构化日志库，比标准 logging 更易用
+
+#### 工具和实用
+- **python-dotenv**: 环境变量管理
+- **feedparser**: RSS feed 解析（用于新闻收集）
+
+#### 测试
+- **pytest** - 测试框架
+- **pytest-asyncio** - 异步测试支持
+- **httpx** - 测试 HTTP 客户端
+
 ### 部署
 
+#### 容器化
+- **Docker**: 容器化平台
+- **docker-compose**: 多容器编排
+
+#### 数据库
+- **PostgreSQL (14+)** - 关系型数据库，用于存储会话历史和对话记忆
+
+#### 部署平台
 - **Vercel**: 前端和容器化后端部署
-- **Docker**: 容器化技术
+- **Vercel Postgres**: 托管数据库服务
+
 - **GitHub Actions**: CI/CD自动化
 - **腾讯云COS**: 文件存储
+
 
 ## 📚 文档
 

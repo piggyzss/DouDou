@@ -53,6 +53,7 @@ export class AgentPluginManager {
         plugin: result.plugin || "unknown",
         command: result.command || request.command,
         timestamp: Date.now(),
+        metadata: result.metadata, // 传递 metadata（包含 steps, plan, evaluation）
       };
     } catch (error) {
       return {
