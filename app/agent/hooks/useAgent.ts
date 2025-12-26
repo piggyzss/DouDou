@@ -1,22 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { agentPluginManager } from "@/lib/agent/plugin-manager";
-import { AgentRequest, AgentResponse } from "@/lib/agent/types";
-import { ReactResponse, ReActStep, ExecutionPlan, QualityEvaluation } from "../types/react-agent";
-
-// 格式化结构化响应的辅助函数
-const formatStructuredResponse = (data: any, command: string): string => {
-  // /help 命令的响应已经由后端格式化，直接返回
-  // 其他结构化数据也由后端处理
-  
-  // 默认格式化
-  if (typeof data === "string") {
-    return data;
-  }
-
-  return JSON.stringify(data, null, 2);
-};
+import { ReActStep, ExecutionPlan, QualityEvaluation } from "../types/react-agent";
 
 export interface AgentMessage {
   id: string;
@@ -59,6 +44,15 @@ export function useAgent() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const eventSourceRef = useRef<EventSource | null>(null);
   const [streamingSteps, setStreamingSteps] = useState<ReActStep[]>([]);
+  const [currentResponse, setCurrentResponse] = useState<string>("");
+
+  // 清理 EventSource 连接
+  const cleanupEventSource = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, []);
 
   const processCommand = useCallback(async (command: string) => {
     const trimmedCommand = command.trim();
@@ -108,72 +102,151 @@ export function useAgent() {
       return;
     }
 
-    // 重置流式步骤
+    // 重置流式步骤和响应
     setStreamingSteps([]);
+    setCurrentResponse("");
+
+    // 清理之前的 EventSource 连接
+    cleanupEventSource();
 
     try {
-      // 使用插件管理器处理命令
-      const request: AgentRequest = {
-        command: trimmedCommand,
-        params: {},
-        sessionId: "default",
-      };
-
-      const response: AgentResponse =
-        await agentPluginManager.executeCommand(request);
-
-      let responseContent = "";
-      let steps: ReActStep[] | undefined;
+      const messageId = (Date.now() + 1).toString();
+      const steps: ReActStep[] = [];
       let plan: ExecutionPlan | undefined;
       let evaluation: QualityEvaluation | undefined;
-
-      if (response.success) {
-        // 检查是否有 ReactAgent 元数据
-        if (response.metadata) {
-          steps = response.metadata.steps as ReActStep[];
-          plan = response.metadata.plan as ExecutionPlan;
-          evaluation = response.metadata.evaluation as QualityEvaluation;
+      let accumulatedResponse = "";
+      
+      const params = new URLSearchParams({
+        input: trimmedCommand,
+        session_id: "default",
+      });
+      
+      const eventSource = new EventSource(`/api/agent/execute?${params}`);
+      eventSourceRef.current = eventSource;
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
           
-          // 调试日志
-          console.log('Received metadata:', {
-            stepsCount: steps?.length,
-            planComplexity: plan?.complexity,
-            evaluationScore: evaluation?.completeness_score
-          });
+          if (data.type === 'start') {
+            // 开始执行
+          } else if (data.type === 'plan') {
+            plan = data.plan as ExecutionPlan;
+          } else if (data.type === 'step') {
+            const step: ReActStep = {
+              step_number: data.step_number,
+              thought: data.thought,
+              action: { 
+                tool_name: data.action, 
+                parameters: {} 
+              },
+              observation: { 
+                success: true,
+                data: data.observation 
+              },
+              status: data.status,
+              timestamp: new Date().toISOString(),
+            };
+            steps.push(step);
+            setStreamingSteps([...steps]);
+            
+            setAgentState((prev) => ({
+              ...prev,
+              currentStep: data.step_number,
+              lastUpdate: new Date(),
+            }));
+          } else if (data.type === 'response_chunk') {
+            accumulatedResponse += data.chunk;
+            setCurrentResponse(accumulatedResponse);
+          } else if (data.type === 'complete') {
+            if (data.evaluation) {
+              evaluation = data.evaluation as QualityEvaluation;
+            }
+            
+            const finalMessage: AgentMessage = {
+              id: messageId,
+              type: "agent",
+              content: data.response || accumulatedResponse,
+              timestamp: new Date(),
+              status: "success",
+              steps,
+              plan,
+              evaluation,
+            };
+            
+            setAgentState((prev) => ({
+              ...prev,
+              status: "idle",
+              lastUpdate: new Date(),
+              currentStep: undefined,
+              totalSteps: undefined,
+            }));
+            
+            setStreamingSteps([]);
+            setCurrentResponse("");
+            setMessages((prev) => [...prev, finalMessage]);
+            
+            cleanupEventSource();
+          } else if (data.type === 'error') {
+            const errorMessage: AgentMessage = {
+              id: messageId,
+              type: "system",
+              content: `[ERROR] ${data.error}\n\n${data.original_error ? `详细信息: ${data.original_error}` : ''}`,
+              timestamp: new Date(),
+              status: "error",
+            };
+            
+            setAgentState((prev) => ({
+              ...prev,
+              status: "error",
+              lastUpdate: new Date(),
+              currentStep: undefined,
+              totalSteps: undefined,
+            }));
+            
+            setCurrentResponse("");
+            setStreamingSteps([]);
+            setMessages((prev) => [...prev, errorMessage]);
+            
+            cleanupEventSource();
+          }
+        } catch (err) {
+          // 忽略 SSE 解析错误
         }
-
-        // 根据响应类型格式化内容
-        if (response.type === "structured" && response.data) {
-          responseContent = formatStructuredResponse(
-            response.data,
-            response.command,
-          );
-        } else {
-          responseContent = response.data || "> Command executed successfully";
-        }
-      } else {
-        responseContent = `> [ERROR] ${response.error}`;
-      }
-
-      const agentMessage: AgentMessage = {
-        id: (Date.now() + 1).toString(),
-        type: response.success ? "agent" : "system",
-        content: responseContent,
-        timestamp: new Date(),
-        status: response.success ? "success" : "error",
-        steps,
-        plan,
-        evaluation,
       };
-
-      setMessages((prev) => [...prev, agentMessage]);
-      setAgentState((prev) => ({
-        ...prev,
-        status: "idle",
-        lastUpdate: new Date(),
-        currentStep: undefined,
-        totalSteps: undefined,
-      }));
+      
+      eventSource.onerror = () => {
+        const errorMessage: AgentMessage = {
+          id: messageId,
+          type: "system",
+          content: `> [ERROR] Connection failed. Please try again.`,
+          timestamp: new Date(),
+          status: "error",
+        };
+        
+        setAgentState((prev) => ({
+          ...prev,
+          status: "error",
+          lastUpdate: new Date(),
+          currentStep: undefined,
+          totalSteps: undefined,
+        }));
+        
+        setCurrentResponse("");
+        setStreamingSteps([]);
+        
+        setMessages((prev) => {
+          const existing = prev.find(m => m.id === messageId);
+          if (existing) {
+            return prev.map(m => m.id === messageId ? errorMessage : m);
+          } else {
+            return [...prev, errorMessage];
+          }
+        });
+        
+        cleanupEventSource();
+      };
+      
     } catch (error) {
       const errorMessage: AgentMessage = {
         id: (Date.now() + 1).toString(),
@@ -192,7 +265,7 @@ export function useAgent() {
         totalSteps: undefined,
       }));
     }
-  }, []);
+  }, [cleanupEventSource]);
 
   const getHistoryCommand = useCallback(
     (direction: "up" | "down") => {
@@ -220,14 +293,6 @@ export function useAgent() {
     [commandHistory, historyIndex],
   );
 
-  // 清理 EventSource 连接
-  const cleanupEventSource = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-  }, []);
-
   return {
     messages,
     agentState,
@@ -236,5 +301,6 @@ export function useAgent() {
     setMessages,
     streamingSteps,
     cleanupEventSource,
+    currentResponse,
   };
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Terminal, Wifi, Link, Bot, Command, Zap } from "lucide-react";
+import { Terminal, Wifi, Link, Bot, Command, Zap } from "lucide-react";
 import { useTerminalTheme } from "../hooks/useTerminalTheme";
 import { useAgent } from "../hooks/useAgent";
 import StepVisualization from "./StepVisualization";
@@ -11,18 +11,42 @@ export default function AgentTerminal() {
   const [input, setInput] = useState("");
   const [isMinimized, setIsMinimized] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isCommandPanelOpen, setIsCommandPanelOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const commandPanelRef = useRef<HTMLDivElement>(null);
 
   const terminalTheme = useTerminalTheme();
-  const { messages, agentState, processCommand, getHistoryCommand, streamingSteps } =
-    useAgent();
+  const { 
+    messages, 
+    agentState, 
+    processCommand, 
+    getHistoryCommand, 
+    streamingSteps,
+    currentResponse,
+  } = useAgent();
 
   // 确保只在客户端渲染时显示时间
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // 点击外部关闭命令面板
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        commandPanelRef.current &&
+        !commandPanelRef.current.contains(event.target as Node)
+      ) {
+        setIsCommandPanelOpen(false);
+      }
+    };
+
+    if (isCommandPanelOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isCommandPanelOpen]);
 
   // 自动滚动到底部，但不影响页面整体位置
   useEffect(() => {
@@ -38,7 +62,7 @@ export default function AgentTerminal() {
         });
       }
     }
-  }, [messages]);
+  }, [messages, currentResponse]);
 
   // 自动聚焦输入框
   useEffect(() => {
@@ -519,30 +543,63 @@ export default function AgentTerminal() {
 
             {/* 控制按钮 */}
             <div className="flex items-center space-x-1 md:space-x-2">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-1.5 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-                title={isSidebarOpen ? "Hide Commands" : "Show Commands"}
-              >
-                <Command
-                  size={14}
-                  strokeWidth={1.5}
-                  className="md:w-4 md:h-4"
-                  style={{ color: "var(--terminal-muted)" }}
-                />
-              </button>
-              <button
-                onClick={() => setIsMinimized(true)}
-                className="p-1.5 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-                title="Minimize"
-              >
-                <X
-                  size={14}
-                  strokeWidth={1.5}
-                  className="md:w-4 md:h-4"
-                  style={{ color: "var(--terminal-muted)" }}
-                />
-              </button>
+              {/* 命令面板按钮 */}
+              <div className="relative" ref={commandPanelRef}>
+                <button
+                  onClick={() => setIsCommandPanelOpen(!isCommandPanelOpen)}
+                  className="p-1.5 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="Commands"
+                >
+                  <Command
+                    size={14}
+                    strokeWidth={1.5}
+                    className="md:w-4 md:h-4"
+                    style={{ color: "var(--terminal-muted)" }}
+                  />
+                </button>
+
+                {/* 命令面板 */}
+                {isCommandPanelOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-full mt-2 w-48 md:w-64 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50"
+                  >
+                    <div className="p-3">
+                      <h3 className="text-xs md:text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300 font-mono">
+                        Quick Commands
+                      </h3>
+                      <div className="space-y-1">
+                        {[
+                          { cmd: "/latest", desc: "Get latest news" },
+                          { cmd: "/trending", desc: "Show trends" },
+                          { cmd: "/deepdive", desc: "Deep analysis" },
+                          { cmd: "/help", desc: "Show help" },
+                        ].map((item) => (
+                          <button
+                            key={item.cmd}
+                            onClick={() => {
+                              setInput(item.cmd);
+                              setIsCommandPanelOpen(false);
+                              inputRef.current?.focus();
+                            }}
+                            className="w-full text-left p-2 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            <div className="font-mono text-terminal-accent font-semibold">
+                              {item.cmd}
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs mt-0.5 font-mono">
+                              {item.desc}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -555,11 +612,9 @@ export default function AgentTerminal() {
             <div className="flex-1 p-3 md:p-6 overflow-y-auto font-mono text-xs md:text-sm font-normal leading-relaxed terminal-messages-container custom-scrollbar terminal-content-text">
               {messages.map((message) => (
                 <div key={message.id} className="mb-4">
-                  {formatMessage(message.content)}
-                  
-                  {/* 显示执行计划 */}
-                  {message.plan && (
-                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  {/* 只在成功消息中显示执行计划 */}
+                  {message.status === "success" && message.plan && (
+                    <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
@@ -573,9 +628,9 @@ export default function AgentTerminal() {
                     </div>
                   )}
                   
-                  {/* 显示执行步骤 */}
-                  {message.steps && message.steps.length > 0 && (
-                    <div className="mt-3">
+                  {/* 只在成功消息中显示执行步骤 */}
+                  {message.status === "success" && message.steps && message.steps.length > 0 && (
+                    <div className="mb-3">
                       <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
                         Execution Steps:
                       </div>
@@ -586,9 +641,9 @@ export default function AgentTerminal() {
                     </div>
                   )}
                   
-                  {/* 显示质量评估 */}
-                  {message.evaluation && (
-                    <div className="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                  {/* 只在成功消息中显示质量评估 */}
+                  {message.status === "success" && message.evaluation && (
+                    <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                       <div className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">
                         Quality Evaluation
                       </div>
@@ -608,20 +663,51 @@ export default function AgentTerminal() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* 显示响应内容 - 放在最后 */}
+                  {formatMessage(message.content)}
                 </div>
               ))}
               
-              {/* 显示流式步骤（正在处理中） */}
-              {agentState.status === "processing" && streamingSteps.length > 0 && (
-                <div className="mb-4">
-                  <div className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mb-2 flex items-center gap-2">
+              {/* 显示流式步骤（正在处理中） - 黄色区域 */}
+              {agentState.status === "processing" && (
+                <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <div className="text-sm font-semibold text-yellow-700 dark:text-yellow-300 mb-3 flex items-baseline gap-2">
                     <Bot className="w-4 h-4 animate-pulse" />
-                    Processing...
+                    <span>Processing</span>
+                    <span className="inline-flex gap-0.5">
+                      <span className="animate-bounce inline-block" style={{ animationDelay: '0ms', animationDuration: '1.4s' }}>.</span>
+                      <span className="animate-bounce inline-block" style={{ animationDelay: '200ms', animationDuration: '1.4s' }}>.</span>
+                      <span className="animate-bounce inline-block" style={{ animationDelay: '400ms', animationDuration: '1.4s' }}>.</span>
+                    </span>
                   </div>
-                  <StepVisualization 
-                    steps={streamingSteps} 
-                    currentStep={agentState.currentStep}
-                  />
+                  
+                  {/* 显示执行步骤 */}
+                  {streamingSteps.length > 0 && (
+                    <div className="mb-3">
+                      <div className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mb-2">
+                        Execution Steps:
+                      </div>
+                      <StepVisualization 
+                        steps={streamingSteps} 
+                        currentStep={agentState.currentStep}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* 显示流式响应内容（带打字机光标） */}
+                  {currentResponse && (
+                    <div className="mt-3 pt-3 border-t border-yellow-200 dark:border-yellow-700">
+                      <div className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mb-2">
+                        Response:
+                      </div>
+                      <div>
+                        {formatMessage(currentResponse)}
+                        {/* 打字机光标 */}
+                        <span className="inline-block w-1.5 h-4 ml-1 bg-terminal-accent animate-pulse align-middle"></span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -656,69 +742,9 @@ export default function AgentTerminal() {
                     disabled={agentState.status === "processing"}
                   />
                 </div>
-                {agentState.status === "processing" && (
-                  <div className="flex items-center space-x-1 ml-2">
-                    <div
-                      className="w-0.5 h-3 md:h-4 bg-terminal-accent animate-pulse"
-                      style={{
-                        animation: "blink 1s infinite",
-                        width: "2px",
-                      }}
-                    ></div>
-                    <span className="text-xs text-terminal-muted hidden sm:inline">
-                      Processing...
-                    </span>
-                  </div>
-                )}
               </form>
             </div>
           </div>
-
-          {/* 侧边栏 - 快捷命令 */}
-          <motion.div
-            className="border-l bg-gray-50 dark:bg-gray-800 overflow-hidden flex-shrink-0"
-            style={{ borderColor: "var(--terminal-border)" }}
-            animate={{
-              width: isSidebarOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 100 : 256) : 0,
-              opacity: isSidebarOpen ? 1 : 0,
-            }}
-            transition={{
-              duration: 0.4,
-              ease: "easeInOut",
-            }}
-          >
-            <div className="w-[100px] md:w-64 p-2 md:p-4">
-              <h3
-                className="text-xs md:text-sm font-medium mb-2 md:mb-3 font-blog truncate"
-                style={{ color: "var(--terminal-text)" }}
-              >
-                Cmds
-              </h3>
-              <div className="space-y-1 md:space-y-2">
-                {[
-                  { cmd: "/latest", desc: "Get latest news" },
-                  { cmd: "/trending", desc: "Show trends" },
-                  { cmd: "/deepdive", desc: "Deep analysis" },
-                  { cmd: "/help", desc: "Show help" },
-                ].map((item) => (
-                  <button
-                    key={item.cmd}
-                    onClick={() => {
-                      setInput(item.cmd);
-                      inputRef.current?.focus();
-                    }}
-                    className="w-full text-left p-1.5 md:p-2 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    style={{ color: "var(--terminal-muted)" }}
-                  >
-                    <div className="font-mono text-terminal-accent truncate">
-                      {item.cmd}
-                    </div>
-                    <div className="font-blog hidden md:block">{item.desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
         </div>
       </motion.div>
     </div>

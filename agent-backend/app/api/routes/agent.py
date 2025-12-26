@@ -207,10 +207,7 @@ async def stream_execution(request: AgentRequest):
                 # 创建 ReactAgent 实例
                 session_id = request.session_id or "default"
                 
-                # 注意：这里需要修改 ReactAgent 以支持流式输出
-                # 当前实现是一个简化版本，实际需要在 ReactAgent 中添加回调机制
-                
-                # 临时实现：执行完整查询然后流式发送结果
+                # 执行完整查询
                 react_response = await react_agent.execute(
                     query=user_input,
                     session_id=session_id,
@@ -228,16 +225,44 @@ async def stream_execution(request: AgentRequest):
                         'observation': step.observation.data if step.observation.is_success() else step.observation.error
                     }
                     yield f"data: {json.dumps(step_data)}\n\n"
-                    await asyncio.sleep(0.1)  # 模拟实时流式
+                    await asyncio.sleep(0.3)  # 增加延迟到 300ms，让用户能看到 Processing 状态
                 
-                # 发送最终响应
+                # 发送执行计划（在响应内容之前）
+                if react_response.plan:
+                    plan_data = {
+                        'type': 'plan',
+                        'plan': {
+                            'query': react_response.plan.query,
+                            'complexity': react_response.plan.complexity,
+                            'steps': [s.to_dict() for s in react_response.plan.steps],
+                            'estimated_iterations': react_response.plan.estimated_iterations
+                        }
+                    }
+                    yield f"data: {json.dumps(plan_data)}\n\n"
+                    await asyncio.sleep(0.2)
+                
+                # 流式发送最终响应（打字机效果）
+                response_text = react_response.response or ""
+                chunk_size = 10  # 每次发送10个字符
+                
+                for i in range(0, len(response_text), chunk_size):
+                    chunk = response_text[i:i + chunk_size]
+                    chunk_data = {
+                        'type': 'response_chunk',
+                        'chunk': chunk
+                    }
+                    yield f"data: {json.dumps(chunk_data)}\n\n"
+                    await asyncio.sleep(0.05)  # 50ms 延迟，模拟打字机效果
+                
+                # 发送完成事件
                 final_data = {
                     'type': 'complete',
                     'success': react_response.success,
-                    'response': react_response.response,
+                    'response': response_text,
                     'evaluation': {
                         'completeness_score': react_response.evaluation.completeness_score,
-                        'quality_score': react_response.evaluation.quality_score
+                        'quality_score': react_response.evaluation.quality_score,
+                        'missing_info': react_response.evaluation.missing_info
                     },
                     'execution_time': react_response.execution_time
                 }
@@ -245,9 +270,20 @@ async def stream_execution(request: AgentRequest):
                 
             except Exception as e:
                 logger.error(f"Streaming failed: {e}", exc_info=True)
+                
+                # 提取更友好的错误信息
+                error_message = str(e)
+                if "User location is not supported" in error_message:
+                    error_message = "Gemini API 不支持当前地区访问。请检查 VPN 设置或使用其他 LLM 服务。"
+                elif "API key" in error_message.lower():
+                    error_message = "API 密钥无效或已过期。请检查环境变量配置。"
+                elif "quota" in error_message.lower() or "limit" in error_message.lower():
+                    error_message = "API 配额已用尽或达到速率限制。请稍后重试。"
+                
                 error_data = {
                     'type': 'error',
-                    'error': str(e)
+                    'error': error_message,
+                    'original_error': str(e)
                 }
                 yield f"data: {json.dumps(error_data)}\n\n"
         

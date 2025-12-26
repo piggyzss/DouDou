@@ -473,7 +473,20 @@ Based on the execution history above, create a clear, helpful response that:
 4. Acknowledges any limitations or errors encountered
 5. Provides actionable information when possible
 
-Guidelines:
+Guidelines for formatting news/articles:
+- For each news item, use this format:
+  Title: [Article title]
+  Summary: [Brief summary]
+  Source: [Source name]
+  Link: [URL]
+  Published: [Date/time if available]
+  
+- Separate multiple items with blank lines
+- Use numbered lists (1., 2., 3.) for multiple items
+- Keep summaries concise (1-2 sentences)
+- Always include links when available
+
+General guidelines:
 - Start with the most important information
 - Use clear, natural language
 - Format lists or structured data appropriately

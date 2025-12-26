@@ -89,7 +89,8 @@ class ReactAgent:
         self,
         query: str,
         session_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
+        streaming_callback: Optional[Any] = None
     ) -> ReactResponse:
         """
         执行用户查询，使用 ReAct 循环
@@ -98,6 +99,7 @@ class ReactAgent:
             query: 用户查询
             session_id: 会话 ID（可选，如果未提供则生成新的）
             context: 上下文信息（可选）
+            streaming_callback: 流式回调函数（可选），用于实时发送执行事件
         
         Returns:
             ReactResponse: 完整的执行响应
@@ -109,6 +111,11 @@ class ReactAgent:
         4. 合成最终响应
         5. 评估输出质量（未来实现）
         6. 返回完整响应
+        
+        如果提供了 streaming_callback，将在以下时机调用：
+        - 生成思考后：callback("thought", {"step_number": N, "content": "..."})
+        - 选择行动后：callback("action", {"step_number": N, "tool_name": "...", "parameters": {...}})
+        - 执行观察后：callback("observation", {"step_number": N, "success": bool, "data": ...})
         """
         start_time = time.time()
         
@@ -144,7 +151,7 @@ class ReactAgent:
             )
             
             # 执行 ReAct 循环
-            steps = await self._react_loop(query, plan, context)
+            steps = await self._react_loop(query, plan, context, streaming_callback)
             
             # 合成最终响应
             final_response = await self._synthesize_response(query, steps, plan)
@@ -224,7 +231,8 @@ class ReactAgent:
         self,
         query: str,
         plan: ExecutionPlan,
-        context: Dict[str, Any]
+        context: Dict[str, Any],
+        streaming_callback: Optional[Any] = None
     ) -> List[ReActStep]:
         """
         执行 ReAct 循环
@@ -259,7 +267,8 @@ class ReactAgent:
                     plan=plan,
                     history=steps,
                     context=context,
-                    iteration=iteration
+                    iteration=iteration,
+                    streaming_callback=streaming_callback
                 )
                 
                 steps.append(step)
@@ -277,6 +286,11 @@ class ReactAgent:
                 if step.status == "failed":
                     logger.warning(f"Step {iteration} failed, stopping iterations")
                     break
+                
+                # 添加迭代间延迟，使流式输出更明显
+                if iteration < self.MAX_ITERATIONS:
+                    import asyncio
+                    await asyncio.sleep(0.2)  # 200ms 延迟
             
             except Exception as e:
                 logger.error(f"ReAct iteration {iteration} failed: {e}", exc_info=True)
@@ -312,7 +326,8 @@ class ReactAgent:
         plan: ExecutionPlan,
         history: List[ReActStep],
         context: Dict[str, Any],
-        iteration: int
+        iteration: int,
+        streaming_callback: Optional[Any] = None
     ) -> ReActStep:
         """
         执行单次 ReAct 迭代
@@ -344,10 +359,52 @@ class ReactAgent:
             logger.info(f"Thought: {thought[:100]}...")
             logger.info(f"Action: {tool_call.tool_name}({tool_call.parameters})")
             
+            # 流式发送思考事件
+            if streaming_callback:
+                try:
+                    await streaming_callback("thought", {
+                        "step_number": iteration,
+                        "content": thought
+                    })
+                    # 添加延迟以确保流式效果可见
+                    import asyncio
+                    await asyncio.sleep(0.3)  # 300ms 延迟
+                except Exception as e:
+                    logger.warning(f"Streaming callback failed for thought: {e}")
+            
+            # 流式发送行动事件
+            if streaming_callback:
+                try:
+                    await streaming_callback("action", {
+                        "step_number": iteration,
+                        "tool_name": tool_call.tool_name,
+                        "parameters": tool_call.parameters
+                    })
+                    # 添加延迟以确保流式效果可见
+                    import asyncio
+                    await asyncio.sleep(0.3)  # 300ms 延迟
+                except Exception as e:
+                    logger.warning(f"Streaming callback failed for action: {e}")
+            
             # 2. 执行工具
             observation = await self._execute_action(tool_call)
             
             logger.info(f"Observation: {'Success' if observation.is_success() else 'Failed'}")
+            
+            # 流式发送观察事件
+            if streaming_callback:
+                try:
+                    await streaming_callback("observation", {
+                        "step_number": iteration,
+                        "success": observation.is_success(),
+                        "data": observation.data if observation.is_success() else None,
+                        "error": observation.error if not observation.is_success() else None
+                    })
+                    # 添加延迟以确保流式效果可见
+                    import asyncio
+                    await asyncio.sleep(0.3)  # 300ms 延迟
+                except Exception as e:
+                    logger.warning(f"Streaming callback failed for observation: {e}")
             
             # 3. 创建步骤
             step = ReActStep(
@@ -526,7 +583,7 @@ class ReactAgent:
         response = await self.llm_service.generate_text(
             prompt,
             temperature=0.7,
-            max_tokens=800
+            max_tokens=2000  # 增加到 2000 以支持更长的响应
         )
         
         # 解析响应

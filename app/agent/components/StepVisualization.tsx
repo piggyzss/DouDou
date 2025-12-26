@@ -7,6 +7,7 @@ import { ReActStep, StepStatus } from "../types/react-agent";
 interface StepVisualizationProps {
   steps: ReActStep[];
   currentStep?: number;
+  isStreaming?: boolean;
 }
 
 const getStatusIcon = (status: StepStatus) => {
@@ -38,6 +39,7 @@ const getStatusColor = (status: StepStatus) => {
 export default function StepVisualization({
   steps,
   currentStep,
+  isStreaming = false,
 }: StepVisualizationProps) {
   if (!steps || steps.length === 0) {
     return null;
@@ -111,7 +113,7 @@ export default function StepVisualization({
             {step.observation && step.status !== "pending" && (
               <div>
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  👁️ Observation:
+                  📊 Observation:
                 </div>
                 <div className="text-sm pl-4">
                   {step.observation.success ? (

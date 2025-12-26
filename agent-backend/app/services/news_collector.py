@@ -185,14 +185,14 @@ class NewsCollectorService:
         self, limit: int = 10, category: str = None
     ) -> List[NewsItem]:
         """
-        获取最新新闻
+        获取最新新闻（数据源均匀分布）
         
         Args:
             limit: 返回数量
             category: 分类过滤（可选）
         
         Returns:
-            新闻列表
+            新闻列表（尽量覆盖多个数据源）
         """
         if not self.use_real_data:
             # 使用 mock 数据
@@ -214,7 +214,47 @@ class NewsCollectorService:
             if category:
                 all_news = filter_by_category(all_news, category)
             
-            return all_news[:limit]
+            # 数据源均匀分布算法
+            # 1. 按来源分组
+            news_by_source = {}
+            for news in all_news:
+                source = news.source
+                if source not in news_by_source:
+                    news_by_source[source] = []
+                news_by_source[source].append(news)
+            
+            # 2. 轮询选择，确保数据源均匀分布
+            result = []
+            source_list = list(news_by_source.keys())
+            source_index = 0
+            
+            # 每个来源的当前索引
+            source_positions = {source: 0 for source in source_list}
+            
+            while len(result) < limit and source_list:
+                # 当前来源
+                current_source = source_list[source_index]
+                current_pos = source_positions[current_source]
+                
+                # 从当前来源获取一条新闻
+                if current_pos < len(news_by_source[current_source]):
+                    result.append(news_by_source[current_source][current_pos])
+                    source_positions[current_source] += 1
+                else:
+                    # 该来源已经用完，移除
+                    source_list.remove(current_source)
+                    if not source_list:
+                        break
+                    # 调整索引
+                    if source_index >= len(source_list):
+                        source_index = 0
+                    continue
+                
+                # 移动到下一个来源
+                source_index = (source_index + 1) % len(source_list)
+            
+            logger.info(f"Returned {len(result)} news from {len(set(n.source for n in result))} sources")
+            return result
         
         except Exception as e:
             logger.error(f"Failed to fetch real news, falling back to mock data: {e}")
