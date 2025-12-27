@@ -27,6 +27,13 @@ try:
     # 注册路由
     app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
     
+    # 注册调试路由
+    try:
+        from app.api.routes import debug
+        app.include_router(debug.router, prefix="/api/debug", tags=["debug"])
+    except Exception as debug_error:
+        print(f"Warning: Could not load debug routes: {debug_error}")
+    
     routes_loaded = True
     routes_error = None
 except Exception as e:
