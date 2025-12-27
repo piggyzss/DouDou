@@ -74,7 +74,11 @@ async def debug():
         "python_version": sys.version,
         "sys_path": sys.path[:5],  # 只显示前5个路径
         "available_routes": [
-            {"path": route.path, "methods": route.methods}
+            {"path": route.path, "methods": list(route.methods) if hasattr(route, 'methods') else []}
             for route in app.routes
         ],
     }
+
+
+# Vercel 需要这个
+handler = app
