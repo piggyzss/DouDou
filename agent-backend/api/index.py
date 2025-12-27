@@ -27,13 +27,6 @@ try:
     # 注册路由
     app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
     
-    # 注册调试路由
-    try:
-        from app.api.routes import debug
-        app.include_router(debug.router, prefix="/api/debug", tags=["debug"])
-    except Exception as debug_error:
-        print(f"Warning: Could not load debug routes: {debug_error}")
-    
     routes_loaded = True
     routes_error = None
 except Exception as e:
@@ -74,11 +67,7 @@ async def debug():
         "python_version": sys.version,
         "sys_path": sys.path[:5],  # 只显示前5个路径
         "available_routes": [
-            {"path": route.path, "methods": list(route.methods) if hasattr(route, 'methods') else []}
+            {"path": route.path, "methods": route.methods}
             for route in app.routes
         ],
     }
-
-
-# Vercel 需要这个
-handler = app
