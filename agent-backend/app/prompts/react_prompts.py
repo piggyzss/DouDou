@@ -304,25 +304,25 @@ Be objective and thorough in your evaluation."""
     @staticmethod
     def create_prompt(
         query: str,
+        output: str,
         plan: Dict[str, Any],
-        response: str,
-        execution_steps: List[Dict[str, Any]]
+        steps: List[Dict[str, Any]]
     ) -> str:
         """
         创建反思评估提示
         
         Args:
             query: 原始用户查询
+            output: Agent 生成的输出
             plan: 执行计划
-            response: Agent 生成的响应
-            execution_steps: 执行步骤列表
+            steps: 执行步骤列表
         
         Returns:
             str: 完整的提示文本
         """
         steps_summary = "\n".join([
             f"Step {s['step_number']}: {s['action']['tool_name']} - {s['status']}"
-            for s in execution_steps
+            for s in steps
         ])
         
         prompt = f"""Evaluate the quality of this AI agent's response.
@@ -336,7 +336,7 @@ Execution Steps:
 {steps_summary}
 
 Agent's Response:
-{response}
+{output}
 
 Please evaluate the response on the following criteria:
 

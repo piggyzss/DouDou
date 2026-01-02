@@ -2,14 +2,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .api.routes import agent
-from .api.routes.agent import global_exception_handler
+from .api.middleware import setup_error_handlers
 import uvicorn
 
 # 创建FastAPI应用
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="AI News Agent Backend Service",
+    description="AI News Agent Backend Service with ReAct Agent",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
 )
@@ -23,8 +23,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 注册全局异常处理器
-app.add_exception_handler(Exception, global_exception_handler)
+# 配置错误处理中间件
+setup_error_handlers(app)
 
 # 注册路由
 app.include_router(agent.router, prefix="/api/agent", tags=["agent"])

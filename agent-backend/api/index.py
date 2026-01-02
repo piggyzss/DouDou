@@ -1,3 +1,9 @@
+"""
+Vercel Serverless Function Entry Point
+
+This file is specifically for Vercel deployment.
+For local development and Docker, use app/main.py instead.
+"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import sys
@@ -7,13 +13,13 @@ import traceback
 app = FastAPI(
     title="AI News Agent",
     version="1.0.0",
-    description="AI News Agent Backend Service",
+    description="AI News Agent Backend Service (Vercel Serverless)",
 )
 
-# 配置CORS - 使用更宽松的配置以确保可以访问
+# 配置CORS - Vercel 部署使用宽松配置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 临时允许所有来源，用于调试
+    allow_origins=["*"],  # Vercel 环境允许所有来源
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
@@ -23,6 +29,10 @@ app.add_middleware(
 try:
     from app.config import settings
     from app.api.routes import agent
+    from app.api.middleware import setup_error_handlers
+    
+    # 配置错误处理中间件
+    setup_error_handlers(app)
     
     # 注册路由
     app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
@@ -42,6 +52,7 @@ async def root():
         "name": "AI News Agent",
         "version": "1.0.0",
         "status": "running",
+        "deployment": "vercel-serverless",
         "routes_loaded": routes_loaded,
         "routes_error": routes_error if not routes_loaded else None,
         "python_version": sys.version,
@@ -54,6 +65,7 @@ async def health():
     return {
         "status": "healthy",
         "service": "agent-backend",
+        "deployment": "vercel-serverless",
         "routes_loaded": routes_loaded,
     }
 

@@ -24,6 +24,16 @@ class Generatable(ABC):
     async def generate_text(self, prompt: str, **kwargs) -> str:
         """生成文本"""
         pass
+    
+    @abstractmethod
+    async def generate_text_stream(self, prompt: str, **kwargs):
+        """流式生成文本（异步生成器）"""
+        pass
+    
+    @abstractmethod
+    async def generate_text_stream(self, prompt: str, **kwargs):
+        """流式生成文本（异步生成器）"""
+        pass
 
 
 class ToolSelectable(ABC):
@@ -110,6 +120,48 @@ class GeminiLLMService(BaseLLMService):
         except Exception as e:
             logger.error(f"Text generation failed: {e}")
             raise LLMServiceError(f"Text generation failed: {e}")
+    
+    async def generate_text_stream(self, prompt: str, **kwargs):
+        """
+        流式生成文本（异步生成器）
+        
+        Args:
+            prompt: 提示词
+            **kwargs: 其他参数（temperature, max_tokens等）
+        
+        Yields:
+            str: 文本块
+        """
+        if not self.is_available():
+            raise LLMServiceError("Gemini service not available")
+        
+        try:
+            async for chunk in self._call_gemini_stream(prompt, **kwargs):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Streaming text generation failed: {e}")
+            raise LLMServiceError(f"Streaming text generation failed: {e}")
+    
+    async def generate_text_stream(self, prompt: str, **kwargs):
+        """
+        流式生成文本（异步生成器）
+        
+        Args:
+            prompt: 提示词
+            **kwargs: 其他参数（temperature, max_tokens等）
+        
+        Yields:
+            str: 文本块
+        """
+        if not self.is_available():
+            raise LLMServiceError("Gemini service not available")
+        
+        try:
+            async for chunk in self._call_gemini_stream(prompt, **kwargs):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Streaming text generation failed: {e}")
+            raise LLMServiceError(f"Streaming text generation failed: {e}")
     
     async def select_tool(self, user_input: str, tools_description: str, context: Optional[Dict[str, Any]] = None):
         """
@@ -219,6 +271,170 @@ class GeminiLLMService(BaseLLMService):
         
         # 所有重试都失败
         logger.error(f"Gemini API call failed after {max_retries} attempts")
+        raise last_error
+    
+    async def _call_gemini_stream(
+        self,
+        prompt: str,
+        temperature: float = 0.7,
+        max_tokens: int = 1000,
+        response_format: str = "text",
+        max_retries: int = 3,
+        timeout: float = 30.0
+    ):
+        """
+        流式调用 Gemini API（带重试机制）
+        
+        Args:
+            prompt: 提示词
+            temperature: 温度参数 (0-1)
+            max_tokens: 最大 token 数
+            response_format: 响应格式 ("text" | "json")
+            max_retries: 最大重试次数
+            timeout: 超时时间（秒）
+        
+        Yields:
+            str: 文本块
+        """
+        import asyncio
+        
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                generation_config = {
+                    "temperature": temperature,
+                    "max_output_tokens": max_tokens,
+                }
+                
+                # 如果需要 JSON 格式，在 prompt 中明确要求
+                if response_format == "json":
+                    prompt_with_format = f"{prompt}\n\nPlease respond with valid JSON only, no additional text."
+                else:
+                    prompt_with_format = prompt
+                
+                # 使用 stream=True 开启流式输出
+                # 注意：不能使用 asyncio.to_thread，因为需要迭代生成器
+                response_stream = self.model.generate_content(
+                    prompt_with_format,
+                    generation_config=generation_config,
+                    stream=True  # 关键：开启流式输出
+                )
+                
+                # 流式处理响应
+                for chunk in response_stream:
+                    if chunk.text:
+                        yield chunk.text
+                        # 添加延迟，让流式效果更明显
+                        # 思考过程：50ms 延迟（更慢，让用户看清推理过程）
+                        # 最终响应：30ms 延迟（稍快，但仍有打字机效果）
+                        await asyncio.sleep(0.05)  # 50ms
+                
+                # 成功完成，退出重试循环
+                return
+            
+            except asyncio.TimeoutError:
+                last_error = LLMServiceError(f"Gemini API stream timed out after {timeout}s")
+                logger.warning(f"Gemini API stream timed out (attempt {attempt + 1}/{max_retries})")
+                
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 2
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    await asyncio.sleep(wait_time)
+            
+            except Exception as e:
+                last_error = e
+                logger.warning(f"Gemini API stream failed (attempt {attempt + 1}/{max_retries}): {e}")
+                
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 2
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    await asyncio.sleep(wait_time)
+        
+        # 所有重试都失败
+        logger.error(f"Gemini API stream failed after {max_retries} attempts")
+        raise last_error
+    
+    async def _call_gemini_stream(
+        self,
+        prompt: str,
+        temperature: float = 0.7,
+        max_tokens: int = 1000,
+        response_format: str = "text",
+        max_retries: int = 3,
+        timeout: float = 30.0
+    ):
+        """
+        流式调用 Gemini API（带重试机制）
+        
+        Args:
+            prompt: 提示词
+            temperature: 温度参数 (0-1)
+            max_tokens: 最大 token 数
+            response_format: 响应格式 ("text" | "json")
+            max_retries: 最大重试次数
+            timeout: 超时时间（秒）
+        
+        Yields:
+            str: 文本块
+        """
+        import asyncio
+        
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                generation_config = {
+                    "temperature": temperature,
+                    "max_output_tokens": max_tokens,
+                }
+                
+                # 如果需要 JSON 格式，在 prompt 中明确要求
+                if response_format == "json":
+                    prompt_with_format = f"{prompt}\n\nPlease respond with valid JSON only, no additional text."
+                else:
+                    prompt_with_format = prompt
+                
+                # 使用 stream=True 开启流式输出
+                # 注意：不能使用 asyncio.to_thread，因为需要迭代生成器
+                response_stream = self.model.generate_content(
+                    prompt_with_format,
+                    generation_config=generation_config,
+                    stream=True  # 关键：开启流式输出
+                )
+                
+                # 流式处理响应
+                for chunk in response_stream:
+                    if chunk.text:
+                        yield chunk.text
+                        # 添加延迟，让流式效果更明显
+                        # 思考过程：50ms 延迟（更慢，让用户看清推理过程）
+                        # 最终响应：30ms 延迟（稍快，但仍有打字机效果）
+                        await asyncio.sleep(0.05)  # 50ms
+                
+                # 成功完成，退出重试循环
+                return
+            
+            except asyncio.TimeoutError:
+                last_error = LLMServiceError(f"Gemini API stream timed out after {timeout}s")
+                logger.warning(f"Gemini API stream timed out (attempt {attempt + 1}/{max_retries})")
+                
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 2
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    await asyncio.sleep(wait_time)
+            
+            except Exception as e:
+                last_error = e
+                logger.warning(f"Gemini API stream failed (attempt {attempt + 1}/{max_retries}): {e}")
+                
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 2
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    await asyncio.sleep(wait_time)
+        
+        # 所有重试都失败
+        logger.error(f"Gemini API stream failed after {max_retries} attempts")
         raise last_error
     
     def _build_tool_selection_prompt(self, user_input: str, tools_description: str, context: Optional[Dict[str, Any]] = None) -> str:

@@ -180,7 +180,7 @@ async def stream_execution(request: AgentRequest):
     """
     流式执行自然语言查询（Server-Sent Events）
     
-    实时流式传输 ReActStep 更新，让用户看到 Agent 的思考过程
+    实时流式传输 ReActStep 更新和 LLM 生成内容，让用户看到 Agent 的实时思考过程
     """
     from fastapi.responses import StreamingResponse
     import json
@@ -204,69 +204,67 @@ async def stream_execution(request: AgentRequest):
                 # 发送开始事件
                 yield f"data: {json.dumps({'type': 'start', 'message': 'Starting execution...'})}\n\n"
                 
-                # 创建 ReactAgent 实例
                 session_id = request.session_id or "default"
                 
-                # 执行完整查询
-                react_response = await react_agent.execute(
-                    query=user_input,
-                    session_id=session_id,
-                    context=request.context or {}
-                )
+                # 创建流式回调队列
+                event_queue = asyncio.Queue()
                 
-                # 流式发送每个步骤
-                for i, step in enumerate(react_response.steps, 1):
-                    step_data = {
-                        'type': 'step',
-                        'step_number': i,
-                        'thought': step.thought,
-                        'action': step.action.tool_name,
-                        'status': step.status,
-                        'observation': step.observation.data if step.observation.is_success() else step.observation.error
-                    }
-                    yield f"data: {json.dumps(step_data)}\n\n"
-                    await asyncio.sleep(0.3)  # 增加延迟到 300ms，让用户能看到 Processing 状态
+                # 定义流式回调函数
+                async def streaming_callback(event_type: str, data: dict):
+                    """接收来自 Agent 的流式事件"""
+                    await event_queue.put({
+                        'type': event_type,
+                        **data
+                    })
                 
-                # 发送执行计划（在响应内容之前）
-                if react_response.plan:
-                    plan_data = {
-                        'type': 'plan',
-                        'plan': {
-                            'query': react_response.plan.query,
-                            'complexity': react_response.plan.complexity,
-                            'steps': [s.to_dict() for s in react_response.plan.steps],
-                            'estimated_iterations': react_response.plan.estimated_iterations
-                        }
-                    }
-                    yield f"data: {json.dumps(plan_data)}\n\n"
-                    await asyncio.sleep(0.2)
+                # 创建执行任务
+                async def execute_agent():
+                    """在后台执行 Agent"""
+                    try:
+                        result = await react_agent.execute(
+                            query=user_input,
+                            session_id=session_id,
+                            context=request.context or {},
+                            streaming_callback=streaming_callback
+                        )
+                        # 执行完成，发送结束信号
+                        await event_queue.put({
+                            'type': 'complete',
+                            'success': result.success,
+                            'response': result.response,
+                            'evaluation': {
+                                'completeness_score': result.evaluation.completeness_score,
+                                'quality_score': result.evaluation.quality_score,
+                                'missing_info': result.evaluation.missing_info
+                            },
+                            'execution_time': result.execution_time
+                        })
+                    except Exception as e:
+                        logger.error(f"Agent execution failed: {e}", exc_info=True)
+                        await event_queue.put({
+                            'type': 'error',
+                            'error': str(e)
+                        })
+                    finally:
+                        # 发送结束标记
+                        await event_queue.put(None)
                 
-                # 流式发送最终响应（打字机效果）
-                response_text = react_response.response or ""
-                chunk_size = 10  # 每次发送10个字符
+                # 启动执行任务
+                execution_task = asyncio.create_task(execute_agent())
                 
-                for i in range(0, len(response_text), chunk_size):
-                    chunk = response_text[i:i + chunk_size]
-                    chunk_data = {
-                        'type': 'response_chunk',
-                        'chunk': chunk
-                    }
-                    yield f"data: {json.dumps(chunk_data)}\n\n"
-                    await asyncio.sleep(0.05)  # 50ms 延迟，模拟打字机效果
+                # 流式发送事件
+                while True:
+                    event = await event_queue.get()
+                    
+                    # 结束标记
+                    if event is None:
+                        break
+                    
+                    # 发送事件
+                    yield f"data: {json.dumps(event)}\n\n"
                 
-                # 发送完成事件
-                final_data = {
-                    'type': 'complete',
-                    'success': react_response.success,
-                    'response': response_text,
-                    'evaluation': {
-                        'completeness_score': react_response.evaluation.completeness_score,
-                        'quality_score': react_response.evaluation.quality_score,
-                        'missing_info': react_response.evaluation.missing_info
-                    },
-                    'execution_time': react_response.execution_time
-                }
-                yield f"data: {json.dumps(final_data)}\n\n"
+                # 等待执行任务完成
+                await execution_task
                 
             except Exception as e:
                 logger.error(f"Streaming failed: {e}", exc_info=True)

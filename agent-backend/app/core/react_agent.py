@@ -28,6 +28,7 @@ from ..core.tool_registry import ToolRegistry, get_tool_registry
 from ..core.conversation_memory import ConversationMemory, get_conversation_memory
 from ..core.task_planner import TaskPlanner, get_task_planner
 from ..core.tool_orchestrator import ToolOrchestrator, get_tool_orchestrator
+from ..core.reflection_engine import ReflectionEngine, get_reflection_engine
 
 # 避免循环导入
 if TYPE_CHECKING:
@@ -63,7 +64,8 @@ class ReactAgent:
         plugin_manager: Optional['PluginManager'] = None,
         conversation_memory: Optional[ConversationMemory] = None,
         task_planner: Optional[TaskPlanner] = None,
-        tool_orchestrator: Optional[ToolOrchestrator] = None
+        tool_orchestrator: Optional[ToolOrchestrator] = None,
+        reflection_engine: Optional[ReflectionEngine] = None
     ):
         """
         初始化 ReAct Agent
@@ -75,6 +77,7 @@ class ReactAgent:
             conversation_memory: 会话记忆管理器
             task_planner: 任务规划器
             tool_orchestrator: 工具编排器
+            reflection_engine: 反思引擎
         """
         self.tool_registry = tool_registry or get_tool_registry()
         self.llm_service = llm_service or get_llm_service()
@@ -82,6 +85,7 @@ class ReactAgent:
         self.conversation_memory = conversation_memory or get_conversation_memory()
         self.task_planner = task_planner or get_task_planner(self.tool_registry, self.llm_service)
         self.tool_orchestrator = tool_orchestrator or get_tool_orchestrator(self.tool_registry, plugin_manager)
+        self.reflection_engine = reflection_engine or get_reflection_engine(self.llm_service)
         
         logger.info("ReAct Agent initialized")
     
@@ -150,17 +154,29 @@ class ReactAgent:
                 context=context
             )
             
+            # 发送 plan 事件（如果有流式回调）
+            if streaming_callback:
+                await streaming_callback('plan', {
+                    'plan': {
+                        'complexity': plan.complexity,
+                        'steps': [step.to_dict() for step in plan.steps],
+                        'estimated_iterations': plan.estimated_iterations
+                    }
+                })
+            
             # 执行 ReAct 循环
             steps = await self._react_loop(query, plan, context, streaming_callback)
             
-            # 合成最终响应
-            final_response = await self._synthesize_response(query, steps, plan)
+            # 合成最终响应（支持流式）
+            final_response = await self._synthesize_response(query, steps, plan, streaming_callback)
             
-            # TODO: 评估输出质量（Phase 5）
-            # evaluation = await self._evaluate_output(final_response, plan)
-            
-            # 临时：创建简单评估
-            evaluation = self._create_simple_evaluation(steps)
+            # 评估输出质量（使用 ReflectionEngine）
+            evaluation = await self.reflection_engine.evaluate_output(
+                query=query,
+                output=final_response,
+                plan=plan,
+                steps=steps
+            )
             
             # 计算执行时间
             execution_time = time.time() - start_time
@@ -273,18 +289,15 @@ class ReactAgent:
                 
                 steps.append(step)
                 
-                # TODO: 检查是否应该继续（Phase 5 - Reflection）
-                # should_continue = await self._should_continue(steps, plan)
-                # if not should_continue:
-                #     break
+                # 检查是否应该继续（使用 ReflectionEngine）
+                should_continue = self.reflection_engine.should_continue(
+                    steps=steps,
+                    plan=plan,
+                    evaluation=None  # 在迭代中不进行完整评估，只在最后评估
+                )
                 
-                # 临时：简单的继续条件
-                if step.is_successful() and iteration >= plan.estimated_iterations:
-                    logger.info("Task appears complete, stopping iterations")
-                    break
-                
-                if step.status == "failed":
-                    logger.warning(f"Step {iteration} failed, stopping iterations")
+                if not should_continue:
+                    logger.info("ReflectionEngine determined task is complete")
                     break
                 
                 # 添加迭代间延迟，使流式输出更明显
@@ -351,38 +364,23 @@ class ReactAgent:
         logger.info(f"Starting ReAct iteration {iteration}")
         
         try:
-            # 1. 生成思考和选择行动（使用 LLM）
+            # 1. 生成思考和选择行动（使用 LLM，支持流式）
             thought, tool_call = await self._generate_thought_and_action(
-                query, plan, history, context, iteration
+                query, plan, history, context, iteration, streaming_callback
             )
             
             logger.info(f"Thought: {thought[:100]}...")
             logger.info(f"Action: {tool_call.tool_name}({tool_call.parameters})")
             
-            # 流式发送思考事件
-            if streaming_callback:
-                try:
-                    await streaming_callback("thought", {
-                        "step_number": iteration,
-                        "content": thought
-                    })
-                    # 添加延迟以确保流式效果可见
-                    import asyncio
-                    await asyncio.sleep(0.3)  # 300ms 延迟
-                except Exception as e:
-                    logger.warning(f"Streaming callback failed for thought: {e}")
-            
-            # 流式发送行动事件
+            # 流式发送行动事件（非流式回调时才发送完整思考）
             if streaming_callback:
                 try:
                     await streaming_callback("action", {
                         "step_number": iteration,
                         "tool_name": tool_call.tool_name,
-                        "parameters": tool_call.parameters
+                        "parameters": tool_call.parameters,
+                        "thought": thought  # 包含完整思考
                     })
-                    # 添加延迟以确保流式效果可见
-                    import asyncio
-                    await asyncio.sleep(0.3)  # 300ms 延迟
                 except Exception as e:
                     logger.warning(f"Streaming callback failed for action: {e}")
             
@@ -400,9 +398,6 @@ class ReactAgent:
                         "data": observation.data if observation.is_success() else None,
                         "error": observation.error if not observation.is_success() else None
                     })
-                    # 添加延迟以确保流式效果可见
-                    import asyncio
-                    await asyncio.sleep(0.3)  # 300ms 延迟
                 except Exception as e:
                     logger.warning(f"Streaming callback failed for observation: {e}")
             
@@ -448,7 +443,8 @@ class ReactAgent:
         plan: ExecutionPlan,
         history: List[ReActStep],
         context: Dict[str, Any],
-        iteration: int
+        iteration: int,
+        streaming_callback: Optional[Any] = None
     ) -> tuple[str, ToolCall]:
         """
         使用 LLM 生成思考和选择行动
@@ -459,6 +455,7 @@ class ReactAgent:
             history: 历史步骤
             context: 上下文
             iteration: 当前迭代次数
+            streaming_callback: 流式回调函数（可选）
         
         Returns:
             tuple[str, ToolCall]: (思考内容, 工具调用)
@@ -497,12 +494,34 @@ class ReactAgent:
             iteration=iteration
         )
         
-        # 调用 LLM
-        response = await self.llm_service.generate_text(
-            prompt,
-            temperature=0.7,
-            max_tokens=500
-        )
+        # 如果有流式回调，使用流式生成
+        if streaming_callback:
+            response = ""
+            try:
+                async for chunk in self.llm_service.generate_text_stream(
+                    prompt,
+                    temperature=0.7,
+                    max_tokens=500
+                ):
+                    response += chunk
+                    # 实时发送思考块
+                    try:
+                        await streaming_callback("thought_chunk", {
+                            "step_number": iteration,
+                            "chunk": chunk
+                        })
+                    except Exception as e:
+                        logger.warning(f"Streaming callback failed: {e}")
+            except Exception as e:
+                logger.error(f"Streaming generation failed: {e}")
+                raise
+        else:
+            # 非流式调用
+            response = await self.llm_service.generate_text(
+                prompt,
+                temperature=0.7,
+                max_tokens=500
+            )
         
         # 解析响应
         action_data = ReActIterationPrompt.parse_response(response)
@@ -544,7 +563,8 @@ class ReactAgent:
         self,
         query: str,
         steps: List[ReActStep],
-        plan: ExecutionPlan
+        plan: ExecutionPlan,
+        streaming_callback: Optional[Any] = None
     ) -> str:
         """
         从执行历史合成最终响应
@@ -553,6 +573,7 @@ class ReactAgent:
             query: 原始查询
             steps: 执行步骤列表
             plan: 执行计划
+            streaming_callback: 流式回调函数（可选）
         
         Returns:
             str: 最终响应文本
@@ -579,22 +600,42 @@ class ReactAgent:
             plan=plan.to_dict()
         )
         
-        # 调用 LLM 生成响应
-        response = await self.llm_service.generate_text(
-            prompt,
-            temperature=0.7,
-            max_tokens=2000  # 增加到 2000 以支持更长的响应
-        )
+        # 如果有流式回调，使用流式生成
+        if streaming_callback:
+            final_response = ""
+            try:
+                async for chunk in self.llm_service.generate_text_stream(
+                    prompt,
+                    temperature=0.7,
+                    max_tokens=2000
+                ):
+                    final_response += chunk
+                    # 实时发送响应块
+                    try:
+                        await streaming_callback("response_chunk", {
+                            "chunk": chunk
+                        })
+                    except Exception as e:
+                        logger.warning(f"Streaming callback failed: {e}")
+            except Exception as e:
+                logger.error(f"Streaming synthesis failed: {e}")
+                raise
+        else:
+            # 非流式调用
+            final_response = await self.llm_service.generate_text(
+                prompt,
+                temperature=0.7,
+                max_tokens=2000
+            )
         
         # 解析响应
-        final_response = ResponseSynthesisPrompt.parse_response(response)
+        final_response = ResponseSynthesisPrompt.parse_response(final_response)
         
         logger.info(f"Synthesized response: {len(final_response)} characters")
         
         return final_response
     
 
-    
     def _create_simple_plan(self, query: str) -> ExecutionPlan:
         """
         创建简单的执行计划（临时实现）
@@ -623,40 +664,6 @@ class ReactAgent:
                 )
             ],
             estimated_iterations=1
-        )
-    
-    def _create_simple_evaluation(self, steps: List[ReActStep]) -> QualityEvaluation:
-        """
-        创建简单的质量评估（临时实现）
-        
-        Args:
-            steps: 执行步骤列表
-        
-        Returns:
-            QualityEvaluation: 质量评估
-        """
-        # 简单评估：基于成功步骤的比例
-        if not steps:
-            return QualityEvaluation(
-                completeness_score=0,
-                quality_score=0,
-                missing_info=["No steps executed"],
-                needs_retry=True,
-                suggestions=["Execute at least one step"]
-            )
-        
-        successful_steps = [s for s in steps if s.is_successful()]
-        success_rate = len(successful_steps) / len(steps)
-        
-        completeness_score = int(success_rate * 10)
-        quality_score = completeness_score
-        
-        return QualityEvaluation(
-            completeness_score=completeness_score,
-            quality_score=quality_score,
-            missing_info=[],
-            needs_retry=completeness_score < 7,
-            suggestions=[]
         )
     
     def _generate_session_id(self) -> str:
@@ -747,7 +754,8 @@ def get_react_agent(
     plugin_manager: Optional['PluginManager'] = None,
     conversation_memory: Optional[ConversationMemory] = None,
     task_planner: Optional[TaskPlanner] = None,
-    tool_orchestrator: Optional[ToolOrchestrator] = None
+    tool_orchestrator: Optional[ToolOrchestrator] = None,
+    reflection_engine: Optional[ReflectionEngine] = None
 ) -> ReactAgent:
     """
     获取全局 ReactAgent 实例
@@ -759,6 +767,7 @@ def get_react_agent(
         conversation_memory: 会话记忆管理器（可选）
         task_planner: 任务规划器（可选）
         tool_orchestrator: 工具编排器（可选）
+        reflection_engine: 反思引擎（可选）
     
     Returns:
         ReactAgent: ReactAgent 实例
@@ -772,7 +781,8 @@ def get_react_agent(
             plugin_manager,
             conversation_memory,
             task_planner,
-            tool_orchestrator
+            tool_orchestrator,
+            reflection_engine
         )
     
     return _react_agent

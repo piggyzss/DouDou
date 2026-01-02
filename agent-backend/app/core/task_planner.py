@@ -113,25 +113,55 @@ class TaskPlanner:
             str: "simple", "medium", or "complex"
         
         分类规则：
-        - Simple: 短查询，单一意图，无需上下文
-        - Medium: 中等长度，可能需要多个工具
-        - Complex: 长查询，多个意图，需要上下文
+        - Simple: 短查询，单一意图，无需上下文，无需深度分析
+        - Medium: 中等长度，可能需要多个工具，或需要分析
+        - Complex: 长查询，多个意图，需要上下文，需要深度分析
         """
         query_length = len(query)
+        query_lower = query.lower()
         
         # 检查是否有多个问题或请求
         has_multiple_intents = any(
-            marker in query.lower()
+            marker in query_lower
             for marker in ["然后", "接着", "还有", "另外", "同时", "以及", "and then", "also", "additionally"]
         )
         
         # 检查是否需要上下文
         needs_context = any(
-            marker in query.lower()
+            marker in query_lower
             for marker in ["继续", "上次", "之前", "刚才", "那个", "这个", "continue", "previous", "last"]
         )
         
-        # 分类逻辑
+        # 检查是否需要深度分析（这些关键词表示需要多步骤处理）
+        needs_analysis = any(
+            marker in query_lower
+            for marker in [
+                "分析", "analyze", "analysis", "深入", "详细", "详尽", "深度",
+                "比较", "compare", "对比", "总结", "summarize", "归纳",
+                "趋势", "trend", "发展", "进展", "progress", "演变", "evolution",
+                "评估", "evaluate", "研究", "research", "调查", "investigate"
+            ]
+        )
+        
+        # 检查是否需要搜索和整合信息
+        needs_search = any(
+            marker in query_lower
+            for marker in [
+                "最近", "recent", "latest", "新闻", "news", "动态", "updates",
+                "搜索", "search", "查找", "find", "寻找", "look for"
+            ]
+        )
+        
+        # 分类逻辑（更智能的判断）
+        # 如果需要分析或搜索，至少是 medium 复杂度
+        if needs_analysis or needs_search:
+            # 如果同时需要分析和搜索，或者有多个意图，则是 complex
+            if (needs_analysis and needs_search) or has_multiple_intents or needs_context:
+                return "complex"
+            else:
+                return "medium"
+        
+        # 原有的长度判断逻辑
         if query_length <= self.SIMPLE_QUERY_MAX_LENGTH and not has_multiple_intents and not needs_context:
             return "simple"
         elif query_length <= self.MEDIUM_QUERY_MAX_LENGTH or has_multiple_intents:

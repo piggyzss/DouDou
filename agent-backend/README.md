@@ -2,6 +2,8 @@
 
 基于 FastAPI 的智能 ReAct (Reasoning + Acting) Agent 后端服务，采用插件化架构设计，支持多步推理、任务规划、工具编排和会话记忆。
 
+> 📚 **文档导航**: 查看 [文档索引](DOCS_INDEX.md) 快速找到你需要的文档
+
 ---
 
 ## 📋 目录
@@ -17,6 +19,7 @@
 - [数据模型](#-数据模型)
 - [开发指南](#-开发指南)
 - [故障排除](#-故障排除)
+- [文档资源](#-文档资源)
 
 ---
 
@@ -31,6 +34,7 @@ ReAct Agent 是一个完整的智能 Agent 系统，实现了 ReAct (Reasoning +
 - **任务规划**：将复杂查询分解为可执行步骤
 - **质量评估**：自我反思和输出质量评估
 - **双模式支持**：同时支持命令模式和自然语言模式
+- **SSE 流式输出**：实时流式传输 Agent 思考过程
 
 ### 双模式交互
 
@@ -764,3 +768,53 @@ lsof -i :8000
 **版本**: 3.0.0 (ReAct Agent)  
 **状态**: ✅ 生产就绪  
 **最后更新**: 2024-01-01
+
+
+---
+
+## 📚 文档资源
+
+### 核心文档
+
+| 文档 | 说明 |
+|-----|------|
+| [文档索引](DOCS_INDEX.md) | 所有文档的导航和索引 |
+| [系统设计](DESIGN.md) | ReAct Agent 系统架构设计 |
+| [部署说明](DEPLOYMENT.md) | 部署和运维指南 |
+| [测试指南](TESTING_GUIDE.md) | 测试脚本使用说明 |
+
+### 功能文档
+
+| 文档 | 说明 |
+|-----|------|
+| [SSE 流式输出指南](docs/SSE_STREAMING_GUIDE.md) | SSE 流式输出完整实现指南 |
+| [Agent 框架对比](docs/AGENT_FRAMEWORKS.md) | 不同 Agent 框架的对比分析 |
+| [真实新闻实现](docs/REAL_NEWS_IMPLEMENTATION.md) | 真实新闻数据源实现说明 |
+
+### 测试脚本
+
+| 脚本 | 说明 |
+|-----|------|
+| `test_gemini_stream.py` | 测试 Gemini API 流式输出 |
+| `test_streaming_complete.py` | 测试完整流式链路 |
+| `test_reflection_engine.py` | 测试反思引擎 |
+
+### 快速查找
+
+- **想了解流式输出?** → [SSE 流式输出指南](docs/SSE_STREAMING_GUIDE.md)
+- **想部署到生产?** → [部署说明](DEPLOYMENT.md)
+- **想运行测试?** → [测试指南](TESTING_GUIDE.md)
+- **想了解架构?** → [系统设计](DESIGN.md)
+- **找不到文档?** → [文档索引](DOCS_INDEX.md)
+
+---
+
+## 🤝 贡献
+
+欢迎贡献代码和文档！请查看 [文档索引](DOCS_INDEX.md) 了解文档结构和贡献指南。
+
+---
+
+**最后更新**: 2025-01-02  
+**版本**: 2.0.0  
+**维护者**: Agent Backend Team
