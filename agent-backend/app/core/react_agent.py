@@ -351,57 +351,55 @@ class ReactAgent:
             history: 历史步骤
             context: 上下文
             iteration: 当前迭代次数
+            streaming_callback: 流式回调函数（可选）
         
         Returns:
             ReActStep: 执行步骤
         
-        步骤：
-        1. 生成思考（使用 LLM）
-        2. 选择行动（工具和参数）
-        3. 执行工具
-        4. 记录观察结果
+        流程：
+        1. Reason: 生成推理/思考
+        2. Act: 选择行动
+        3. Observe: 执行工具并获取结果
+        4. 构建 ReActStep
         """
         logger.info(f"Starting ReAct iteration {iteration}")
         
         try:
-            # 1. 生成思考和选择行动（使用 LLM，支持流式）
-            thought, tool_call = await self._generate_thought_and_action(
-                query, plan, history, context, iteration, streaming_callback
+            # Step 1: Reason - 生成思考（包含流式处理）
+            thought = await self._reason(
+                query=query,
+                plan=plan,
+                history=history,
+                context=context,
+                iteration=iteration,
+                streaming_callback=streaming_callback
             )
             
             logger.info(f"Thought: {thought[:100]}...")
+            
+            # Step 2: Act - 选择行动（包含流式处理）
+            tool_call = await self._act(
+                query=query,
+                thought=thought,
+                plan=plan,
+                history=history,
+                context=context,
+                iteration=iteration,
+                streaming_callback=streaming_callback
+            )
+            
             logger.info(f"Action: {tool_call.tool_name}({tool_call.parameters})")
             
-            # SSE：流式发送行动事件（非流式回调时才发送完整思考）
-            if streaming_callback:
-                try:
-                    await streaming_callback("action", {
-                        "step_number": iteration,
-                        "tool_name": tool_call.tool_name,
-                        "parameters": tool_call.parameters,
-                        "thought": thought  # 包含完整思考
-                    })
-                except Exception as e:
-                    logger.warning(f"Streaming callback failed for action: {e}")
-            
-            # 2. 执行工具
-            observation = await self._execute_action(tool_call)
+            # Step 3: Observe - 执行工具（包含流式处理）
+            observation = await self._observe(
+                tool_call=tool_call,
+                iteration=iteration,
+                streaming_callback=streaming_callback
+            )
             
             logger.info(f"Observation: {'Success' if observation.is_success() else 'Failed'}")
             
-            # SSE：流式发送观察事件
-            if streaming_callback:
-                try:
-                    await streaming_callback("observation", {
-                        "step_number": iteration,
-                        "success": observation.is_success(),
-                        "data": observation.data if observation.is_success() else None,
-                        "error": observation.error if not observation.is_success() else None
-                    })
-                except Exception as e:
-                    logger.warning(f"Streaming callback failed for observation: {e}")
-            
-            # 创建步骤
+            # Step 4: 构建结果
             step = ReActStep(
                 step_number=iteration,
                 thought=thought,
@@ -437,7 +435,7 @@ class ReactAgent:
                 timestamp=datetime.now()
             )
     
-    async def _generate_thought_and_action(
+    async def _reason(
         self,
         query: str,
         plan: ExecutionPlan,
@@ -445,9 +443,9 @@ class ReactAgent:
         context: Dict[str, Any],
         iteration: int,
         streaming_callback: Optional[Any] = None
-    ) -> tuple[str, ToolCall]:
+    ) -> str:
         """
-        使用 LLM 生成思考和选择行动
+        使用 LLM 生成推理/思考（ReAct 的 Reason 步骤）
         
         Args:
             query: 用户查询
@@ -458,106 +456,262 @@ class ReactAgent:
             streaming_callback: 流式回调函数（可选）
         
         Returns:
-            tuple[str, ToolCall]: (思考内容, 工具调用)
+            str: 生成的思考内容
         
         Raises:
             LLMServiceError: 当 LLM 服务不可用或调用失败时
-            ValueError: 当解析失败时
         """
-        from ..prompts.react_prompts import ReActIterationPrompt, format_tools_for_prompt
+        from ..prompts.react_prompts import ReActReasoningPrompt, format_tools_for_prompt
         from ..services.llm_service import LLMServiceError
         
-        # 检查 LLM 是否可用
-        if not self.llm_service or not self.llm_service.is_available():
-            raise LLMServiceError("LLM service not available. Please check your API configuration.")
+        logger.info(f"Generating reasoning for iteration {iteration}")
         
-        # 获取可用工具描述
-        tools = self.tool_registry.get_all_tools()
-        tools_description = format_tools_for_prompt([
-            {
-                'name': tool.name,
-                'description': tool.description,
-                'parameters': [
-                    {'name': p.name, 'type': p.type}
-                    for p in tool.parameters
-                ]
-            }
-            for tool in tools
-        ])
-        
-        # 构建提示
-        prompt = ReActIterationPrompt.create_prompt(
-            query=query,
-            plan=plan.to_dict(),
-            history=[step.to_dict() for step in history],
-            available_tools=tools_description,
-            iteration=iteration
-        )
-        
-        # 如果有流式回调，使用流式生成
-        if streaming_callback:
-            response = ""
-            try:
-                async for chunk in self.llm_service.generate_text_stream(
+        try:
+            # 检查 LLM 是否可用
+            if not self.llm_service or not self.llm_service.is_available():
+                raise LLMServiceError("LLM service not available. Please check your API configuration.")
+            
+            # 获取可用工具描述
+            tools = self.tool_registry.get_all_tools()
+            tools_description = format_tools_for_prompt([
+                {
+                    'name': tool.name,
+                    'description': tool.description,
+                    'parameters': [
+                        {'name': p.name, 'type': p.type}
+                        for p in tool.parameters
+                    ]
+                }
+                for tool in tools
+            ])
+            
+            # 构建提示
+            prompt = ReActReasoningPrompt.create_prompt(
+                query=query,
+                plan=plan.to_dict(),
+                history=[step.to_dict() for step in history],
+                available_tools=tools_description,
+                iteration=iteration
+            )
+            
+            # 如果有流式回调，使用流式生成
+            if streaming_callback:
+                thought = ""
+                try:
+                    async for chunk in self.llm_service.generate_text_stream(
+                        prompt,
+                        temperature=0.7,
+                        max_tokens=2000
+                    ):
+                        thought += chunk
+                        # 实时发送思考块
+                        try:
+                            await streaming_callback("thought_chunk", {
+                                "step_number": iteration,
+                                "chunk": chunk
+                            })
+                        except Exception as e:
+                            logger.warning(f"Streaming callback failed for thought_chunk: {e}")
+                except Exception as e:
+                    logger.error(f"Streaming reasoning generation failed: {e}")
+                    raise
+            else:
+                # 非流式调用
+                thought = await self.llm_service.generate_text(
                     prompt,
                     temperature=0.7,
-                    max_tokens=3000  # Increased for complex reasoning - prevents truncation
-                ):
-                    response += chunk
-                    # 实时发送思考块
-                    try:
-                        await streaming_callback("thought_chunk", {
-                            "step_number": iteration,
-                            "chunk": chunk
-                        })
-                    except Exception as e:
-                        logger.warning(f"Streaming callback failed: {e}")
-            except Exception as e:
-                logger.error(f"Streaming generation failed: {e}")
-                raise
-        else:
-            # 非流式调用
+                    max_tokens=2000
+                )
+            
+            # 解析响应
+            thought = ReActReasoningPrompt.parse_response(thought)
+            
+            logger.info(f"Generated reasoning: {thought[:100]}...")
+            return thought
+        
+        except LLMServiceError as e:
+            logger.error(f"LLM service failed during reasoning: {e}")
+            error_thought = f"Error generating thought: {str(e)}"
+            return error_thought
+        except Exception as e:
+            logger.error(f"Unexpected error during reasoning: {e}", exc_info=True)
+            error_thought = f"Unexpected error during reasoning: {str(e)}"
+            return error_thought
+    
+    async def _act(
+        self,
+        query: str,
+        thought: str,
+        plan: ExecutionPlan,
+        history: List[ReActStep],
+        context: Dict[str, Any],
+        iteration: int,
+        streaming_callback: Optional[Any] = None
+    ) -> ToolCall:
+        """
+        选择行动（ReAct 的 Act 步骤）
+        
+        Args:
+            query: 用户查询
+            thought: 推理内容（来自 _reason()）
+            plan: 执行计划
+            history: 历史步骤
+            context: 上下文
+            iteration: 当前迭代次数
+            streaming_callback: 流式回调函数（可选）
+        
+        Returns:
+            ToolCall: 选择的工具调用
+        """
+        from ..prompts.react_prompts import ReActActionPrompt, format_tools_for_prompt
+        from ..services.llm_service import LLMServiceError
+        
+        logger.info(f"Selecting action for iteration {iteration}")
+        
+        try:
+            # 检查 LLM 是否可用
+            if not self.llm_service or not self.llm_service.is_available():
+                raise LLMServiceError("LLM service not available. Please check your API configuration.")
+            
+            # 获取可用工具描述
+            tools = self.tool_registry.get_all_tools()
+            tools_description = format_tools_for_prompt([
+                {
+                    'name': tool.name,
+                    'description': tool.description,
+                    'parameters': [
+                        {'name': p.name, 'type': p.type}
+                        for p in tool.parameters
+                    ]
+                }
+                for tool in tools
+            ])
+            
+            # 构建提示
+            prompt = ReActActionPrompt.create_prompt(
+                query=query,
+                thought=thought,
+                plan=plan.to_dict(),
+                history=[step.to_dict() for step in history],
+                available_tools=tools_description,
+                iteration=iteration
+            )
+            
+            # 调用 LLM（行动选择通常不需要流式，因为响应较短）
             response = await self.llm_service.generate_text(
                 prompt,
                 temperature=0.7,
-                max_tokens=3000  # Increased for complex reasoning - prevents truncation
+                max_tokens=1000
             )
+            
+            # 解析响应
+            action_data = ReActActionPrompt.parse_response(response)
+            
+            # 检查是否是解析错误
+            if action_data.get('tool_name') == '_parsing_error':
+                logger.error(f"Action parsing failed. Prompt: {prompt[:200]}...")
+                logger.error(f"LLM response: {response[:500]}...")
+                raise ValueError("Failed to parse LLM response into valid action")
+            
+            # 创建 ToolCall 对象
+            tool_call = ToolCall(
+                tool_name=action_data.get('tool_name'),
+                parameters=action_data.get('parameters', {}),
+                reasoning=action_data.get('reasoning', thought),
+                confidence=0.8,
+                source="llm"
+            )
+            
+            logger.info(f"Selected action: {tool_call.tool_name}({tool_call.parameters})")
+            
+            # 发送流式事件
+            if streaming_callback:
+                try:
+                    await streaming_callback("action", {
+                        "step_number": iteration,
+                        "tool_name": tool_call.tool_name,
+                        "parameters": tool_call.parameters,
+                        "thought": thought  # 包含完整思考以提供上下文
+                    })
+                except Exception as e:
+                    logger.warning(f"Streaming callback failed for action: {e}")
+            
+            return tool_call
         
-        # 解析响应
-        action_data = ReActIterationPrompt.parse_response(response)
-        
-        # 检查是否是解析错误
-        if action_data.get('tool_name') == '_parsing_error':
-            logger.error(f"LLM response parsing failed. Prompt: {prompt[:200]}...")
-            logger.error(f"LLM response: {response[:500]}...")
-            raise ValueError("Failed to parse LLM response into valid action")
-        
-        thought = action_data.get('thought', 'Analyzing the situation...')
-        
-        tool_call = ToolCall(
-            tool_name=action_data.get('tool_name'),
-            parameters=action_data.get('parameters', {}),
-            reasoning=action_data.get('reasoning', thought),
-            confidence=0.8,
-            source="llm"
-        )
-        
-        return thought, tool_call
+        except (LLMServiceError, ValueError) as e:
+            logger.error(f"Action selection failed: {e}")
+            # 返回错误 ToolCall
+            error_tool_call = ToolCall(
+                tool_name="_error",
+                parameters={"error": str(e)},
+                reasoning="Action selection failed",
+                confidence=0.0,
+                source="system"
+            )
+            
+            # 仍然发送流式事件（表示错误）
+            if streaming_callback:
+                try:
+                    await streaming_callback("action", {
+                        "step_number": iteration,
+                        "tool_name": error_tool_call.tool_name,
+                        "parameters": error_tool_call.parameters,
+                        "thought": thought
+                    })
+                except Exception as callback_error:
+                    logger.warning(f"Streaming callback failed for error action: {callback_error}")
+            
+            return error_tool_call
+        except Exception as e:
+            logger.error(f"Unexpected error during action selection: {e}", exc_info=True)
+            # 返回错误 ToolCall
+            error_tool_call = ToolCall(
+                tool_name="_error",
+                parameters={"error": str(e)},
+                reasoning="Unexpected error during action selection",
+                confidence=0.0,
+                source="system"
+            )
+            return error_tool_call
     
-
-    
-    async def _execute_action(self, tool_call: ToolCall) -> ToolResult:
+    async def _observe(
+        self,
+        tool_call: ToolCall,
+        iteration: int,
+        streaming_callback: Optional[Any] = None
+    ) -> ToolResult:
         """
-        执行工具调用（使用 ToolOrchestrator）
+        执行工具并收集观察结果（ReAct 的 Observe 步骤）
         
         Args:
-            tool_call: 工具调用对象
+            tool_call: 要执行的工具调用
+            iteration: 当前迭代次数
+            streaming_callback: 流式回调函数（可选）
         
         Returns:
             ToolResult: 工具执行结果
         """
+        logger.info(f"Executing tool: {tool_call.tool_name}")
+        
         # 使用 ToolOrchestrator 执行工具（带缓存）
-        return await self.tool_orchestrator.execute_tool(tool_call, use_cache=True)
+        observation = await self.tool_orchestrator.execute_tool(tool_call, use_cache=True)
+        
+        logger.info(f"Tool execution {'succeeded' if observation.is_success() else 'failed'}")
+        
+        # 发送流式事件
+        if streaming_callback:
+            try:
+                await streaming_callback("observation", {
+                    "step_number": iteration,
+                    "success": observation.is_success(),
+                    "data": observation.data if observation.is_success() else None,
+                    "error": observation.error if not observation.is_success() else None
+                })
+            except Exception as e:
+                logger.warning(f"Streaming callback failed for observation: {e}")
+        
+        return observation
+
     
     async def _synthesize_response(
         self,

@@ -145,6 +145,263 @@ Return ONLY the JSON object, no additional text."""
         }
 
 
+class ReActReasoningPrompt:
+    """
+    ReAct 推理提示模板
+    
+    用于生成推理/思考，不包含行动选择。
+    这是 ReAct 循环中的第一步：分析情况并解释下一步应该做什么。
+    """
+    
+    SYSTEM_PROMPT = """You are an intelligent AI agent using the ReAct (Reasoning + Acting) framework.
+
+Your task is to think step-by-step about the current situation and reason about what needs to be done next.
+Focus on analysis and reasoning - you will select the specific action in the next step."""
+    
+    @staticmethod
+    def create_prompt(
+        query: str,
+        plan: Dict[str, Any],
+        history: List[Dict[str, Any]],
+        available_tools: str,
+        iteration: int
+    ) -> str:
+        """
+        创建推理生成提示
+        
+        Args:
+            query: 原始用户查询
+            plan: 执行计划
+            history: 已执行的步骤历史
+            available_tools: 可用工具描述
+            iteration: 当前迭代次数
+        
+        Returns:
+            str: 完整的提示文本
+        """
+        # 构建历史上下文
+        history_text = ""
+        if history:
+            history_text = "\n\nPrevious Steps:\n"
+            for step in history:
+                history_text += f"Step {step['step_number']}:\n"
+                history_text += f"  Thought: {step['thought']}\n"
+                history_text += f"  Action: {step['action']['tool_name']}({step['action']['parameters']})\n"
+                history_text += f"  Observation: {step['observation'].get('data', step['observation'].get('error', 'N/A'))}\n"
+                history_text += f"  Status: {step['status']}\n"
+        
+        # 构建计划上下文
+        plan_text = f"\nExecution Plan (Complexity: {plan.get('complexity', 'unknown')}):\n"
+        for step in plan.get('steps', []):
+            plan_text += f"  {step['step_number']}. {step['description']} (Tool: {step['tool_name']})\n"
+        
+        prompt = f"""You are executing a task using the ReAct framework.
+
+Original Task: {query}
+{plan_text}
+{history_text}
+
+Current Iteration: {iteration}/{plan.get('estimated_iterations', 5)}
+
+Available Tools:
+{available_tools}
+
+Think step-by-step about the current situation:
+1. What have we accomplished so far?
+2. What information do we have from previous observations?
+3. What's the next logical step toward completing the task?
+4. What do we need to find out or do next?
+
+Provide your reasoning in clear, natural language. Focus on:
+- Analyzing the current state
+- Explaining what needs to happen next
+- Reasoning about why this is the right next step
+
+Do NOT select a specific tool or parameters yet - just explain your thinking.
+
+Your reasoning:"""
+        
+        return prompt
+    
+    @staticmethod
+    def parse_response(response: str) -> str:
+        """
+        解析 LLM 响应提取思考内容
+        
+        Args:
+            response: LLM 响应文本
+        
+        Returns:
+            str: 思考内容
+        """
+        # 清理响应
+        thought = response.strip()
+        
+        # 如果响应为空，返回默认值
+        if not thought:
+            thought = "Analyzing the situation..."
+        
+        return thought
+
+
+class ReActActionPrompt:
+    """
+    ReAct 行动选择提示模板
+    
+    用于基于推理选择具体的行动（工具和参数）。
+    这是 ReAct 循环中的第二步：将推理转化为可执行的行动。
+    """
+    
+    SYSTEM_PROMPT = """You are an intelligent AI agent using the ReAct (Reasoning + Acting) framework.
+
+Your task is to select the most appropriate tool and parameters based on the reasoning provided.
+Be specific and actionable in your tool selection."""
+    
+    @staticmethod
+    def create_prompt(
+        query: str,
+        thought: str,
+        plan: Dict[str, Any],
+        history: List[Dict[str, Any]],
+        available_tools: str,
+        iteration: int
+    ) -> str:
+        """
+        创建行动选择提示
+        
+        Args:
+            query: 原始用户查询
+            thought: 推理内容（来自 _reason()）
+            plan: 执行计划
+            history: 已执行的步骤历史
+            available_tools: 可用工具描述
+            iteration: 当前迭代次数
+        
+        Returns:
+            str: 完整的提示文本
+        """
+        # 构建历史上下文（简化版，只显示工具和结果）
+        history_text = ""
+        if history:
+            history_text = "\n\nPrevious Actions:\n"
+            for step in history:
+                history_text += f"Step {step['step_number']}: {step['action']['tool_name']} - {step['status']}\n"
+        
+        prompt = f"""You are executing a task using the ReAct framework.
+
+Original Task: {query}
+
+Current Iteration: {iteration}
+{history_text}
+
+Your Reasoning:
+{thought}
+
+Available Tools:
+{available_tools}
+
+Based on your reasoning above, select the most appropriate tool and parameters.
+
+Respond in JSON format (NO markdown code blocks, just raw JSON):
+{{
+  "tool_name": "name_of_tool_to_use",
+  "parameters": {{
+    "param1": "value1",
+    "param2": "value2"
+  }},
+  "reasoning": "Brief explanation of why this tool and these parameters"
+}}
+
+Example response:
+{{
+  "tool_name": "get_latest_news",
+  "parameters": {{
+    "count": 5,
+    "keywords": ["OpenAI"]
+  }},
+  "reasoning": "This will retrieve the most recent news articles about OpenAI"
+}}
+
+CRITICAL RULES:
+- Return ONLY the JSON object
+- Do NOT wrap in markdown code blocks (no ```)
+- Do NOT add any explanatory text before or after the JSON
+- Choose a tool from the available tools list above
+- Ensure parameters match the tool's expected format
+- Be specific and actionable
+
+Return your response now:"""
+        
+        return prompt
+    
+    @staticmethod
+    def parse_response(response: str) -> Dict[str, Any]:
+        """
+        解析 LLM 响应为结构化数据
+        
+        Args:
+            response: LLM 响应文本
+        
+        Returns:
+            Dict: 解析后的行动数据
+        """
+        import json
+        import re
+        from loguru import logger
+        
+        # 尝试提取 JSON（支持 markdown 代码块）
+        code_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+        if code_block_match:
+            try:
+                return json.loads(code_block_match.group(1))
+            except json.JSONDecodeError as e:
+                logger.warning(f"Failed to parse JSON from code block: {e}")
+        
+        # 然后尝试直接提取 JSON 对象
+        first_brace = response.find('{')
+        last_brace = response.rfind('}')
+        
+        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+            json_str = response[first_brace:last_brace + 1]
+            try:
+                parsed = json.loads(json_str)
+                logger.debug(f"Successfully parsed action JSON response")
+                return parsed
+            except json.JSONDecodeError as e:
+                logger.warning(f"Failed to parse action JSON: {e}")
+                
+                # Try to fix by finding balanced braces
+                try:
+                    brace_count = 0
+                    json_end = -1
+                    for i, char in enumerate(json_str):
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_end = i + 1
+                                break
+                    
+                    if json_end > 0:
+                        json_str_fixed = json_str[:json_end]
+                        parsed = json.loads(json_str_fixed)
+                        logger.info(f"Successfully parsed action JSON after fixing")
+                        return parsed
+                except Exception as fix_error:
+                    logger.warning(f"Failed to fix action JSON: {fix_error}")
+        
+        # 如果解析失败，返回错误指示
+        logger.error(f"Unable to parse action selection response")
+        logger.error(f"Response preview: {response[:500]}")
+        
+        return {
+            "tool_name": "_parsing_error",
+            "parameters": {"error": "Action parsing failed", "response_preview": response[:200]},
+            "reasoning": "Failed to parse action selection from LLM response"
+        }
+
+
 class ReActIterationPrompt:
     """
     ReAct 迭代提示模板
