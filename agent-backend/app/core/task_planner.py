@@ -81,7 +81,7 @@ class TaskPlanner:
             context = {}
         
         # 1. 分析复杂度
-        complexity = self._classify_complexity(query, conversation_history)
+        complexity = await self._classify_complexity(query, conversation_history)
         
         logger.info(f"Query complexity: {complexity}")
         
@@ -97,13 +97,13 @@ class TaskPlanner:
         
         return plan
     
-    def _classify_complexity(
+    async def _classify_complexity(
         self,
         query: str,
         conversation_history: List[ConversationTurn]
     ) -> str:
         """
-        分类查询复杂度
+        分类查询复杂度（混合方法：快速规则 + LLM 智能判断）
         
         Args:
             query: 用户查询
@@ -112,10 +112,163 @@ class TaskPlanner:
         Returns:
             str: "simple", "medium", or "complex"
         
-        分类规则：
-        - Simple: 短查询，单一意图，无需上下文，无需深度分析
-        - Medium: 中等长度，可能需要多个工具，或需要分析
-        - Complex: 长查询，多个意图，需要上下文，需要深度分析
+        分类策略：
+        1. 快速规则过滤：明显简单的查询直接返回 simple
+        2. LLM 智能判断：使用 LLM 理解语义和意图
+        3. 规则兜底：LLM 不可用时使用规则判断
+        """
+        # 1. 快速规则过滤：明显简单的查询
+        if self._is_obviously_simple(query):
+            logger.info(f"Classified as simple: obviously simple query")
+            return "simple"
+        
+        # 2. 尝试使用 LLM 智能判断
+        if self.llm_service and self.llm_service.is_available():
+            try:
+                complexity = await self._classify_with_llm(query, conversation_history)
+                logger.info(f"LLM classified as: {complexity}")
+                return complexity
+            except Exception as e:
+                logger.warning(f"LLM classification failed, falling back to rules: {e}")
+        
+        # 3. 规则兜底
+        return self._classify_with_rules(query, conversation_history)
+    
+    def _is_obviously_simple(self, query: str) -> bool:
+        """
+        快速判断是否是明显简单的查询
+        
+        Args:
+            query: 用户查询
+        
+        Returns:
+            bool: 是否明显简单
+        """
+        query_lower = query.lower()
+        
+        # 非常短的问候语或简单问题
+        simple_patterns = [
+            "你好", "hello", "hi", "嗨",
+            "谢谢", "thank", "thanks",
+            "再见", "bye", "goodbye",
+            "什么是", "what is", "who is",
+        ]
+        
+        # 查询很短且包含简单模式
+        if len(query) <= 20 and any(pattern in query_lower for pattern in simple_patterns):
+            return True
+        
+        return False
+    
+    async def _classify_with_llm(
+        self,
+        query: str,
+        conversation_history: List[ConversationTurn]
+    ) -> str:
+        """
+        使用 LLM 智能分类查询复杂度
+        
+        Args:
+            query: 用户查询
+            conversation_history: 对话历史
+        
+        Returns:
+            str: "simple", "medium", or "complex"
+        """
+        # 获取可用工具列表
+        tools = self.tool_registry.get_all_tools()
+        tools_list = "\n".join([
+            f"- {tool.name}: {tool.description}"
+            for tool in tools
+        ])
+        
+        # 构建提示
+        prompt = f"""Analyze the following user query and classify its complexity based on the available tools and required steps.
+
+User Query: "{query}"
+
+Available Tools:
+{tools_list}
+
+Classification Guidelines:
+
+**Simple (1 step)**:
+- Single, straightforward request
+- Can be answered with one tool call or direct response
+- No need for information gathering + analysis
+- Examples: "Hello", "What's the weather?", "Echo this message"
+
+**Medium (2-3 steps)**:
+- Requires 2-3 tool calls
+- Some coordination between tools
+- Examples: "Search for news and summarize", "Get weather and suggest activities"
+
+**Complex (3+ steps)**:
+- Requires multiple tool calls with dependencies
+- Needs information gathering THEN analysis/synthesis
+- Multi-step reasoning required
+- Examples: "Analyze recent technological advancements at OpenAI" (needs: search news → analyze trends → synthesize)
+
+CRITICAL: Queries that ask to "analyze", "compare", "evaluate" recent/latest information are COMPLEX because they require:
+1. First step: Search/gather information
+2. Second step: Analyze the gathered information
+3. Third step: Synthesize findings
+
+Respond with ONLY a JSON object:
+{{
+  "complexity": "simple|medium|complex",
+  "reasoning": "Brief explanation (1-2 sentences)",
+  "estimated_steps": 1-5
+}}"""
+        
+        # 调用 LLM
+        response = await self.llm_service.generate_text(
+            prompt,
+            temperature=0.3,  # 低温度以获得更确定的分类
+            max_tokens=200
+        )
+        
+        # 解析响应
+        import json
+        import re
+        
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            try:
+                data = json.loads(json_match.group())
+                complexity = data.get('complexity', 'medium')
+                reasoning = data.get('reasoning', 'No reasoning provided')
+                estimated_steps = data.get('estimated_steps', 2)
+                
+                logger.info(f"LLM classification: {complexity} (steps: {estimated_steps})")
+                logger.info(f"LLM reasoning: {reasoning}")
+                
+                # 验证复杂度值
+                if complexity not in ['simple', 'medium', 'complex']:
+                    logger.warning(f"Invalid complexity '{complexity}', defaulting to medium")
+                    return 'medium'
+                
+                return complexity
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse LLM response: {e}")
+                raise
+        
+        raise ValueError("LLM response does not contain valid JSON")
+    
+    def _classify_with_rules(
+        self,
+        query: str,
+        conversation_history: List[ConversationTurn]
+    ) -> str:
+        """
+        使用规则分类查询复杂度（兜底方案）
+        
+        Args:
+            query: 用户查询
+            conversation_history: 对话历史
+        
+        Returns:
+            str: "simple", "medium", or "complex"
         """
         query_length = len(query)
         query_lower = query.lower()
@@ -132,7 +285,7 @@ class TaskPlanner:
             for marker in ["继续", "上次", "之前", "刚才", "那个", "这个", "continue", "previous", "last"]
         )
         
-        # 检查是否需要深度分析（这些关键词表示需要多步骤处理）
+        # 检查是否需要深度分析
         needs_analysis = any(
             marker in query_lower
             for marker in [
@@ -152,21 +305,38 @@ class TaskPlanner:
             ]
         )
         
-        # 分类逻辑（更智能的判断）
-        # 如果需要分析或搜索，至少是 medium 复杂度
-        if needs_analysis or needs_search:
-            # 如果同时需要分析和搜索，或者有多个意图，则是 complex
-            if (needs_analysis and needs_search) or has_multiple_intents or needs_context:
+        # 如果同时需要分析和搜索，这是典型的复杂任务
+        if needs_analysis and needs_search:
+            logger.info(f"Rule classified as complex: needs both analysis and search")
+            return "complex"
+        
+        # 如果需要分析，至少是 medium
+        if needs_analysis:
+            if has_multiple_intents or needs_context or query_length > self.MEDIUM_QUERY_MAX_LENGTH:
+                logger.info(f"Rule classified as complex: analysis + other factors")
                 return "complex"
             else:
+                logger.info(f"Rule classified as medium: needs analysis")
                 return "medium"
         
-        # 原有的长度判断逻辑
+        # 如果需要搜索，至少是 medium
+        if needs_search:
+            if has_multiple_intents or needs_context or query_length > self.MEDIUM_QUERY_MAX_LENGTH:
+                logger.info(f"Rule classified as complex: search + other factors")
+                return "complex"
+            else:
+                logger.info(f"Rule classified as medium: needs search")
+                return "medium"
+        
+        # 基于长度和意图的判断
         if query_length <= self.SIMPLE_QUERY_MAX_LENGTH and not has_multiple_intents and not needs_context:
+            logger.info(f"Rule classified as simple: short and single intent")
             return "simple"
         elif query_length <= self.MEDIUM_QUERY_MAX_LENGTH or has_multiple_intents:
+            logger.info(f"Rule classified as medium: length or multiple intents")
             return "medium"
         else:
+            logger.info(f"Rule classified as complex: long query")
             return "complex"
     
     async def _create_simple_plan(self, query: str) -> ExecutionPlan:

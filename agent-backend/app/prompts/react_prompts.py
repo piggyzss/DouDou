@@ -32,7 +32,7 @@ Always think step-by-step and create clear, actionable plans."""
     @staticmethod
     def create_prompt(
         query: str,
-        tools_description: str,
+        available_tools: str,
         conversation_history: Optional[List[Dict[str, Any]]] = None,
         complexity: str = "medium"
     ) -> str:
@@ -41,12 +41,14 @@ Always think step-by-step and create clear, actionable plans."""
         
         Args:
             query: 用户查询
-            tools_description: 可用工具描述
+            available_tools: 可用工具描述
             conversation_history: 对话历史（可选）
+            complexity: 预期复杂度（可选）
         
         Returns:
             str: 完整的提示文本
         """
+        tools_description = available_tools  # 兼容旧参数名
         history_context = ""
         if conversation_history:
             history_context = "\n\nConversation History:\n"
@@ -81,14 +83,23 @@ Please analyze the query and provide a structured execution plan in JSON format:
 }}
 
 Classification Guidelines:
-- **Simple**: Single tool, straightforward task, no dependencies (1 step)
+- **Simple**: Single tool, straightforward task, no dependencies (EXACTLY 1 step)
 - **Medium**: 2-3 tools, some coordination needed (2-3 steps)
-- **Complex**: Multiple tools, complex dependencies, multi-step reasoning (3+ steps)
+- **Complex**: Multiple tools, complex dependencies, multi-step reasoning (AT LEAST 2 steps, typically 3-5)
+
+CRITICAL RULES FOR COMPLEX QUERIES:
+- If the query asks to "analyze", "compare", "evaluate" recent/latest information, it is COMPLEX
+- Complex queries MUST have AT LEAST 2 steps (this is a hard requirement)
+- For analysis queries, break down into: Step 1 = gather information, Step 2 = analyze/synthesize
+- Example: "分析最近 OpenAI 的技术进展" should have:
+  - Step 1: Use get_latest_news to search for OpenAI news
+  - Step 2: Use deep_analysis to analyze the findings
+  - Step 3 (optional): Synthesize final insights
 
 Important:
 - For simple queries, create a plan with exactly 1 step
-- For complex queries, create at least 2 steps
-- Estimated iterations should be realistic (1-5)
+- For complex queries, create at least 2 steps (preferably 3-5 for thorough analysis)
+- Estimated iterations should match the number of steps (1-5)
 - Mark steps as required=false only if they're truly optional
 - Use depends_on to reference previous step numbers when needed
 
@@ -262,16 +273,50 @@ Return your response now:"""
             except json.JSONDecodeError as e:
                 logger.warning(f"Failed to parse JSON from code block: {e}")
         
-        # 然后尝试直接提取 JSON 对象
-        json_match = re.search(r'\{.*\}', response, re.DOTALL)
-        if json_match:
+        # 然后尝试直接提取 JSON 对象（使用贪婪匹配）
+        # 找到第一个 { 和最后一个 }
+        first_brace = response.find('{')
+        last_brace = response.rfind('}')
+        
+        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+            json_str = response[first_brace:last_brace + 1]
             try:
-                return json.loads(json_match.group())
+                parsed = json.loads(json_str)
+                logger.debug(f"Successfully parsed JSON response")
+                return parsed
             except json.JSONDecodeError as e:
-                logger.warning(f"Failed to parse JSON: {e}")
+                logger.warning(f"Failed to parse JSON (greedy match): {e}")
+                logger.debug(f"JSON string length: {len(json_str)}, first 200 chars: {json_str[:200]}")
+                logger.debug(f"JSON string last 200 chars: {json_str[-200:]}")
+                
+                # Try to fix common JSON issues
+                # Sometimes the response has trailing text after the JSON
+                # Try to find a valid JSON by looking for balanced braces
+                try:
+                    # Count braces to find where JSON actually ends
+                    brace_count = 0
+                    json_end = -1
+                    for i, char in enumerate(json_str):
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_end = i + 1
+                                break
+                    
+                    if json_end > 0:
+                        json_str_fixed = json_str[:json_end]
+                        parsed = json.loads(json_str_fixed)
+                        logger.info(f"Successfully parsed JSON after fixing (truncated at position {json_end})")
+                        return parsed
+                except Exception as fix_error:
+                    logger.warning(f"Failed to fix JSON: {fix_error}")
         
         # 如果解析失败，记录详细日志并返回错误指示
-        logger.error(f"Unable to parse LLM response. Response text: {response[:500]}...")
+        logger.error(f"Unable to parse LLM response. Response length: {len(response)}")
+        logger.error(f"Response first 500 chars: {response[:500]}")
+        logger.error(f"Response last 500 chars: {response[-500:]}")
         
         # 返回一个特殊的错误标记，而不是调用不存在的工具
         return {

@@ -372,7 +372,7 @@ class ReactAgent:
             logger.info(f"Thought: {thought[:100]}...")
             logger.info(f"Action: {tool_call.tool_name}({tool_call.parameters})")
             
-            # 流式发送行动事件（非流式回调时才发送完整思考）
+            # SSE：流式发送行动事件（非流式回调时才发送完整思考）
             if streaming_callback:
                 try:
                     await streaming_callback("action", {
@@ -389,7 +389,7 @@ class ReactAgent:
             
             logger.info(f"Observation: {'Success' if observation.is_success() else 'Failed'}")
             
-            # 流式发送观察事件
+            # SSE：流式发送观察事件
             if streaming_callback:
                 try:
                     await streaming_callback("observation", {
@@ -401,7 +401,7 @@ class ReactAgent:
                 except Exception as e:
                     logger.warning(f"Streaming callback failed for observation: {e}")
             
-            # 3. 创建步骤
+            # 创建步骤
             step = ReActStep(
                 step_number=iteration,
                 thought=thought,
@@ -501,7 +501,7 @@ class ReactAgent:
                 async for chunk in self.llm_service.generate_text_stream(
                     prompt,
                     temperature=0.7,
-                    max_tokens=500
+                    max_tokens=3000  # Increased for complex reasoning - prevents truncation
                 ):
                     response += chunk
                     # 实时发送思考块
@@ -520,7 +520,7 @@ class ReactAgent:
             response = await self.llm_service.generate_text(
                 prompt,
                 temperature=0.7,
-                max_tokens=500
+                max_tokens=3000  # Increased for complex reasoning - prevents truncation
             )
         
         # 解析响应
@@ -607,7 +607,7 @@ class ReactAgent:
                 async for chunk in self.llm_service.generate_text_stream(
                     prompt,
                     temperature=0.7,
-                    max_tokens=2000
+                    max_tokens=4000  # Increased for comprehensive responses - prevents truncation
                 ):
                     final_response += chunk
                     # 实时发送响应块
@@ -625,7 +625,7 @@ class ReactAgent:
             final_response = await self.llm_service.generate_text(
                 prompt,
                 temperature=0.7,
-                max_tokens=2000
+                max_tokens=4000  # Increased for comprehensive responses - prevents truncation
             )
         
         # 解析响应

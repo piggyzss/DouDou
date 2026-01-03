@@ -612,8 +612,8 @@ export default function AgentTerminal() {
             <div className="flex-1 p-3 md:p-6 overflow-y-auto font-mono text-xs md:text-sm font-normal leading-relaxed terminal-messages-container custom-scrollbar terminal-content-text">
               {messages.map((message) => (
                 <div key={message.id} className="mb-4">
-                  {/* 只在成功消息中显示执行计划 */}
-                  {message.status === "success" && message.plan && (
+                  {/* 显示执行计划 - 蓝色区域 */}
+                  {message.plan && (
                     <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -628,8 +628,8 @@ export default function AgentTerminal() {
                     </div>
                   )}
                   
-                  {/* 只在成功消息中显示执行步骤 */}
-                  {message.status === "success" && message.steps && message.steps.length > 0 && (
+                  {/* 显示执行步骤 - 绿色区域 */}
+                  {message.steps && message.steps.length > 0 && (
                     <div className="mb-3">
                       <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
                         Execution Steps:
@@ -641,8 +641,8 @@ export default function AgentTerminal() {
                     </div>
                   )}
                   
-                  {/* 只在成功消息中显示质量评估 */}
-                  {message.status === "success" && message.evaluation && (
+                  {/* 显示质量评估 - 紫色区域 */}
+                  {message.evaluation && (
                     <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                       <div className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2">
                         Quality Evaluation

@@ -232,38 +232,34 @@ class ReflectionEngine:
         Returns:
             bool: True 表示应该继续，False 表示应该停止
         
-        终止条件：
-        1. 完整性评分 >= 8（任务完成）
-        2. 迭代次数超过估计 + 2（防止无限循环）
-        3. 最后一步失败（无法继续）
-        
-        继续条件：
-        1. 完整性评分 < 7（需要更多工作）
-        2. 迭代次数在合理范围内
-        3. 最后一步成功
+        改进的终止逻辑：
+        1. 优先检查计划步骤完成度
+        2. 检查是否超过最大迭代次数（硬限制）
+        3. 检查最后一步是否失败
+        4. 基于质量评估决定（如果有）
+        5. 对于复杂任务，允许更多迭代
         """
         # 检查是否有步骤
         if not steps:
             return True  # 至少执行一步
         
         current_iterations = len(steps)
-        max_allowed_iterations = plan.estimated_iterations + 2
+        last_step = steps[-1]
         
-        # 条件 1：超过最大允许迭代次数
-        if current_iterations >= max_allowed_iterations:
+        # 硬限制：绝对最大迭代次数（防止无限循环）
+        absolute_max_iterations = 5  # ReactAgent.MAX_ITERATIONS
+        if current_iterations >= absolute_max_iterations:
             logger.info(
-                f"Stopping: iterations ({current_iterations}) "
-                f"exceeded max allowed ({max_allowed_iterations})"
+                f"Stopping: reached absolute max iterations ({absolute_max_iterations})"
             )
             return False
         
-        # 条件 2：最后一步失败
-        last_step = steps[-1]
+        # 条件 1：最后一步失败
         if last_step.status == "failed":
             logger.info("Stopping: last step failed")
             return False
         
-        # 条件 3：基于评估决定
+        # 条件 2：基于评估决定（如果有完整评估）
         if evaluation:
             if evaluation.completeness_score >= 8:
                 logger.info(
@@ -275,16 +271,50 @@ class ReflectionEngine:
                 logger.info("Stopping: evaluation indicates no retry needed")
                 return False
         
-        # 条件 4：达到估计迭代次数且最后一步成功
-        if current_iterations >= plan.estimated_iterations and last_step.is_successful():
+        # 条件 3：检查计划步骤完成度
+        # 统计已执行的不同工具类型
+        executed_tools = set(step.action.tool_name for step in steps if step.is_successful())
+        planned_tools = set(step.tool_name for step in plan.steps)
+        
+        # 如果所有计划的工具都已执行，检查是否应该继续
+        if planned_tools.issubset(executed_tools):
+            # 对于复杂任务，即使完成了所有计划步骤，也可能需要额外的综合步骤
+            if plan.complexity == "complex" and current_iterations < plan.estimated_iterations:
+                logger.info(
+                    f"Continuing: complex task, all planned tools executed but "
+                    f"may need synthesis ({current_iterations}/{plan.estimated_iterations})"
+                )
+                return True
+            else:
+                logger.info(
+                    f"Stopping: all planned tools executed "
+                    f"({len(executed_tools)}/{len(planned_tools)})"
+                )
+                return False
+        
+        # 条件 4：对于复杂任务，允许更多迭代
+        if plan.complexity == "complex":
+            # 复杂任务允许超过估计迭代次数
+            max_allowed = min(plan.estimated_iterations + 2, absolute_max_iterations)
+        elif plan.complexity == "medium":
+            # 中等任务允许少量额外迭代
+            max_allowed = min(plan.estimated_iterations + 1, absolute_max_iterations)
+        else:
+            # 简单任务严格按照估计
+            max_allowed = min(plan.estimated_iterations, absolute_max_iterations)
+        
+        if current_iterations >= max_allowed:
             logger.info(
-                f"Stopping: reached estimated iterations ({plan.estimated_iterations}) "
-                f"with successful last step"
+                f"Stopping: reached max allowed iterations for {plan.complexity} task "
+                f"({current_iterations}/{max_allowed})"
             )
             return False
         
         # 默认：继续执行
-        logger.info(f"Continuing: {current_iterations}/{max_allowed_iterations} iterations")
+        logger.info(
+            f"Continuing: {current_iterations}/{max_allowed} iterations, "
+            f"executed tools: {len(executed_tools)}/{len(planned_tools)}"
+        )
         return True
     
     def _clamp_score(self, score: Any) -> int:

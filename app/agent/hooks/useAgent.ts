@@ -132,29 +132,104 @@ export function useAgent() {
             // 开始执行
           } else if (data.type === 'plan') {
             plan = data.plan as ExecutionPlan;
-          } else if (data.type === 'step') {
-            const step: ReActStep = {
-              step_number: data.step_number,
-              thought: data.thought,
-              action: { 
-                tool_name: data.action, 
-                parameters: {} 
-              },
-              observation: { 
-                success: true,
-                data: data.observation 
-              },
-              status: data.status,
-              timestamp: new Date().toISOString(),
-            };
-            steps.push(step);
-            setStreamingSteps([...steps]);
+          } else if (data.type === 'thought_chunk') {
+            // 实时思考块 - 更新当前步骤的思考内容
+            const stepNumber = data.step_number;
+            
+            setStreamingSteps((prevSteps) => {
+              const existingStepIndex = prevSteps.findIndex(s => s.step_number === stepNumber);
+              if (existingStepIndex >= 0) {
+                // 更新现有步骤的思考内容
+                const updatedSteps = [...prevSteps];
+                updatedSteps[existingStepIndex] = {
+                  ...updatedSteps[existingStepIndex],
+                  thought: (updatedSteps[existingStepIndex].thought || '') + data.chunk,
+                  status: 'running',  // 确保状态是 running
+                };
+                return updatedSteps;
+              } else {
+                // 创建新步骤
+                return [...prevSteps, {
+                  step_number: stepNumber,
+                  thought: data.chunk,
+                  action: { tool_name: '', parameters: {} },
+                  observation: { success: true, data: '' },
+                  status: 'running',  // 设置为 running 状态
+                  timestamp: new Date().toISOString(),
+                }];
+              }
+            });
             
             setAgentState((prev) => ({
               ...prev,
-              currentStep: data.step_number,
+              currentStep: stepNumber,
               lastUpdate: new Date(),
             }));
+          } else if (data.type === 'action') {
+            // 行动事件 - 包含完整思考和选择的工具
+            const stepNumber = data.step_number;
+            setStreamingSteps((prevSteps) => {
+              const existingStepIndex = prevSteps.findIndex(s => s.step_number === stepNumber);
+              if (existingStepIndex >= 0) {
+                // 更新现有步骤
+                const updatedSteps = [...prevSteps];
+                updatedSteps[existingStepIndex] = {
+                  ...updatedSteps[existingStepIndex],
+                  thought: data.thought || updatedSteps[existingStepIndex].thought,
+                  action: {
+                    tool_name: data.tool_name,
+                    parameters: data.parameters || {},
+                  },
+                  status: 'running',  // 使用 'running' 而不是 'executing'
+                };
+                return updatedSteps;
+              } else {
+                // 创建新步骤
+                return [...prevSteps, {
+                  step_number: stepNumber,
+                  thought: data.thought || '',
+                  action: {
+                    tool_name: data.tool_name,
+                    parameters: data.parameters || {},
+                  },
+                  observation: { success: true, data: '' },
+                  status: 'running',  // 使用 'running' 而不是 'executing'
+                  timestamp: new Date().toISOString(),
+                }];
+              }
+            });
+          } else if (data.type === 'observation') {
+            // 观察事件 - 工具执行结果
+            const stepNumber = data.step_number;
+            
+            // 更新 streamingSteps 并同时更新 steps 数组
+            setStreamingSteps((prevSteps) => {
+              const existingStepIndex = prevSteps.findIndex(s => s.step_number === stepNumber);
+              if (existingStepIndex >= 0) {
+                const updatedSteps = [...prevSteps];
+                const updatedStep = {
+                  ...updatedSteps[existingStepIndex],
+                  observation: {
+                    success: data.success,
+                    data: data.data,
+                    error: data.error,
+                  },
+                  status: data.success ? 'completed' : 'failed',
+                };
+                updatedSteps[existingStepIndex] = updatedStep;
+                
+                // 同时更新 steps 数组
+                const existingInSteps = steps.findIndex(s => s.step_number === stepNumber);
+                if (existingInSteps >= 0) {
+                  steps[existingInSteps] = updatedStep;
+                } else {
+                  steps.push(updatedStep);
+                }
+                
+                return updatedSteps;
+              }
+              return prevSteps;
+            });
           } else if (data.type === 'response_chunk') {
             accumulatedResponse += data.chunk;
             setCurrentResponse(accumulatedResponse);

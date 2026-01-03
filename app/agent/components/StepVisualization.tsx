@@ -84,6 +84,10 @@ export default function StepVisualization({
                 </div>
                 <div className="text-sm text-gray-700 dark:text-gray-300 pl-4">
                   {step.thought}
+                  {/* 如果步骤正在运行，显示打字机光标 */}
+                  {step.status === 'running' && (
+                    <span className="inline-block w-1.5 h-4 ml-1 bg-yellow-500 animate-pulse align-middle"></span>
+                  )}
                 </div>
               </div>
             )}
