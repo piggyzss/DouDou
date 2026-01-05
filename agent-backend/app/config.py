@@ -58,6 +58,15 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 3600  # 1小时（秒）
     NEWS_CACHE_TTL: int = 1800  # 30分钟（秒）
 
+    # ========== 数据库配置 ==========
+    DATABASE_URL: str = ""  # PostgreSQL 连接字符串，从环境变量读取
+    POSTGRES_URL: str = ""  # 备用 PostgreSQL 连接字符串
+    
+    @property
+    def DB_CONNECTION_STRING(self) -> str:
+        """获取数据库连接字符串（优先使用 DATABASE_URL）"""
+        return self.DATABASE_URL or self.POSTGRES_URL
+
     # ========== LLM 配置 ==========
     # 敏感信息：必须从环境变量读取
     GOOGLE_API_KEY: str = ""  # 必须在 .env 中设置

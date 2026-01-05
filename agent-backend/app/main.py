@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .api.routes import agent
 from .api.middleware import setup_error_handlers
+from .db import get_db_pool, close_db_pool
 import uvicorn
+from loguru import logger
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -28,6 +30,22 @@ setup_error_handlers(app)
 
 # 注册路由
 app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
+
+
+# 应用启动事件
+@app.on_event("startup")
+async def startup_event():
+    """应用启动时初始化数据库连接池"""
+    logger.info("Application starting up...")
+    await get_db_pool()
+
+
+# 应用关闭事件
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭时清理数据库连接池"""
+    logger.info("Application shutting down...")
+    await close_db_pool()
 
 
 @app.get("/")

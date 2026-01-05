@@ -36,6 +36,7 @@
     "db:manage-aigc-master": "ts-node -P tsconfig.scripts.json scripts/database/manage-aigc-master.ts",
     "db:manage-blog": "ts-node -P tsconfig.scripts.json scripts/database/manage-blog-db.ts",
     "db:manage-apps": "ts-node -P tsconfig.scripts.json scripts/database/manage-apps.ts",
+    "db:manage-agent": "ts-node -P tsconfig.scripts.json scripts/database/manage-agent.ts",
     "changelog": "ts-node -P tsconfig.scripts.json scripts/utilities/update-changelog.ts",
     "deploy:init": "ts-node -P tsconfig.scripts.json scripts/deployment/deploy-init.ts",
     "deploy:verify": "ts-node -P tsconfig.scripts.json scripts/deployment/verify-deployment.ts",

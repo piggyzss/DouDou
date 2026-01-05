@@ -22,6 +22,21 @@ export interface AgentState {
 }
 
 export function useAgent() {
+  // 生成唯一的 session ID（每个浏览器标签页一个会话）
+  const [sessionId] = useState(() => {
+    // 尝试从 localStorage 获取现有 session ID
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('agent_session_id') : null;
+    if (stored) {
+      return stored;
+    }
+    // 生成新的 session ID: timestamp + random
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('agent_session_id', newSessionId);
+    }
+    return newSessionId;
+  });
+
   const [messages, setMessages] = useState<AgentMessage[]>([
     {
       id: "1",
@@ -118,7 +133,7 @@ export function useAgent() {
       
       const params = new URLSearchParams({
         input: trimmedCommand,
-        session_id: "default",
+        session_id: sessionId,  // 使用唯一的 session ID
       });
       
       const eventSource = new EventSource(`/api/agent/execute?${params}`);

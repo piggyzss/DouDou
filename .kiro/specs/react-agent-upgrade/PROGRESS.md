@@ -261,7 +261,7 @@ docker-compose -f docker/docker-compose.dev.yml up
 
 ### 运行快速测试
 ```bash
-./agent-backend/quick_test.sh
+./agent-backend/scripts/quick_test.sh
 ```
 
 ### 手动测试

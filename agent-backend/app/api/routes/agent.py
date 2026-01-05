@@ -5,6 +5,8 @@ from ...core.plugin_manager import plugin_manager
 from ...core.react_agent import ReactAgent, get_react_agent
 from ...core.tool_registry import get_tool_registry
 from ...services.llm_service import get_llm_service
+from ...core.conversation_memory import get_conversation_memory
+from ...db import get_db_connection
 from loguru import logger
 from datetime import datetime
 import traceback
@@ -61,8 +63,28 @@ plugin_manager.tool_registry = tool_registry
 for plugin in list(plugin_manager.plugins.values()):
     plugin_manager.register_plugin(plugin)
 
-# 初始化 React Agent
-react_agent = get_react_agent(tool_registry, llm_service, plugin_manager)
+
+# 初始化 React Agent（延迟初始化，在请求时获取数据库连接）
+async def get_initialized_react_agent():
+    """
+    获取已初始化的 ReactAgent（包含数据库连接）
+    
+    Returns:
+        ReactAgent: 已初始化的 ReactAgent 实例
+    """
+    # 获取数据库连接
+    db_conn = await get_db_connection()
+    
+    # 创建带数据库连接的 ConversationMemory
+    conversation_memory = get_conversation_memory(db_connection=db_conn, llm_service=llm_service)
+    
+    # 创建 ReactAgent
+    return get_react_agent(
+        tool_registry=tool_registry,
+        llm_service=llm_service,
+        plugin_manager=plugin_manager,
+        conversation_memory=conversation_memory
+    )
 
 
 @router.post("/execute", response_model=AgentResponse)
@@ -88,6 +110,9 @@ async def execute_command(request: AgentRequest):
             raise HTTPException(status_code=400, detail="Input cannot be empty")
         
         logger.info(f"Executing natural language query: {user_input[:100]}...")
+        
+        # 获取已初始化的 ReactAgent（包含数据库连接）
+        react_agent = await get_initialized_react_agent()
         
         # 使用 ReactAgent 执行
         react_response = await react_agent.execute(
@@ -221,6 +246,9 @@ async def stream_execution(request: AgentRequest):
                 async def execute_agent():
                     """在后台执行 Agent"""
                     try:
+                        # 获取已初始化的 ReactAgent（包含数据库连接）
+                        react_agent = await get_initialized_react_agent()
+                        
                         result = await react_agent.execute(
                             query=user_input,
                             session_id=session_id,

@@ -396,7 +396,7 @@ pytest tests/ -v --cov=app
 docker-compose -f docker/docker-compose.dev.yml up
 
 # 运行快速测试脚本
-./quick_test.sh
+./scripts/quick_test.sh
 ```
 
 ---

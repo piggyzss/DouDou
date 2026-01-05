@@ -218,11 +218,14 @@ class ConversationMemory:
             logger.error(f"Failed to get context summary: {e}", exc_info=True)
             return None
     
-    async def cleanup_expired_sessions(self) -> int:
+    async def cleanup_expired_sessions(self, expiry_hours: int = 24) -> int:
         """
         清理过期会话
         
-        标记 24 小时未活动的会话为过期
+        标记指定时间未活动的会话为过期
+        
+        Args:
+            expiry_hours: 会话过期时间（小时），默认 24 小时
         
         Returns:
             int: 清理的会话数量
@@ -232,18 +235,73 @@ class ConversationMemory:
                 logger.warning("Database not available, skipping cleanup")
                 return 0
             
-            expiry_time = datetime.now() - timedelta(hours=self.SESSION_EXPIRY_HOURS)
+            expiry_time = datetime.now() - timedelta(hours=expiry_hours)
             
             # 更新过期会话状态
             count = await self._mark_sessions_expired(expiry_time)
             
-            logger.info(f"Cleaned up {count} expired sessions")
+            logger.info(f"Marked {count} sessions as expired (inactive for {expiry_hours}+ hours)")
             
             return count
         
         except Exception as e:
             logger.error(f"Failed to cleanup expired sessions: {e}", exc_info=True)
             return 0
+    
+    async def delete_old_data(self, days: int = 30) -> Dict[str, int]:
+        """
+        删除旧数据
+        
+        删除指定天数之前的过期会话和对话记录
+        
+        Args:
+            days: 保留天数，默认 30 天（删除 30 天前的数据）
+        
+        Returns:
+            Dict[str, int]: 删除的记录数 {"sessions": count, "conversations": count}
+        """
+        try:
+            if not self.db:
+                logger.warning("Database not available, skipping deletion")
+                return {"sessions": 0, "conversations": 0}
+            
+            cutoff_time = datetime.now() - timedelta(days=days)
+            
+            async with self.db.acquire() as conn:
+                # 1. 删除旧的对话记录
+                conversations_deleted = await conn.execute(
+                    """
+                    DELETE FROM agent_conversations
+                    WHERE created_at < $1
+                    """,
+                    cutoff_time
+                )
+                
+                # 2. 删除旧的过期会话
+                sessions_deleted = await conn.execute(
+                    """
+                    DELETE FROM agent_sessions
+                    WHERE is_expired = true
+                      AND last_active < $1
+                    """,
+                    cutoff_time
+                )
+                
+                result = {
+                    "sessions": int(sessions_deleted.split()[-1]) if sessions_deleted else 0,
+                    "conversations": int(conversations_deleted.split()[-1]) if conversations_deleted else 0
+                }
+                
+                logger.info(
+                    f"Deleted old data: {result['sessions']} sessions, "
+                    f"{result['conversations']} conversations (older than {days} days)"
+                )
+                
+                return result
+        
+        except Exception as e:
+            logger.error(f"Failed to delete old data: {e}", exc_info=True)
+            return {"sessions": 0, "conversations": 0}
     
     async def _insert_conversation(self, data: Dict[str, Any]) -> None:
         """
@@ -252,34 +310,29 @@ class ConversationMemory:
         Args:
             data: 对话数据
         """
-        # TODO: 实现实际的数据库插入
-        # 这里需要根据实际的数据库连接实现
-        
         if not self.db:
             raise Exception("Database connection not available")
         
-        # 示例实现（需要根据实际数据库调整）
+        # 使用 asyncpg 插入数据
         query = """
             INSERT INTO agent_conversations 
-            (session_id, user_id, query, response, success, steps_count, 
-             execution_time, metadata, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            (session_id, user_query, agent_response, steps, plan, evaluation, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
         """
         
         import json
         
-        await self.db.execute(
-            query,
-            data["session_id"],
-            data.get("user_id"),
-            data["query"],
-            data["response"],
-            data["success"],
-            data["steps_count"],
-            data["execution_time"],
-            json.dumps(data["metadata"]),
-            data["created_at"]
-        )
+        async with self.db.acquire() as conn:
+            await conn.execute(
+                query,
+                data["session_id"],
+                data["query"],
+                data["response"],
+                json.dumps(data["metadata"]["steps"]),
+                json.dumps(data["metadata"]["plan"]),
+                json.dumps(data["metadata"]["evaluation"]),
+                data["created_at"]
+            )
     
     async def _query_conversations(
         self,
@@ -296,36 +349,38 @@ class ConversationMemory:
         Returns:
             List[Dict]: 对话记录列表
         """
-        # TODO: 实现实际的数据库查询
-        
         if not self.db:
             return []
         
-        # 示例实现（需要根据实际数据库调整）
+        # 使用 asyncpg 查询数据
         query = """
-            SELECT session_id, query, response, success, steps_count,
-                   execution_time, metadata, created_at
+            SELECT session_id, user_query, agent_response, steps, plan, evaluation, created_at
             FROM agent_conversations
             WHERE session_id = $1
             ORDER BY created_at DESC
             LIMIT $2
         """
         
-        rows = await self.db.fetch(query, session_id, limit)
-        
-        # 转换为字典列表
         import json
         
+        async with self.db.acquire() as conn:
+            rows = await conn.fetch(query, session_id, limit)
+        
+        # 转换为字典列表
         result = []
         for row in rows:
             result.append({
                 "session_id": row["session_id"],
-                "query": row["query"],
-                "response": row["response"],
-                "success": row["success"],
-                "steps_count": row["steps_count"],
-                "execution_time": row["execution_time"],
-                "metadata": json.loads(row["metadata"]) if row["metadata"] else {},
+                "query": row["user_query"],
+                "response": row["agent_response"],
+                "success": True,  # 默认成功
+                "steps_count": len(json.loads(row["steps"])) if row["steps"] else 0,
+                "execution_time": 0.0,  # 暂时不存储执行时间
+                "metadata": {
+                    "steps": json.loads(row["steps"]) if row["steps"] else [],
+                    "plan": json.loads(row["plan"]) if row["plan"] else {},
+                    "evaluation": json.loads(row["evaluation"]) if row["evaluation"] else {},
+                },
                 "created_at": row["created_at"]
             })
         
@@ -343,20 +398,19 @@ class ConversationMemory:
             session_id: 会话 ID
             user_id: 用户 ID（可选）
         """
-        # TODO: 实现实际的数据库更新
-        
         if not self.db:
             return
         
-        # 示例实现（需要根据实际数据库调整）
+        # 使用 asyncpg 更新或插入会话记录
         query = """
-            INSERT INTO agent_sessions (session_id, user_id, last_active, status)
-            VALUES ($1, $2, $3, 'active')
+            INSERT INTO agent_sessions (session_id, user_id, last_active, created_at)
+            VALUES ($1, $2, $3, $3)
             ON CONFLICT (session_id)
-            DO UPDATE SET last_active = $3, status = 'active'
+            DO UPDATE SET last_active = $3, user_id = COALESCE($2, agent_sessions.user_id)
         """
         
-        await self.db.execute(query, session_id, user_id, datetime.now())
+        async with self.db.acquire() as conn:
+            await conn.execute(query, session_id, user_id, datetime.now())
     
     async def _mark_sessions_expired(self, expiry_time: datetime) -> int:
         """
@@ -368,22 +422,21 @@ class ConversationMemory:
         Returns:
             int: 标记的会话数量
         """
-        # TODO: 实现实际的数据库更新
-        
         if not self.db:
             return 0
         
-        # 示例实现（需要根据实际数据库调整）
+        # 使用 asyncpg 删除过期会话
         query = """
-            UPDATE agent_sessions
-            SET status = 'expired'
-            WHERE last_active < $1 AND status = 'active'
+            DELETE FROM agent_sessions
+            WHERE last_active < $1
         """
         
-        result = await self.db.execute(query, expiry_time)
+        async with self.db.acquire() as conn:
+            result = await conn.execute(query, expiry_time)
         
-        # 返回受影响的行数
-        return int(result.split()[-1]) if result else 0
+        # 从结果中提取受影响的行数
+        # asyncpg 返回格式: "DELETE N"
+        return int(result.split()[-1]) if result and result.startswith("DELETE") else 0
     
     async def _generate_summary(self, history: List[Dict[str, Any]]) -> str:
         """

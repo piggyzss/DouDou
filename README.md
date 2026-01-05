@@ -231,6 +231,35 @@ cd agent-backend
 pytest
 ```
 
+### 数据库管理
+
+项目提供了交互式数据库管理工具，方便查看和管理各类数据：
+
+```bash
+# Agent 会话和对话管理
+npm run db:manage-agent
+
+# 博客内容管理
+npm run db:manage-blog
+
+# 应用作品管理
+npm run db:manage-apps
+
+# AIGC 内容管理
+npm run db:manage-aigc-image   # 图片作品集
+npm run db:manage-aigc-music   # 音乐作品
+npm run db:manage-aigc-video   # 视频作品
+```
+
+**Agent 数据库管理功能**：
+- 查看所有会话和对话记录
+- 查看对话详情（包含 Steps/Plan/Evaluation）
+- 分析 ReAct 执行步骤
+- 清理过期会话
+- 数据库统计信息
+
+详细使用说明请参考：[Agent 数据库管理指南](./docs/agent-database-management.md)
+
 ### 代码质量
 
 ```bash
