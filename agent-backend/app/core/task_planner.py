@@ -525,7 +525,7 @@ Respond with ONLY a JSON object:
                 tool_name=step_data.get('tool_name', 'echo'),
                 parameters=step_data.get('parameters', {}),
                 required=step_data.get('required', True),
-                dependencies=step_data.get('dependencies', [])
+                depends_on=step_data.get('depends_on')  # Fixed: use depends_on instead of dependencies
             )
             steps.append(step)
         

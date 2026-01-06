@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { ReActStep, ExecutionPlan, QualityEvaluation } from "../types/react-agent";
+import { ReActStep, ExecutionPlan, QualityEvaluation, StepStatus } from "../types/react-agent";
 
 export interface AgentMessage {
   id: string;
@@ -222,14 +222,14 @@ export function useAgent() {
               const existingStepIndex = prevSteps.findIndex(s => s.step_number === stepNumber);
               if (existingStepIndex >= 0) {
                 const updatedSteps = [...prevSteps];
-                const updatedStep = {
+                const updatedStep: ReActStep = {
                   ...updatedSteps[existingStepIndex],
                   observation: {
                     success: data.success,
                     data: data.data,
                     error: data.error,
                   },
-                  status: data.success ? 'completed' : 'failed',
+                  status: (data.success ? 'completed' : 'failed') as StepStatus,
                 };
                 updatedSteps[existingStepIndex] = updatedStep;
                 

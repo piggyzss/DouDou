@@ -144,11 +144,13 @@ class ConversationMemory:
             history = []
             for row in rows:
                 turn = ConversationTurn(
-                    query=row["query"],
-                    response=row["response"],
-                    timestamp=row["created_at"],
-                    success=row.get("success", True),
-                    metadata=row.get("metadata", {})
+                    session_id=session_id,
+                    user_query=row["query"],
+                    agent_response=row["response"],
+                    steps=row.get("metadata", {}).get("steps", []),
+                    plan=row.get("metadata", {}).get("plan"),
+                    evaluation=row.get("metadata", {}).get("evaluation"),
+                    created_at=row["created_at"]
                 )
                 history.append(turn)
             
@@ -187,19 +189,29 @@ class ConversationMemory:
                     return cached["summary"]
             
             # 获取完整历史
-            full_history = await self._query_conversations(
+            full_history_rows = await self._query_conversations(
                 session_id,
                 limit=1000  # 获取所有记录
             )
             
             # 如果记录数少于阈值，不需要摘要
-            if len(full_history) < self.SUMMARY_THRESHOLD:
+            if len(full_history_rows) < self.SUMMARY_THRESHOLD:
                 return None
             
             # 检查 LLM 是否可用
             if not self.llm_service or not self.llm_service.is_available():
                 logger.warning("LLM not available, cannot generate summary")
                 return None
+            
+            # 转换数据库行为标准格式（确保有 'query' 和 'response' 键）
+            full_history = []
+            for row in full_history_rows:
+                full_history.append({
+                    'query': row.get('query', ''),
+                    'response': row.get('response', ''),
+                    'timestamp': row.get('created_at'),
+                    'success': row.get('success', True)
+                })
             
             # 生成摘要
             summary = await self._generate_summary(full_history)
@@ -314,7 +326,7 @@ class ConversationMemory:
             raise Exception("Database connection not available")
         
         # 使用 asyncpg 插入数据
-        query = """
+        sql_query = """
             INSERT INTO agent_conversations 
             (session_id, user_query, agent_response, steps, plan, evaluation, created_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -324,7 +336,7 @@ class ConversationMemory:
         
         async with self.db.acquire() as conn:
             await conn.execute(
-                query,
+                sql_query,
                 data["session_id"],
                 data["query"],
                 data["response"],
@@ -480,7 +492,7 @@ class ConversationMemory:
         recent_history = history[:20]
         
         conversation_text = "\n\n".join([
-            f"User: {item['query']}\nAssistant: {item['response']}"
+            f"User: {item.get('query', '')}\nAssistant: {item.get('response', '')}"
             for item in recent_history
         ])
         
@@ -513,8 +525,8 @@ Summary (2-3 sentences):"""
         
         topics = set()
         for item in recent:
-            # 简单提取关键词
-            query = item["query"].lower()
+            # 简单提取关键词 - 使用 .get() 安全访问
+            query = item.get("query", "").lower()
             if "新闻" in query or "资讯" in query:
                 topics.add("新闻资讯")
             if "天气" in query:

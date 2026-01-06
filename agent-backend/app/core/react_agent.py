@@ -224,12 +224,26 @@ class ReactAgent:
             execution_time = time.time() - start_time
             logger.error(f"ReAct Agent execution failed: {e}", exc_info=True)
             
+            # 安全地创建简单计划（处理 query 可能未定义的情况）
+            try:
+                simple_plan = self._create_simple_plan(query)
+            except Exception as plan_error:
+                logger.error(f"Failed to create simple plan: {plan_error}")
+                # 创建最小化的计划
+                from ..models.react import PlanStep
+                simple_plan = ExecutionPlan(
+                    query=query if 'query' in locals() else "Unknown query",
+                    complexity="simple",
+                    steps=[],
+                    estimated_iterations=1
+                )
+            
             # 返回错误响应
             return ReactResponse(
                 success=False,
                 response="",
                 steps=[],
-                plan=self._create_simple_plan(query),
+                plan=simple_plan,
                 evaluation=QualityEvaluation(
                     completeness_score=0,
                     quality_score=0,
